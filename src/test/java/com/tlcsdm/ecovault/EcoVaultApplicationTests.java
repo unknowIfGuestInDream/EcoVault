@@ -6,6 +6,7 @@ import com.tlcsdm.ecovault.dto.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -14,9 +15,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
+
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -44,6 +51,39 @@ class EcoVaultApplicationTests {
 	@Test
 	@DisplayName("Spring 上下文正常加载")
 	void contextLoads() {
+	}
+
+	@Test
+	@DisplayName("启动 Banner 资源存在且包含应用名称")
+	void bannerResourceExists() throws Exception {
+		ClassPathResource banner = new ClassPathResource("banner.txt");
+		assertTrue(banner.exists());
+		String content = banner.getContentAsString(StandardCharsets.UTF_8);
+		assertTrue(content.contains("EcoVault"));
+	}
+
+	@Test
+	@DisplayName("首页包含 favicon 引用")
+	void indexContainsFaviconLink() throws Exception {
+		mockMvc.perform(get("/"))
+			.andExpect(status().isOk())
+			.andExpect(header().string("Content-Type", containsString("text/html")))
+			.andExpect(content().string(containsString("<link rel=\"icon\" href=\"/favicon.ico\"")))
+			.andExpect(content().string(containsString("<meta name=\"renderer\" content=\"webkit\"/>")))
+			.andExpect(content().string(containsString("<meta name=\"google\" content=\"notranslate\"/>")));
+	}
+
+	@Test
+	@DisplayName("favicon 资源可直接访问")
+	void faviconIsServed() throws Exception {
+		byte[] content = mockMvc.perform(get("/favicon.ico"))
+			.andExpect(status().isOk())
+			.andExpect(header().string("Content-Type", containsString("image")))
+			.andReturn()
+			.getResponse()
+			.getContentAsByteArray();
+		assertTrue(content.length > 6);
+		assertArrayEquals(new byte[] { 0, 0, 1, 0 }, Arrays.copyOf(content, 4));
 	}
 
 	@Test
