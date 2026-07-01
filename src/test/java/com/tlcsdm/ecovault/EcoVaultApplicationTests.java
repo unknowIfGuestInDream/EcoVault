@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -65,8 +66,7 @@ class EcoVaultApplicationTests {
 		mockMvc.perform(get("/"))
 			.andExpect(status().isOk())
 			.andExpect(header().string("Content-Type", containsString("text/html")))
-			.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
-				.string(containsString("/favicon.ico")));
+			.andExpect(content().string(containsString("/favicon.ico")));
 	}
 
 	@Test

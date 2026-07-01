@@ -62,6 +62,7 @@
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
         <maven-help-plugin.version>3.5.1</maven-help-plugin.version>
+        <argLine/>
         <ecovault.jvm.args>--enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8</ecovault.jvm.args>
     </properties>
 
