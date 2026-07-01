@@ -166,12 +166,134 @@ class AuthServiceImplTest {
 	}
 
 	@Test
-	@DisplayName("修改密码原密码错误抛出异常")
-	void changePasswordWrongOld() {
-		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser()));
+	@DisplayName("注册提供非空昵称时保留该昵称")
+	void registerKeepsProvidedNickname() {
+		when(userRepository.existsByUsername("carol")).thenReturn(false);
+		when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		assertThatThrownBy(() -> service.changePassword(1L, new ChangePasswordRequest("wrong", "NewPass123")))
+		User saved = service.register(new RegisterRequest("carol", "Secret123", "卡罗尔", "c@d.com"));
+
+		assertThat(saved.getNickname()).isEqualTo("卡罗尔");
+		assertThat(saved.getEmail()).isEqualTo("c@d.com");
+	}
+
+	@Test
+	@DisplayName("用户名不存在登录失败")
+	void loginUserNotFound() {
+		when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.login(new LoginRequest("ghost", "x"), "device", "127.0.0.1"))
 			.isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("超长设备信息在会话中被截断至上限长度")
+	void loginTruncatesLongDeviceInfo() {
+		when(userRepository.findByUsername("alice")).thenReturn(Optional.of(existingUser()));
+		when(sessionRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(1L)).thenReturn(new ArrayList<>());
+		List<UserSession> captured = new ArrayList<>();
+		when(sessionRepository.save(any(UserSession.class))).thenAnswer(inv -> {
+			captured.add(inv.getArgument(0));
+			return inv.getArgument(0);
+		});
+		String longDevice = "d".repeat(600);
+
+		service.login(new LoginRequest("alice", "Passw0rd!"), longDevice, "127.0.0.1");
+
+		assertThat(captured.get(0).getDeviceInfo()).hasSize(512);
+	}
+
+	@Test
+	@DisplayName("登出 jti 为空时直接返回，不访问仓储")
+	void logoutNullJti() {
+		service.logout(null);
+
+		org.mockito.Mockito.verifyNoInteractions(sessionRepository);
+	}
+
+	@Test
+	@DisplayName("登出存在的会话将其置为失效")
+	void logoutExistingSession() {
+		UserSession session = new UserSession();
+		session.setJti("jti-1");
+		session.setActive(true);
+		when(sessionRepository.findByJti("jti-1")).thenReturn(Optional.of(session));
+		when(sessionRepository.save(any(UserSession.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		service.logout("jti-1");
+
+		assertThat(session.isActive()).isFalse();
+	}
+
+	@Test
+	@DisplayName("登出不存在的会话时安全忽略")
+	void logoutMissingSession() {
+		when(sessionRepository.findByJti("none")).thenReturn(Optional.empty());
+
+		service.logout("none");
+
+		org.mockito.Mockito.verify(sessionRepository).findByJti("none");
+	}
+
+	@Test
+	@DisplayName("更新资料非空昵称时更新昵称与邮箱")
+	void updateProfileWithNickname() {
+		User user = existingUser();
+		when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+		when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		User updated = service.updateProfile(1L,
+				new com.tlcsdm.ecovault.dto.UpdateProfileRequest("新昵称", "new@mail.com"));
+
+		assertThat(updated.getNickname()).isEqualTo("新昵称");
+		assertThat(updated.getEmail()).isEqualTo("new@mail.com");
+	}
+
+	@Test
+	@DisplayName("更新资料昵称为空白时保留原昵称")
+	void updateProfileBlankNicknameKept() {
+		User user = existingUser();
+		when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+		when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		User updated = service.updateProfile(1L, new com.tlcsdm.ecovault.dto.UpdateProfileRequest("  ", "e@f.com"));
+
+		assertThat(updated.getNickname()).isEqualTo("Alice");
+		assertThat(updated.getEmail()).isEqualTo("e@f.com");
+	}
+
+	@Test
+	@DisplayName("更新不存在用户资料抛出异常")
+	void updateProfileUserNotFound() {
+		when(userRepository.findById(9L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(
+				() -> service.updateProfile(9L, new com.tlcsdm.ecovault.dto.UpdateProfileRequest("n", "e@f.com")))
+			.isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("修改不存在用户密码抛出异常")
+	void changePasswordUserNotFound() {
+		when(userRepository.findById(9L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.changePassword(9L, new ChangePasswordRequest("a", "Newpass123")))
+			.isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("最大设备数小于 1 时回退为 1")
+	void maxDevicesFloorsToOne() {
+		AuthServiceImpl zeroDevice = new AuthServiceImpl(userRepository, sessionRepository, passwordEncoder,
+				tokenProvider, 0);
+
+		when(userRepository.findByUsername("alice")).thenReturn(Optional.of(existingUser()));
+		when(sessionRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(1L)).thenReturn(new ArrayList<>());
+		when(sessionRepository.save(any(UserSession.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		LoginResponse response = zeroDevice.login(new LoginRequest("alice", "Passw0rd!"), "device", "127.0.0.1");
+
+		assertThat(response.token()).isNotBlank();
 	}
 
 }

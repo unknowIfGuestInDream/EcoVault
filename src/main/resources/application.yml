@@ -37,7 +37,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.community.dialect.SQLiteDialect
+        dialect: com.tlcsdm.ecovault.config.EcoVaultSQLiteDialect
         format_sql: false
     open-in-view: false
   thymeleaf:

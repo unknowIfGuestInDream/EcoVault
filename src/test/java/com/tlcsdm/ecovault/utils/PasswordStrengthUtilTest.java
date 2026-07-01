@@ -45,6 +45,15 @@ class PasswordStrengthUtilTest {
 	}
 
 	@Test
+	@DisplayName("6-7 位密码命中中间长度档位")
+	void sixCharPasswordLengthTier() {
+		// 6 位 (10) + 小写 (15) = 25 -> WEAK，覆盖 length>=6 分支
+		PasswordStrengthUtil.Strength strength = PasswordStrengthUtil.evaluate("abcdef");
+		assertThat(strength.score()).isEqualTo(25);
+		assertThat(strength.level()).isEqualTo("WEAK");
+	}
+
+	@Test
 	@DisplayName("评分上限不超过 100")
 	void scoreCappedAt100() {
 		PasswordStrengthUtil.Strength strength = PasswordStrengthUtil.evaluate("Abcdefghijkl123!@#$%");

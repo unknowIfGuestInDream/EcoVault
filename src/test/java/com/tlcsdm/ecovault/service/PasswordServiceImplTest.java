@@ -91,6 +91,139 @@ class PasswordServiceImplTest {
 		assertThatThrownBy(() -> service.update(1L, 99L, request)).isInstanceOf(BusinessException.class);
 	}
 
+	@Test
+	@DisplayName("关键字非空时按标题模糊查询，且无标签筛选返回全部")
+	void listWithKeywordNoTag() {
+		PasswordEntry a = buildEntry(1L, "GitHub", "p1", List.of("工作"));
+		when(repository.findByUserIdAndTitleContainingIgnoreCaseOrderByUpdatedAtDesc(1L, "Git")).thenReturn(List.of(a));
+
+		List<PasswordEntryResponse> result = service.list(1L, "  Git  ", "  ");
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).title()).isEqualTo("GitHub");
+	}
+
+	@Test
+	@DisplayName("标签筛选时忽略标签为空的条目")
+	void listFilterSkipsEntriesWithoutTags() {
+		PasswordEntry a = buildEntry(1L, "A", "p1", List.of("工作"));
+		PasswordEntry noTag = new PasswordEntry();
+		noTag.setId(2L);
+		noTag.setUserId(1L);
+		noTag.setTitle("B");
+		noTag.setSecret(aesUtil.encrypt("p2"));
+		noTag.setTags(null);
+		when(repository.findByUserIdOrderByUpdatedAtDesc(1L)).thenReturn(List.of(a, noTag));
+
+		List<PasswordEntryResponse> result = service.list(1L, "", "工作");
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).title()).isEqualTo("A");
+	}
+
+	@Test
+	@DisplayName("空白或空标签在加密时被过滤为无标签")
+	void createWithBlankTagsStoresNull() {
+		PasswordEntryRequest request = new PasswordEntryRequest("X", null, "Abcdef123!@#", null, null, null,
+				List.of(" ", ""));
+		when(repository.save(any(PasswordEntry.class))).thenAnswer(inv -> {
+			PasswordEntry entry = inv.getArgument(0);
+			assertThat(entry.getTags()).isNull();
+			entry.setId(5L);
+			return entry;
+		});
+
+		PasswordEntryResponse response = service.create(1L, request);
+
+		assertThat(response.tags()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("更新存在的条目成功写入新内容")
+	void updateSuccess() {
+		PasswordEntry entry = buildEntry(3L, "旧标题", "old", List.of("工作"));
+		when(repository.findByIdAndUserId(3L, 1L)).thenReturn(Optional.of(entry));
+		when(repository.save(any(PasswordEntry.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		PasswordEntryRequest request = new PasswordEntryRequest("新标题", "acc", "NewSecret1!", "https://x.com", "备注",
+				"分类", List.of("个人"));
+		PasswordEntryResponse response = service.update(1L, 3L, request);
+
+		assertThat(response.title()).isEqualTo("新标题");
+		assertThat(response.secret()).isEqualTo("NewSecret1!");
+		assertThat(response.tags()).containsExactly("个人");
+	}
+
+	@Test
+	@DisplayName("获取存在的条目返回解密内容")
+	void getSuccess() {
+		PasswordEntry entry = buildEntry(4L, "标题", "secret1", List.of("工作", "代码"));
+		when(repository.findByIdAndUserId(4L, 1L)).thenReturn(Optional.of(entry));
+
+		PasswordEntryResponse response = service.get(1L, 4L);
+
+		assertThat(response.title()).isEqualTo("标题");
+		assertThat(response.secret()).isEqualTo("secret1");
+		assertThat(response.tags()).containsExactly("工作", "代码");
+	}
+
+	@Test
+	@DisplayName("删除存在的条目调用仓储删除")
+	void deleteSuccess() {
+		PasswordEntry entry = buildEntry(6L, "标题", "secret", List.of());
+		when(repository.findByIdAndUserId(6L, 1L)).thenReturn(Optional.of(entry));
+
+		service.delete(1L, 6L);
+
+		org.mockito.Mockito.verify(repository).delete(entry);
+	}
+
+	@Test
+	@DisplayName("删除不存在的条目抛出业务异常")
+	void deleteMissingThrows() {
+		when(repository.findByIdAndUserId(7L, 1L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.delete(1L, 7L)).isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("获取不存在的条目抛出业务异常")
+	void getMissingThrows() {
+		when(repository.findByIdAndUserId(8L, 1L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.get(1L, 8L)).isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("标签含 null/空白/有效项时仅保留有效标签")
+	void createWithMixedTags() {
+		java.util.List<String> tags = java.util.Arrays.asList("工作", null, "  ", "代码");
+		PasswordEntryRequest request = new PasswordEntryRequest("X", null, "Abcdef123!@#", null, null, null, tags);
+		when(repository.save(any(PasswordEntry.class))).thenAnswer(inv -> {
+			PasswordEntry entry = inv.getArgument(0);
+			entry.setId(11L);
+			return entry;
+		});
+
+		PasswordEntryResponse response = service.create(1L, request);
+
+		assertThat(response.tags()).containsExactly("工作", "代码");
+	}
+
+	@Test
+	@DisplayName("同时按关键字与标签筛选")
+	void listWithKeywordAndTag() {
+		PasswordEntry a = buildEntry(1L, "GitHub", "p1", List.of("工作"));
+		PasswordEntry b = buildEntry(2L, "GitLab", "p2", List.of("个人"));
+		when(repository.findByUserIdAndTitleContainingIgnoreCaseOrderByUpdatedAtDesc(1L, "Git"))
+			.thenReturn(List.of(a, b));
+
+		List<PasswordEntryResponse> result = service.list(1L, "Git", "工作");
+
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).title()).isEqualTo("GitHub");
+	}
+
 	private PasswordEntry buildEntry(Long id, String title, String secret, List<String> tags) {
 		PasswordEntry entry = new PasswordEntry();
 		entry.setId(id);

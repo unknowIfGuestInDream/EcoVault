@@ -21,7 +21,7 @@ spring:
       ddl-auto: create-drop
     properties:
       hibernate:
-        dialect: org.hibernate.community.dialect.SQLiteDialect
+        dialect: com.tlcsdm.ecovault.config.EcoVaultSQLiteDialect
     open-in-view: false
   lifecycle:
     timeout-per-shutdown-phase: 30s

@@ -113,7 +113,7 @@
         try {
             const resp = await fetch("/actuator/health", { credentials: "same-origin" });
             const h = await resp.json();
-            const rows = [["状态", h.status]];
+            const rows = [ ["状态", h.status] ];
             if (h.components) {
                 Object.entries(h.components).forEach(([k, v]) => rows.push([k, v.status]));
             }
