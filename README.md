@@ -3,7 +3,6 @@
 ![Java 25](https://img.shields.io/badge/Java-25-orange.svg)
 ![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4-brightgreen.svg)
 ![License MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![Build](https://img.shields.io/badge/Build-Maven%20%7C%20Jenkins-informational.svg)
 
 EcoVault（生态保险箱）是一个个人数据安全存储与管理平台，面向个人、家庭与小团队私有化部署场景，提供密码、财务、日志与后台管理能力。项目强调安全存储、权限隔离、可审计、易部署与现代化用户体验。
 
@@ -24,7 +23,7 @@ graph TD
 
 ## 项目简介
 
-EcoVault 使用 Java 25 与 Spring Boot 4 构建，主类为 `com.tlcsdm.ecovault.EcoVaultApplication`，Jar artifact id 为 `ecovault`。系统默认使用嵌入式 SQLite 数据库文件 `data/ecovault.db`，前端以 Thymeleaf 服务端渲染为主。
+EcoVault 使用 Java 25 与 Spring Boot 4 构建。系统默认使用嵌入式 SQLite 数据库文件 `data/ecovault.db`，前端以 Thymeleaf 服务端渲染为主。
 
 ## 功能特性
 
