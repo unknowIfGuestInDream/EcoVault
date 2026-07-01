@@ -18,7 +18,6 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -69,9 +68,9 @@ class EcoVaultApplicationTests {
 		mockMvc.perform(get("/"))
 			.andExpect(status().isOk())
 			.andExpect(header().string("Content-Type", containsString("text/html")))
-			.andExpect(content().string(allOf(containsString("<link rel=\"icon\" href=\"/favicon.ico\""),
-					containsString("<meta name=\"renderer\" content=\"webkit\"/>"),
-					containsString("<meta name=\"google\" content=\"notranslate\"/>"))));
+			.andExpect(content().string(containsString("<link rel=\"icon\" href=\"/favicon.ico\"")))
+			.andExpect(content().string(containsString("<meta name=\"renderer\" content=\"webkit\"/>")))
+			.andExpect(content().string(containsString("<meta name=\"google\" content=\"notranslate\"/>")));
 	}
 
 	@Test
