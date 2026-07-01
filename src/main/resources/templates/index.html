@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{fragments/common :: head('EcoVault - 生态保险箱')}"></head>
+<body>
+<div class="center-page">
+    <div class="glass hero">
+        <div style="position:absolute; top:20px; right:20px">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </div>
+        <h1>🔐 EcoVault 生态保险箱</h1>
+        <p class="muted">个人数据的安全存储与智能管理平台 —— 密码、财务、日志，一站式守护。</p>
+        <div class="feature-grid">
+            <div class="feature">
+                <h3>🔑 密码管理</h3>
+                <p class="muted">AES 加密存储，密码强度检测，标签分类与搜索。</p>
+            </div>
+            <div class="feature">
+                <h3>💰 财务分析</h3>
+                <p class="muted">工资数据录入，趋势图表，同比环比统计与导出。</p>
+            </div>
+            <div class="feature">
+                <h3>📋 操作审计</h3>
+                <p class="muted">AOP 自动记录操作日志，随时查询与导出。</p>
+            </div>
+            <div class="feature">
+                <h3>🛡️ 安全可靠</h3>
+                <p class="muted">JWT 认证、单设备登录、RBAC 权限、CSRF 防护。</p>
+            </div>
+        </div>
+        <div style="margin-top:28px; display:flex; gap:12px; justify-content:center; flex-direction:column; align-items:center">
+            <a class="btn" th:href="@{/login}">登录</a>
+            <span class="muted">账号由管理员在后台创建，不提供外部自助注册。</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

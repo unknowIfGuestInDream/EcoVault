@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${title}">EcoVault</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <script defer th:src="@{/js/app.js}"></script>
+</head>
+<body>
+<!-- 顶部导航栏 (登录后页面使用) -->
+<header th:fragment="navbar" class="navbar">
+    <div class="brand">🔐 EcoVault</div>
+    <nav>
+        <a th:href="@{/dashboard}">控制台</a>
+        <a th:href="@{/passwords}">密码管理</a>
+        <a th:href="@{/finance}">财务管理</a>
+        <a th:href="@{/logs}">操作日志</a>
+        <a th:href="@{/profile}">个人中心</a>
+        <a th:href="@{/admin}" id="nav-admin" style="display:none">管理后台</a>
+    </nav>
+    <div style="display:flex; gap:10px; align-items:center">
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        <button class="btn btn-sm secondary" onclick="logout()">退出</button>
+    </div>
+</header>
+</body>
+</html>

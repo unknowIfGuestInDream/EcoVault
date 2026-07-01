@@ -1,0 +1,73 @@
+name: CI 构建与测试
+
+# 在推送到主分支或提交 PR 时触发，执行编译、单元测试并生成测试与覆盖率报告
+on:
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  build-and-test:
+    name: 构建与测试 (JDK 25)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 配置 JDK 25 (Temurin)
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: 编译并运行测试 (生成 JaCoCo 覆盖率报告)
+        run: mvn -B --no-transfer-progress verify
+      - name: Check spring-javaformat
+        run: mvn spring-javaformat:validate
+      - name: 发布 JUnit 测试报告
+        uses: dorny/test-reporter@v3
+        if: always()
+        with:
+          name: 单元测试报告
+          path: 'target/surefire-reports/*.xml'
+          reporter: java-junit
+          fail-on-error: false
+
+      - name: 生成覆盖率摘要
+        if: always()
+        run: |
+          if [ -f target/site/jacoco/jacoco.csv ]; then
+            IFS=' ' read -r instruction_coverage branch_coverage < <(
+              awk -F, 'NR>1{im+=$4; ic+=$5; bm+=$6; bc+=$7}
+                END{
+                  instruction = (ic + im) ? ic * 100 / (ic + im) : 0
+                  branch = (bc + bm) ? bc * 100 / (bc + bm) : 0
+                  printf "%.1f %.1f\n", instruction, branch
+                }' target/site/jacoco/jacoco.csv
+            )
+            {
+              echo "## 📊 代码覆盖率"
+              echo
+              echo "| 指标 | 覆盖率 |"
+              echo "|------|--------|"
+              echo "| 指令覆盖 | ${instruction_coverage}% |"
+              echo "| 分支覆盖 | ${branch_coverage}% |"
+            } > cov.md
+            cat cov.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: 上传测试与覆盖率报告
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
+          retention-days: 14

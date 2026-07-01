@@ -1,0 +1,84 @@
+server:
+  port: 8100
+  shutdown: graceful
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: EcoVault
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy/MM/dd HH:mm:ss
+  mvc:
+    format:
+      date: yyyy/MM/dd
+      date-time: yyyy/MM/dd HH:mm:ss
+      time: HH:mm:ss
+    hiddenmethod:
+      filter:
+        enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  # SQLite 嵌入式数据库
+  datasource:
+    url: jdbc:sqlite:${ECOVAULT_DB_PATH:data/ecovault.db}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      # SQLite 为单写入者，限制连接池大小以避免数据库锁冲突
+      maximum-pool-size: 1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.community.dialect.SQLiteDialect
+        format_sql: false
+    open-in-view: false
+  thymeleaf:
+    cache: false
+
+# EcoVault 自定义配置
+ecovault:
+  security:
+    # JWT 签名密钥 (生产环境请通过环境变量 ECOVAULT_JWT_SECRET 覆盖)
+    jwt-secret: ${ECOVAULT_JWT_SECRET:Zm9vYmFyLWVjb3ZhdWx0LXNlY3JldC1rZXktY2hhbmdlLW1lLTEyMzQ1Njc4OTA=}
+    # JWT 有效期 (毫秒)，默认 2 小时，可按需自定义
+    jwt-expiration-ms: 7200000
+    # 单个用户允许同时在线的最大设备数量 (单设备登录限制，可配置)
+    max-devices: 1
+  crypto:
+    # 密码条目 AES 加密密钥 (生产环境请通过环境变量 ECOVAULT_CRYPTO_SECRET 覆盖)
+    secret: ${ECOVAULT_CRYPTO_SECRET:ecovault-aes-secret-change-me-32b}
+
+# actuator 端点：仅暴露必要端点，且通过安全配置限制为管理员访问
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,loggers
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+
+# 构建信息 (供 actuator /info 与管理后台展示)
+info:
+  app:
+    name: EcoVault
+    description: 生态保险箱 - 个人数据安全存储与智能管理平台
+    version: 1.0.0
+
+logging:
+  level:
+    root: INFO
+    com.tlcsdm.ecovault: DEBUG
