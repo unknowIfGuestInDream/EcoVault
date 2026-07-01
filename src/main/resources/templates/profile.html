@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{fragments/common :: head('个人中心 - EcoVault')}"></head>
+<body>
+<header th:replace="~{fragments/common :: navbar}"></header>
+<div class="container">
+    <div class="grid two">
+        <div class="glass card">
+            <h3>👤 基本资料</h3>
+            <label>用户名</label><input id="username" disabled/>
+            <label>昵称</label><input id="nickname"/>
+            <label>邮箱</label><input id="email" type="email"/>
+            <button class="btn" style="margin-top:20px" onclick="saveProfile()">保存资料</button>
+        </div>
+        <div class="glass card">
+            <h3>🔒 修改密码</h3>
+            <label>原密码</label><input id="oldPassword" type="password"/>
+            <label>新密码 (6-64 位)</label><input id="newPassword" type="password"/>
+            <label>确认新密码</label><input id="confirmPassword" type="password"/>
+            <button class="btn" style="margin-top:20px" onclick="changePassword()">修改密码</button>
+        </div>
+    </div>
+</div>
+<script>
+    async function loadProfile() {
+        const me = await api("/api/auth/me");
+        document.getElementById("username").value = me.username;
+        document.getElementById("nickname").value = me.nickname || "";
+        document.getElementById("email").value = me.email || "";
+        if (me.role === "ADMIN") document.getElementById("nav-admin").style.display = "inline-block";
+    }
+
+    async function saveProfile() {
+        try {
+            await api("/api/auth/profile", {
+                method: "PUT",
+                body: JSON.stringify({
+                    nickname: document.getElementById("nickname").value.trim(),
+                    email: document.getElementById("email").value.trim()
+                })
+            });
+            toast("资料已更新");
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    async function changePassword() {
+        const oldPassword = document.getElementById("oldPassword").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        if (!oldPassword || !newPassword) {
+            toast("请填写完整", "error");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            toast("两次输入的新密码不一致", "error");
+            return;
+        }
+        try {
+            await api("/api/auth/password", {
+                method: "PUT",
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+            toast("密码已修改，请重新登录");
+            setTimeout(() => (window.location.href = "/login"), 900);
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadProfile);
+</script>
+</body>
+</html>

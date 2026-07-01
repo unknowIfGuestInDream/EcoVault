@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{fragments/common :: head('注册 - EcoVault')}"></head>
+<body>
+<div class="center-page">
+    <div class="glass" style="max-width:400px; width:100%">
+        <div style="position:absolute; top:20px; right:20px">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </div>
+        <h2>创建账号 ✨</h2>
+        <p class="muted">加入 EcoVault，开启安全数据管理</p>
+        <form id="register-form" onsubmit="return false">
+            <label for="username">用户名 (3-32 位)</label>
+            <input id="username" required/>
+            <label for="nickname">昵称</label>
+            <input id="nickname"/>
+            <label for="email">邮箱</label>
+            <input id="email" type="email"/>
+            <label for="password">密码 (至少 6 位)</label>
+            <input id="password" type="password" required/>
+            <button class="btn" style="width:100%; margin-top:20px" onclick="doRegister()">注册</button>
+        </form>
+        <p class="muted" style="margin-top:16px; text-align:center">
+            已有账号？<a th:href="@{/login}">返回登录</a>
+        </p>
+    </div>
+</div>
+<script>
+    async function doRegister() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        const nickname = document.getElementById("nickname").value.trim();
+        const email = document.getElementById("email").value.trim();
+        if (!username || !password) {
+            toast("请填写用户名和密码", "error");
+            return;
+        }
+        try {
+            await api("/api/auth/register", {
+                method: "POST",
+                body: JSON.stringify({ username, password, nickname, email })
+            });
+            toast("注册成功，请登录");
+            setTimeout(() => (window.location.href = "/login"), 800);
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{fragments/common :: head('操作日志 - EcoVault')}"></head>
+<body>
+<header th:replace="~{fragments/common :: navbar}"></header>
+<div class="container">
+    <div class="glass card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px">
+            <h2>📋 操作日志</h2>
+            <div class="row">
+                <input id="module" placeholder="模块筛选" oninput="debouncedLoad()"/>
+                <input id="keyword" placeholder="关键字搜索" oninput="debouncedLoad()"/>
+                <button class="btn secondary" onclick="exportCsv()">⬇ 导出CSV</button>
+            </div>
+        </div>
+        <div style="overflow-x:auto; margin-top:16px">
+            <table class="table">
+                <thead>
+                <tr><th>时间</th><th>用户</th><th>模块</th><th>操作</th><th>方法</th><th>IP</th><th>状态</th><th>耗时(ms)</th></tr>
+                </thead>
+                <tbody id="log-body"></tbody>
+            </table>
+        </div>
+        <div class="pager">
+            <button class="btn btn-sm secondary" onclick="prevPage()">上一页</button>
+            <span id="page-info" class="muted"></span>
+            <button class="btn btn-sm secondary" onclick="nextPage()">下一页</button>
+        </div>
+    </div>
+</div>
+<script>
+    let page = 0;
+    const size = 20;
+    let totalPages = 1;
+    let timer;
+
+    function debouncedLoad() {
+        clearTimeout(timer);
+        timer = setTimeout(() => { page = 0; loadLogs(); }, 300);
+    }
+
+    function params() {
+        const p = new URLSearchParams();
+        const module = document.getElementById("module").value.trim();
+        const keyword = document.getElementById("keyword").value.trim();
+        if (module) p.append("module", module);
+        if (keyword) p.append("keyword", keyword);
+        p.append("page", page);
+        p.append("size", size);
+        return p;
+    }
+
+    async function loadLogs() {
+        const data = await api("/api/logs?" + params().toString());
+        totalPages = data.totalPages || 1;
+        const body = document.getElementById("log-body");
+        const rows = data.content || [];
+        if (!rows.length) {
+            body.innerHTML = '<tr><td colspan="8" class="muted">暂无日志</td></tr>';
+        } else {
+            body.innerHTML = rows.map(l => `
+                <tr>
+                    <td>${escapeHtml(l.createdAt || "")}</td>
+                    <td>${escapeHtml(l.username || "")}</td>
+                    <td>${escapeHtml(l.module || "")}</td>
+                    <td>${escapeHtml(l.operation || "")}</td>
+                    <td>${escapeHtml(l.method || "")}</td>
+                    <td>${escapeHtml(l.ip || "")}</td>
+                    <td><span class="badge ${l.status === 'SUCCESS' ? 'STRONG' : 'WEAK'}">${escapeHtml(l.status || "")}</span></td>
+                    <td>${l.durationMs}</td>
+                </tr>`).join("");
+        }
+        document.getElementById("page-info").textContent = `第 ${page + 1} / ${Math.max(totalPages, 1)} 页`;
+    }
+
+    function prevPage() {
+        if (page > 0) { page--; loadLogs(); }
+    }
+
+    function nextPage() {
+        if (page + 1 < totalPages) { page++; loadLogs(); }
+    }
+
+    function exportCsv() {
+        const p = new URLSearchParams();
+        const module = document.getElementById("module").value.trim();
+        const keyword = document.getElementById("keyword").value.trim();
+        if (module) p.append("module", module);
+        if (keyword) p.append("keyword", keyword);
+        window.location.href = "/api/logs/export?" + p.toString();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const me = await api("/api/auth/me");
+            if (me.role === "ADMIN") document.getElementById("nav-admin").style.display = "inline-block";
+        } catch (e) {}
+        loadLogs();
+    });
+</script>
+</body>
+</html>
