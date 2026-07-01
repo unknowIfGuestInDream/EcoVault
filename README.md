@@ -1,7 +1,7 @@
 # EcoVault（生态保险箱）
 
 ![Java 25](https://img.shields.io/badge/Java-25-orange.svg)
-![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4.1.x-brightgreen.svg)
+![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4-brightgreen.svg)
 ![License MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Build](https://img.shields.io/badge/Build-Maven%20%7C%20Jenkins-informational.svg)
 
@@ -24,7 +24,7 @@ graph TD
 
 ## 项目简介
 
-EcoVault 使用 Java 25 与 Spring Boot 4.1.x 构建，主类为 `com.tlcsdm.ecovault.EcoVaultApplication`，Jar artifact id 为 `ecovault`。系统默认使用嵌入式 SQLite 数据库文件 `data/ecovault.db`，前端以 Thymeleaf 服务端渲染为主。
+EcoVault 使用 Java 25 与 Spring Boot 4 构建，主类为 `com.tlcsdm.ecovault.EcoVaultApplication`，Jar artifact id 为 `ecovault`。系统默认使用嵌入式 SQLite 数据库文件 `data/ecovault.db`，前端以 Thymeleaf 服务端渲染为主。
 
 ## 功能特性
 
@@ -65,7 +65,7 @@ EcoVault 使用 Java 25 与 Spring Boot 4.1.x 构建，主类为 `com.tlcsdm.eco
 | 分类 | 技术 |
 | --- | --- |
 | 语言 | Java 25 |
-| 框架 | Spring Boot 4.1.x、Spring Security、Spring MVC |
+| 框架 | Spring Boot 4、Spring Security、Spring MVC |
 | 数据库 | SQLite 3（嵌入式，`data/ecovault.db`） |
 | 前端 | Thymeleaf、Chart.js |
 | UI | 玻璃拟态、渐变、暗色/亮色主题 |

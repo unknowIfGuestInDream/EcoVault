@@ -7,7 +7,7 @@
 - Java 基础包名：`com.tlcsdm.ecovault`。
 - 应用主类：`com.tlcsdm.ecovault.EcoVaultApplication`。
 - Jar artifact id：`ecovault`。
-- 技术栈：Java 25、Spring Boot 4.1.x、SQLite 3、Thymeleaf、Maven、JUnit 5、JaCoCo、Jenkins。
+- 技术栈：Java 25、Spring Boot 4、SQLite 3、Thymeleaf、Maven、JUnit 5、JaCoCo、Jenkins。
 - 前端图表可使用 Chart.js 或 ECharts。
 - UI 风格应现代、响应式，支持玻璃拟态、渐变、暗色/亮色主题。
 
