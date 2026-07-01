@@ -146,6 +146,15 @@ class EcoVaultApplicationTests {
 	}
 
 	@Test
+	@DisplayName("空 User-Agent 的 API 请求返回 403")
+	void blankUserAgentRejected() throws Exception {
+		mockMvc
+			.perform(
+					get("/api/passwords").header(HttpHeaders.ORIGIN, TRUSTED_ORIGIN).header(HttpHeaders.USER_AGENT, ""))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
 	@DisplayName("浏览器版本过低的 API 请求返回 403")
 	void outdatedUserAgentRejected() throws Exception {
 		mockMvc

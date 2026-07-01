@@ -126,6 +126,7 @@ public class SecurityConfig {
 			.formLogin(form -> form.disable())
 			.httpBasic(basic -> basic.disable())
 			.logout(logout -> logout.disable())
+			// 先做来源与浏览器准入校验，再执行 JWT 认证，尽早拒绝非网页请求
 			.addFilterBefore(browserRequestGuardFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterAfter(jwtAuthenticationFilter, BrowserRequestGuardFilter.class)
 			// 强制下发 CSRF Cookie，供前端读取

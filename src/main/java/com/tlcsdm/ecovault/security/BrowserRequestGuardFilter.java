@@ -66,7 +66,7 @@ public class BrowserRequestGuardFilter extends OncePerRequestFilter {
 	}
 
 	private boolean isTrustedOrigin(String origin) {
-		return !StringUtils.hasText(origin) || browserSecurityProperties.getAllowedOrigins().contains(origin);
+		return StringUtils.hasText(origin) && browserSecurityProperties.getAllowedOrigins().contains(origin);
 	}
 
 	private boolean isAllowedUserAgent(String userAgent) {
