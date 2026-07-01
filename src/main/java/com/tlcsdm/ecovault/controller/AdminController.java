@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -105,7 +104,7 @@ public class AdminController {
             info.put("name", props.getName());
             info.put("version", props.getVersion());
             info.put("buildTime", props.getTime() == null ? null
-                    : BUILD_TIME_FORMATTER.format(props.getTime().atZone(ZoneId.of("GMT+8"))));
+                    : BUILD_TIME_FORMATTER.format(props.getTime().atZone(DateTimeConfig.DEFAULT_ZONE_ID)));
         } else {
             info.put("version", "开发环境 (未生成构建信息)");
         }

@@ -94,12 +94,6 @@
             <artifactId>spring-boot-starter-validation</artifactId>
             <scope>compile</scope>
         </dependency>
-        <!-- Java 时间类型的 Jackson 支持 -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <scope>compile</scope>
-        </dependency>
         <!-- 健康检查与监控 (actuator 仅管理员可用) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

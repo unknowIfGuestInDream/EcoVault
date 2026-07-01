@@ -13,13 +13,13 @@
         <div class="glass card">
             <h3>➕ 创建用户</h3>
             <label for="new-username">用户名</label>
-            <input id="new-username" maxlength="32" autocomplete="off"/>
+            <input id="new-username" name="username" maxlength="32" autocomplete="off"/>
             <label for="new-password">初始密码</label>
-            <input id="new-password" type="password" maxlength="64" autocomplete="new-password"/>
+            <input id="new-password" name="password" type="password" maxlength="64" autocomplete="new-password"/>
             <label for="new-nickname">昵称</label>
-            <input id="new-nickname" maxlength="64"/>
+            <input id="new-nickname" name="nickname" maxlength="64"/>
             <label for="new-email">邮箱</label>
-            <input id="new-email" maxlength="128" type="email"/>
+            <input id="new-email" name="email" maxlength="128" type="email"/>
             <button class="btn" style="margin-top:16px" onclick="createUser()">创建用户</button>
             <p class="muted" style="margin-top:12px">外部不提供自助注册，账号仅能由管理员在此处创建。</p>
         </div>
