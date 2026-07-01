@@ -36,6 +36,18 @@ public class EcoVaultApplication {
 	 */
 	private static void ensureDatabaseDirectory() {
 		String dbPath = System.getenv().getOrDefault("ECOVAULT_DB_PATH", "data/ecovault.db");
+		ensureDatabaseDirectory(dbPath);
+	}
+
+	/**
+	 * 根据数据库路径确保其父级目录存在。
+	 *
+	 * <p>
+	 * 抽取为包级可见的重载方法，便于对「无父目录」「父目录已存在」「父目录待创建」等分支进行单元测试。
+	 * </p>
+	 * @param dbPath 数据库文件路径
+	 */
+	static void ensureDatabaseDirectory(String dbPath) {
 		File dbFile = new File(dbPath);
 		File parent = dbFile.getParentFile();
 		if (parent != null && !parent.exists()) {

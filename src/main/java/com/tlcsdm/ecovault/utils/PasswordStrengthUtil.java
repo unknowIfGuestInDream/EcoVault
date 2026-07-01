@@ -61,10 +61,6 @@ public final class PasswordStrengthUtil {
 			score += 15;
 		}
 
-		if (score > 100) {
-			score = 100;
-		}
-
 		String level;
 		if (score >= 70) {
 			level = "STRONG";

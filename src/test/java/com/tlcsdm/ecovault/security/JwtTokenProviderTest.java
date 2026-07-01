@@ -69,4 +69,16 @@ class JwtTokenProviderTest {
 		assertThat(jti).doesNotContain("-").hasSize(32);
 	}
 
+	@Test
+	@DisplayName("SHA-256 算法不可用时构造函数包装为 IllegalStateException")
+	void sha256AlgorithmUnavailable() {
+		try (org.mockito.MockedStatic<java.security.MessageDigest> mocked = org.mockito.Mockito
+			.mockStatic(java.security.MessageDigest.class)) {
+			mocked.when(() -> java.security.MessageDigest.getInstance(org.mockito.ArgumentMatchers.anyString()))
+				.thenThrow(new java.security.NoSuchAlgorithmException("no sha-256"));
+			assertThatThrownBy(() -> new JwtTokenProvider("secret", 7200000L)).isInstanceOf(IllegalStateException.class)
+				.hasMessage("无法初始化 JWT 密钥");
+		}
+	}
+
 }

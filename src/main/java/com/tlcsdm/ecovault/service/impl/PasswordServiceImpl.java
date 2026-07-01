@@ -84,7 +84,7 @@ public class PasswordServiceImpl implements PasswordService {
 		if (tag != null && !tag.isBlank()) {
 			String target = tag.trim();
 			responses = responses.stream()
-				.filter(r -> r.tags() != null && r.tags().stream().anyMatch(t -> t.equalsIgnoreCase(target)))
+				.filter(r -> r.tags().stream().anyMatch(t -> t.equalsIgnoreCase(target)))
 				.collect(Collectors.toList());
 		}
 		return responses;
@@ -135,7 +135,7 @@ public class PasswordServiceImpl implements PasswordService {
 			return new ArrayList<>();
 		}
 		String joined = aesUtil.decrypt(cipher);
-		if (joined == null || joined.isBlank()) {
+		if (joined.isBlank()) {
 			return new ArrayList<>();
 		}
 		return Arrays.stream(joined.split(",")).filter(t -> !t.isBlank()).collect(Collectors.toList());

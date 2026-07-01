@@ -45,10 +45,28 @@ class PasswordStrengthUtilTest {
 	}
 
 	@Test
+	@DisplayName("6-7 位密码命中中间长度档位")
+	void sixCharPasswordLengthTier() {
+		// 6 位 (10) + 小写 (15) = 25 -> WEAK，覆盖 length>=6 分支
+		PasswordStrengthUtil.Strength strength = PasswordStrengthUtil.evaluate("abcdef");
+		assertThat(strength.score()).isEqualTo(25);
+		assertThat(strength.level()).isEqualTo("WEAK");
+	}
+
+	@Test
 	@DisplayName("评分上限不超过 100")
 	void scoreCappedAt100() {
 		PasswordStrengthUtil.Strength strength = PasswordStrengthUtil.evaluate("Abcdefghijkl123!@#$%");
 		assertThat(strength.score()).isLessThanOrEqualTo(100);
+	}
+
+	@Test
+	@DisplayName("不含小写字母时不叠加小写得分")
+	void passwordWithoutLowercase() {
+		// 8 位 (25) + 大写 (15) + 数字 (15) = 55，覆盖 lower=false 分支
+		PasswordStrengthUtil.Strength strength = PasswordStrengthUtil.evaluate("ABCDEF12");
+		assertThat(strength.score()).isEqualTo(55);
+		assertThat(strength.level()).isEqualTo("MEDIUM");
 	}
 
 }
