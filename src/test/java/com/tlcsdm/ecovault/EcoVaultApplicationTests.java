@@ -15,9 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -72,9 +74,14 @@ class EcoVaultApplicationTests {
 	@Test
 	@DisplayName("favicon 资源可直接访问")
 	void faviconIsServed() throws Exception {
-		mockMvc.perform(get("/favicon.ico"))
+		byte[] content = mockMvc.perform(get("/favicon.ico"))
 			.andExpect(status().isOk())
-			.andExpect(header().string("Content-Type", containsString("image")));
+			.andExpect(header().string("Content-Type", containsString("image")))
+			.andReturn()
+			.getResponse()
+			.getContentAsByteArray();
+		assertTrue(content.length > 6);
+		assertArrayEquals(new byte[] { 0, 0, 1, 0 }, Arrays.copyOf(content, 4));
 	}
 
 	@Test
