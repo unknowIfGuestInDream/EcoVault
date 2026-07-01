@@ -3,7 +3,7 @@ name: 缺陷报告
 about: 报告 EcoVault 中可复现的问题
 title: "[Bug] "
 labels: bug
-assignees: ''
+assignees: 'unknowIfGuestInDream'
 ---
 
 ## 问题描述

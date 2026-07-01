@@ -3,7 +3,7 @@ name: 功能建议
 about: 为 EcoVault 提出新功能或改进建议
 title: "[Feature] "
 labels: enhancement
-assignees: ''
+assignees: 'unknowIfGuestInDream'
 ---
 
 ## 功能背景
