@@ -38,6 +38,46 @@ class EcoVaultApplicationMainTest {
 	}
 
 	@Test
+	@DisplayName("数据库路径无父目录时安全跳过创建 (parent 为 null 分支)")
+	void ensureDatabaseDirectoryWithoutParent() {
+		// 仅文件名、无父目录，parent 为 null，不应抛出异常
+		EcoVaultApplication.ensureDatabaseDirectory("ecovault-standalone.db");
+		assertThat(new File("ecovault-standalone.db")).doesNotExist();
+	}
+
+	@Test
+	@DisplayName("父目录不存在时创建，已存在时安全跳过")
+	void ensureDatabaseDirectoryCreatesAndSkips(@org.junit.jupiter.api.io.TempDir Path tempDir) {
+		Path nested = tempDir.resolve("nested-db-dir");
+		String dbPath = nested.resolve("ecovault.db").toString();
+
+		EcoVaultApplication.ensureDatabaseDirectory(dbPath);
+		assertThat(nested).exists();
+
+		// 再次调用命中 parent.exists() 为真的分支
+		EcoVaultApplication.ensureDatabaseDirectory(dbPath);
+		assertThat(nested).exists();
+	}
+
+	@Test
+	@DisplayName("main 方法确保目录并委托 SpringApplication 启动")
+	void mainDelegatesToSpringApplication() {
+		try (org.mockito.MockedStatic<org.springframework.boot.SpringApplication> mocked = org.mockito.Mockito
+			.mockStatic(org.springframework.boot.SpringApplication.class)) {
+			mocked.when(() -> org.springframework.boot.SpringApplication.run(
+					org.mockito.ArgumentMatchers.eq(EcoVaultApplication.class),
+					org.mockito.ArgumentMatchers.any(String[].class)))
+				.thenReturn(null);
+
+			EcoVaultApplication.main(new String[] {});
+
+			mocked.verify(() -> org.springframework.boot.SpringApplication.run(
+					org.mockito.ArgumentMatchers.eq(EcoVaultApplication.class),
+					org.mockito.ArgumentMatchers.any(String[].class)));
+		}
+	}
+
+	@Test
 	@DisplayName("实例化启动类以覆盖默认构造函数")
 	void constructorIsInvocable() {
 		assertThat(new EcoVaultApplication()).isNotNull();

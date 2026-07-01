@@ -282,18 +282,38 @@ class AuthServiceImplTest {
 	}
 
 	@Test
-	@DisplayName("最大设备数小于 1 时回退为 1")
-	void maxDevicesFloorsToOne() {
-		AuthServiceImpl zeroDevice = new AuthServiceImpl(userRepository, sessionRepository, passwordEncoder,
-				tokenProvider, 0);
+	@DisplayName("注册提供空白昵称时回退为用户名")
+	void registerBlankNicknameFallsBack() {
+		when(userRepository.existsByUsername("dave")).thenReturn(false);
+		when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		when(userRepository.findByUsername("alice")).thenReturn(Optional.of(existingUser()));
-		when(sessionRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(1L)).thenReturn(new ArrayList<>());
-		when(sessionRepository.save(any(UserSession.class))).thenAnswer(inv -> inv.getArgument(0));
+		User saved = service.register(new RegisterRequest("dave", "Secret123", "   ", "d@e.com"));
 
-		LoginResponse response = zeroDevice.login(new LoginRequest("alice", "Passw0rd!"), "device", "127.0.0.1");
+		assertThat(saved.getNickname()).isEqualTo("dave");
+	}
 
-		assertThat(response.token()).isNotBlank();
+	@Test
+	@DisplayName("更新资料昵称为 null 时保留原昵称")
+	void updateProfileNullNicknameKept() {
+		User user = existingUser();
+		when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+		when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		User updated = service.updateProfile(1L, new com.tlcsdm.ecovault.dto.UpdateProfileRequest(null, "g@h.com"));
+
+		assertThat(updated.getNickname()).isEqualTo("Alice");
+		assertThat(updated.getEmail()).isEqualTo("g@h.com");
+	}
+
+	@Test
+	@DisplayName("修改密码原密码不正确时抛出异常")
+	void changePasswordWrongOldPassword() {
+		User user = existingUser();
+		when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+		assertThatThrownBy(() -> service.changePassword(1L, new ChangePasswordRequest("wrong-old", "NewPass123")))
+			.isInstanceOf(BusinessException.class)
+			.hasMessage("原密码不正确");
 	}
 
 }

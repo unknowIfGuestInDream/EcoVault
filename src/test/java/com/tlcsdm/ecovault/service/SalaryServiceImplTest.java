@@ -208,4 +208,26 @@ class SalaryServiceImplTest {
 		assertThat(csv).contains("\"含,逗号\"\"引号\"");
 	}
 
+	@Test
+	@DisplayName("导出时对空串、换行、引号与普通备注分别正确处理")
+	void exportCsvEscapesVariousRemarks() {
+		SalaryRecord empty = record(10L, 2025, 5, "10000", "0", "0", "0");
+		empty.setRemark("");
+		SalaryRecord plain = record(11L, 2025, 6, "10000", "0", "0", "0");
+		plain.setRemark("普通备注");
+		SalaryRecord newline = record(12L, 2025, 7, "10000", "0", "0", "0");
+		newline.setRemark("第一行\n第二行");
+		SalaryRecord quote = record(13L, 2025, 8, "10000", "0", "0", "0");
+		quote.setRemark("仅含\"引号");
+		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(empty, plain, newline, quote));
+
+		String csv = service.exportCsv(1L, 2025);
+
+		// 普通备注不加引号 (备注为行末字段)
+		assertThat(csv).contains(",普通备注\n");
+		// 含换行或引号的备注被引号包裹
+		assertThat(csv).contains("\"第一行\n第二行\"");
+		assertThat(csv).contains("\"仅含\"\"引号\"");
+	}
+
 }

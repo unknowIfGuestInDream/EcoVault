@@ -159,4 +159,48 @@ class AuthControllerTest extends AbstractWebMvcTest {
 			.andExpect(jsonPath("$.code").value(0));
 	}
 
+	@Test
+	@DisplayName("Authorization 头非令牌方案时按无令牌处理并成功注销")
+	void logoutWithNonBearerHeader() throws Exception {
+		Authentication auth = authFor(securityUser(6100L, "nonbearer", Role.USER));
+		mockMvc
+			.perform(post("/api/auth/logout").header(HttpHeaders.AUTHORIZATION, "Basic dXNlcjpwYXNz")
+				.with(authentication(auth))
+				.with(csrf()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value(0));
+	}
+
+	@Test
+	@DisplayName("Cookie 中含无关 Cookie 时仍能定位令牌 Cookie 完成注销")
+	void logoutWithTokenCookieAmongOthers() throws Exception {
+		createUser("multicookie");
+		Cookie cookie = login("multicookie", "Passw0rd!");
+		mockMvc.perform(post("/api/auth/logout").cookie(new Cookie("OTHER", "x"), cookie).with(csrf()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value(0));
+	}
+
+	@Test
+	@DisplayName("仅含无关 Cookie 时遍历后未找到令牌，按无令牌成功注销")
+	void logoutWithOnlyUnrelatedCookie() throws Exception {
+		Authentication auth = authFor(securityUser(6300L, "onlyother", Role.USER));
+		mockMvc
+			.perform(post("/api/auth/logout").cookie(new Cookie("OTHER", "x")).with(authentication(auth)).with(csrf()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value(0));
+	}
+
+	@Test
+	@DisplayName("Authorization 头携带无效令牌时 jti 解析为空仍成功注销")
+	void logoutWithInvalidBearerToken() throws Exception {
+		Authentication auth = authFor(securityUser(6200L, "invalidtoken", Role.USER));
+		mockMvc
+			.perform(post("/api/auth/logout").header(HttpHeaders.AUTHORIZATION, "Bearer " + "not.a.valid.jwt")
+				.with(authentication(auth))
+				.with(csrf()))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value(0));
+	}
+
 }

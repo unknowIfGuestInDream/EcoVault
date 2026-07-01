@@ -157,4 +157,74 @@ class OperationLogAspectTest {
 		verify(logService).save(any(OperationLog.class));
 	}
 
+	@Test
+	@DisplayName("方法无注解时模块与操作为空，仍记录方法与状态")
+	void withoutAnnotation() throws Throwable {
+		MethodSignature signature = signatureFor("noAnnotation");
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getSignature()).thenReturn(signature);
+		when(joinPoint.getArgs()).thenReturn(new Object[0]);
+		when(joinPoint.proceed()).thenReturn("ok");
+
+		aspect.around(joinPoint);
+
+		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+		verify(logService).save(captor.capture());
+		OperationLog saved = captor.getValue();
+		assertThat(saved.getModule()).isNull();
+		assertThat(saved.getOperation()).isNull();
+		assertThat(saved.getMethod()).isEqualTo("OperationLogAspectTest.noAnnotation");
+		assertThat(saved.getStatus()).isEqualTo("SUCCESS");
+	}
+
+	@Test
+	@DisplayName("方法参数为 null 时参数摘要为空字符串")
+	void nullArgsProducesEmptyParams() throws Throwable {
+		MethodSignature signature = signatureFor("noAnnotation");
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getSignature()).thenReturn(signature);
+		when(joinPoint.getArgs()).thenReturn(null);
+		when(joinPoint.proceed()).thenReturn("ok");
+
+		aspect.around(joinPoint);
+
+		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+		verify(logService).save(captor.capture());
+		assertThat(captor.getValue().getParams()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("异常信息为 null 时错误信息记录为 null")
+	void nullExceptionMessage() throws Throwable {
+		MethodSignature signature = signatureFor("noAnnotation");
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getSignature()).thenReturn(signature);
+		when(joinPoint.getArgs()).thenReturn(new Object[0]);
+		when(joinPoint.proceed()).thenThrow(new IllegalStateException());
+
+		assertThatThrownBy(() -> aspect.around(joinPoint)).isInstanceOf(IllegalStateException.class);
+
+		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+		verify(logService).save(captor.capture());
+		OperationLog saved = captor.getValue();
+		assertThat(saved.getStatus()).isEqualTo("FAILURE");
+		assertThat(saved.getErrorMsg()).isNull();
+	}
+
+	@Test
+	@DisplayName("超长异常信息按上限截断")
+	void longExceptionMessageTruncated() throws Throwable {
+		MethodSignature signature = signatureFor("noAnnotation");
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getSignature()).thenReturn(signature);
+		when(joinPoint.getArgs()).thenReturn(new Object[0]);
+		when(joinPoint.proceed()).thenThrow(new IllegalStateException("e".repeat(1500)));
+
+		assertThatThrownBy(() -> aspect.around(joinPoint)).isInstanceOf(IllegalStateException.class);
+
+		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+		verify(logService).save(captor.capture());
+		assertThat(captor.getValue().getErrorMsg()).hasSize(1000);
+	}
+
 }

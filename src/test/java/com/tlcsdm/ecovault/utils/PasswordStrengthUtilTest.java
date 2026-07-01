@@ -60,4 +60,13 @@ class PasswordStrengthUtilTest {
 		assertThat(strength.score()).isLessThanOrEqualTo(100);
 	}
 
+	@Test
+	@DisplayName("不含小写字母时不叠加小写得分")
+	void passwordWithoutLowercase() {
+		// 8 位 (25) + 大写 (15) + 数字 (15) = 55，覆盖 lower=false 分支
+		PasswordStrengthUtil.Strength strength = PasswordStrengthUtil.evaluate("ABCDEF12");
+		assertThat(strength.score()).isEqualTo(55);
+		assertThat(strength.level()).isEqualTo("MEDIUM");
+	}
+
 }

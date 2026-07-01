@@ -104,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
 		List<UserSession> activeSessions = sessionRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(userId);
 		int allowedRemaining = maxDevices - 1;
 		int toRevoke = activeSessions.size() - allowedRemaining;
-		for (int i = 0; i < toRevoke && i < activeSessions.size(); i++) {
+		for (int i = 0; i < toRevoke; i++) {
 			UserSession session = activeSessions.get(i);
 			session.setActive(false);
 			sessionRepository.save(session);

@@ -44,4 +44,16 @@ class AesUtilTest {
 		assertThatThrownBy(() -> aesUtil.decrypt("not-a-valid-cipher")).isInstanceOf(IllegalStateException.class);
 	}
 
+	@Test
+	@DisplayName("加密底层异常时包装为 IllegalStateException")
+	void encryptWrapsUnderlyingException() {
+		try (org.mockito.MockedStatic<javax.crypto.Cipher> mocked = org.mockito.Mockito
+			.mockStatic(javax.crypto.Cipher.class)) {
+			mocked.when(() -> javax.crypto.Cipher.getInstance(org.mockito.ArgumentMatchers.anyString()))
+				.thenThrow(new java.security.NoSuchAlgorithmException("boom"));
+			assertThatThrownBy(() -> aesUtil.encrypt("plain")).isInstanceOf(IllegalStateException.class)
+				.hasMessage("加密失败");
+		}
+	}
+
 }

@@ -221,4 +221,35 @@ class JwtAuthenticationFilterTest {
 		verify(userDetailsService, never()).loadUserByUsername(anyString());
 	}
 
+	@Test
+	@DisplayName("令牌缺失 jti 时会话判定为不活跃，不注入认证")
+	void tokenWithoutJti() throws Exception {
+		String token = tokenProvider.generateToken("alice", 1L, null);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader("Authorization", "Bearer " + token);
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		FilterChain chain = mock(FilterChain.class);
+
+		filter.doFilterInternal(request, response, chain);
+
+		assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+		verify(sessionRepository, never()).findByJti(anyString());
+		verify(userDetailsService, never()).loadUserByUsername(anyString());
+	}
+
+	@Test
+	@DisplayName("Authorization 头非令牌方案时不解析令牌")
+	void nonBearerAuthorizationHeader() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader("Authorization", "Basic dXNlcjpwYXNz");
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		FilterChain chain = mock(FilterChain.class);
+
+		filter.doFilterInternal(request, response, chain);
+
+		assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+		verify(userDetailsService, never()).loadUserByUsername(anyString());
+	}
+
 }

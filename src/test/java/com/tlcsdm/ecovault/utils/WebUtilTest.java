@@ -75,4 +75,14 @@ class WebUtilTest {
 		assertThat(WebUtil.getClientIp(request)).isEqualTo("192.168.0.1");
 	}
 
+	@Test
+	@DisplayName("X-Real-IP 为空白时回退到 RemoteAddr")
+	void realIpBlankFallback() {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+		when(request.getHeader("X-Real-IP")).thenReturn("   ");
+		when(request.getRemoteAddr()).thenReturn("192.168.1.1");
+		assertThat(WebUtil.getClientIp(request)).isEqualTo("192.168.1.1");
+	}
+
 }
