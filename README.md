@@ -52,6 +52,7 @@ EcoVault 使用 Java 25 与 Spring Boot 4 构建。系统默认使用嵌入式 S
 - AOP 自动记录关键操作。
 - 支持按用户、模块、动作、时间筛选和搜索。
 - 支持日志导出与敏感字段脱敏。
+- 启动 Banner 与控制台日志统一按 UTF-8 输出。
 
 ### 管理后台
 
@@ -113,7 +114,11 @@ mvn clean package
 ### 运行
 
 ```bash
-java -jar target/ecovault.jar
+java --enable-native-access=ALL-UNNAMED \
+  -Dfile.encoding=UTF-8 \
+  -Dsun.stdout.encoding=UTF-8 \
+  -Dsun.stderr.encoding=UTF-8 \
+  -jar target/ecovault.jar
 ```
 
 ### 访问
@@ -155,9 +160,11 @@ ecovault:
 - `server.shutdown`：启用优雅停机，避免部署时中断正在处理的请求。
 - `spring.jackson.*`：统一 JSON 时区为 `GMT+8`，格式为 `yyyy/MM/dd HH:mm:ss`。
 - `spring.mvc.format.*`：统一 Spring MVC 参数绑定与表单时间格式。
+- `spring.banner.charset`：固定为 `UTF-8`，确保自定义启动 Banner 与中文日志输出稳定。
 - `ecovault.security.jwt-secret`：JWT 签名密钥，生产环境必须使用强随机值。
 - `ecovault.security.max-devices`：单用户允许同时登录设备数，默认建议为 `1`。
 - `ecovault.crypto.secret`：密码库 AES 主密钥，必须通过环境变量安全注入。
+- 启动参数需包含 `--enable-native-access=ALL-UNNAMED`，用于消除 SQLite JDBC 在 Java 25 下的受限原生访问告警。
 
 ## 加密设计说明
 
@@ -205,7 +212,7 @@ target/site/jacoco/index.html
 bash deploy/deploy.sh
 ```
 
-脚本会停止旧服务、备份旧 Jar、部署 `target/ecovault.jar`，以 `prod` 配置启动，并通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。
+脚本会停止旧服务、备份旧 Jar、部署 `target/ecovault.jar`，以 `prod` 配置启动，并默认附加 `--enable-native-access=ALL-UNNAMED` 与 UTF-8 JVM 参数，然后通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。
 
 ## Actuator / 构建信息
 
