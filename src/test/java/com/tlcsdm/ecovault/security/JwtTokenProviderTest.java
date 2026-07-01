@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * JWT 令牌提供者单元测试。
@@ -53,6 +54,14 @@ class JwtTokenProviderTest {
 
         assertThat(claims).isNotNull();
         assertThat(claims.getExpiration().getTime() - claims.getIssuedAt().getTime()).isEqualTo(3000L);
+    }
+
+    @Test
+    @DisplayName("无效过期时间配置会抛出异常")
+    void invalidExpirationRejected() {
+        assertThatThrownBy(() -> new JwtTokenProvider("bad-secret", 0L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("JWT 有效期必须大于 0");
     }
 
     @Test
