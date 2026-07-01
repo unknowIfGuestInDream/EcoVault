@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JwtTokenProviderTest {
 
     private final JwtTokenProvider provider =
-            new JwtTokenProvider("test-secret-key-for-unit-tests", 7200000L);
+            new JwtTokenProvider("test-secret-key-for-unit-tests", 86400000L);
 
     @Test
     @DisplayName("生成的令牌可被解析并还原声明")
@@ -40,9 +40,19 @@ class JwtTokenProviderTest {
     @Test
     @DisplayName("使用不同密钥签发的令牌校验失败")
     void differentKeyFails() {
-        JwtTokenProvider other = new JwtTokenProvider("another-secret", 7200000L);
+        JwtTokenProvider other = new JwtTokenProvider("another-secret", 86400000L);
         String token = other.generateToken("carol", 2L, other.newJti());
         assertThat(provider.parse(token)).isNull();
+    }
+
+    @Test
+    @DisplayName("令牌过期时间使用配置值")
+    void tokenExpirationUsesConfiguredValue() {
+        JwtTokenProvider custom = new JwtTokenProvider("custom-secret", 3000L);
+        Claims claims = custom.parse(custom.generateToken("dave", 3L, custom.newJti()));
+
+        assertThat(claims).isNotNull();
+        assertThat(claims.getExpiration().getTime() - claims.getIssuedAt().getTime()).isEqualTo(3000L);
     }
 
     @Test

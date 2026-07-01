@@ -59,7 +59,7 @@ public class AuthController {
         String ip = WebUtil.getClientIp(httpRequest);
         LoginResponse response = authService.login(request, deviceInfo, ip);
 
-        ResponseCookie cookie = buildTokenCookie(response.token(), Duration.ofHours(2));
+        ResponseCookie cookie = buildTokenCookie(response.token(), Duration.ofMillis(tokenProvider.getExpirationMs()));
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success(response));

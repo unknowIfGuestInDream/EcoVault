@@ -44,13 +44,22 @@ jobs:
         if: always()
         run: |
           if [ -f target/site/jacoco/jacoco.csv ]; then
-            awk -F, 'NR>1{im+=$4; ic+=$5; bm+=$6; bc+=$7}
+            read -r instruction_coverage branch_coverage <<EOF
+            $(awk -F, 'NR>1{im+=$4; ic+=$5; bm+=$6; bc+=$7}
               END{
-                printf "## 📊 代码覆盖率\n\n" > cov.md
-                printf "| 指标 | 覆盖率 |\n|------|--------|\n" >> cov.md
-                printf "| 指令覆盖 | %.1f%% |\n", ic*100/(ic+im) >> cov.md
-                printf "| 分支覆盖 | %.1f%% |\n", bc*100/(bc+bm) >> cov.md
-              }' target/site/jacoco/jacoco.csv
+                instruction = (ic + im) ? ic * 100 / (ic + im) : 0
+                branch = (bc + bm) ? bc * 100 / (bc + bm) : 0
+                printf "%.1f %.1f", instruction, branch
+              }' target/site/jacoco/jacoco.csv)
+            EOF
+            cat <<EOF > cov.md
+            ## 📊 代码覆盖率
+
+            | 指标 | 覆盖率 |
+            |------|--------|
+            | 指令覆盖 | ${instruction_coverage}% |
+            | 分支覆盖 | ${branch_coverage}% |
+            EOF
             cat cov.md >> "$GITHUB_STEP_SUMMARY"
           fi
 

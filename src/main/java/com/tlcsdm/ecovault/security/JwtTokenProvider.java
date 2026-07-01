@@ -40,6 +40,9 @@ public class JwtTokenProvider {
     public JwtTokenProvider(@Value("${ecovault.security.jwt-secret}") String secret,
                             @Value("${ecovault.security.jwt-expiration-ms}") long expirationMs) {
         this.key = Keys.hmacShaKeyFor(sha256(secret));
+        if (expirationMs <= 0) {
+            throw new IllegalArgumentException("JWT 有效期必须大于 0");
+        }
         this.expirationMs = expirationMs;
     }
 
@@ -99,5 +102,14 @@ public class JwtTokenProvider {
             log.debug("JWT 校验失败: {}", e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * 返回当前 JWT 有效期配置。
+     *
+     * @return 有效期（毫秒）
+     */
+    public long getExpirationMs() {
+        return expirationMs;
     }
 }

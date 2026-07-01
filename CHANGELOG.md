@@ -6,6 +6,7 @@
 
 ### Changed
 
+- JWT 默认登录有效期调整为 24 小时，并统一使用 `ecovault.security.jwt-expiration-ms` 控制令牌与 Cookie 失效时间。
 - 主分支相关说明统一调整为 `master`。
 - 默认服务端口从 `8080` 调整为 `8100`，部署健康检查地址同步更新。
 - 用户自助注册入口下线，改为管理员在后台手动创建用户。
@@ -16,6 +17,7 @@
 
 ### Added
 
+- 新增 `.github/dependabot.yml`，每周检查 Maven 依赖与 GitHub Actions 更新。
 - 新增统一错误页 `templates/error.html`。
 - 新增 `DateTimeConfig`，统一 Jackson 与 Spring MVC 时间格式。
 - 新增后台创建用户能力。

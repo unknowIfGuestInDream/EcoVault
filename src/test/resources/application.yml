@@ -29,7 +29,7 @@ spring:
 ecovault:
   security:
     jwt-secret: dGVzdC1zZWNyZXQta2V5LWZvci1lY292YXVsdC11bml0LXRlc3Rz
-    jwt-expiration-ms: 7200000
+    jwt-expiration-ms: 86400000
     max-devices: 1
   crypto:
     secret: ecovault-test-aes-secret-32bytes!
