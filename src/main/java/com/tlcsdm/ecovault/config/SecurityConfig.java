@@ -1,10 +1,14 @@
 package com.tlcsdm.ecovault.config;
 
+import com.tlcsdm.ecovault.security.BrowserRequestGuardFilter;
 import com.tlcsdm.ecovault.security.CsrfCookieFilter;
 import com.tlcsdm.ecovault.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,6 +21,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  * Spring Security 安全配置。
@@ -28,6 +37,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
  * <li>无状态会话，基于 JWT 认证 (令牌存放于 HttpOnly + SameSite=Strict 的 Cookie，防御 XSS/CSRF)</li>
  * <li>密码使用 BCrypt 加密</li>
  * <li>启用 CSRF 保护 (CookieCsrfTokenRepository)，仅登录公开接口除外</li>
+ * <li>API 启用 CORS 白名单与浏览器 User-Agent 准入控制</li>
  * <li>actuator 与管理后台仅 ADMIN 角色可访问</li>
  * <li>方法级权限控制 ({@code @EnableMethodSecurity})</li>
  * </ul>
@@ -35,12 +45,20 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@EnableConfigurationProperties(BrowserSecurityProperties.class)
 public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+	private final BrowserRequestGuardFilter browserRequestGuardFilter;
+
+	private final BrowserSecurityProperties browserSecurityProperties;
+
+	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+			BrowserRequestGuardFilter browserRequestGuardFilter, BrowserSecurityProperties browserSecurityProperties) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+		this.browserRequestGuardFilter = browserRequestGuardFilter;
+		this.browserSecurityProperties = browserSecurityProperties;
 	}
 
 	/**
@@ -76,10 +94,13 @@ public class SecurityConfig {
 			.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
 			// 公开接口 (登录) 无需 CSRF 令牌
 			.ignoringRequestMatchers("/api/auth/login"))
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.authorizeHttpRequests(auth -> auth
 				// 公开页面与静态资源
 				.requestMatchers("/", "/login", "/error", "/css/**", "/js/**", "/images/**", "/webjars/**",
 						"/favicon.ico")
+				.permitAll()
+				.requestMatchers(HttpMethod.OPTIONS, "/api/**")
 				.permitAll()
 				.requestMatchers("/api/auth/login")
 				.permitAll()
@@ -105,11 +126,33 @@ public class SecurityConfig {
 			.formLogin(form -> form.disable())
 			.httpBasic(basic -> basic.disable())
 			.logout(logout -> logout.disable())
-			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(browserRequestGuardFilter, UsernamePasswordAuthenticationFilter.class)
+			.addFilterAfter(jwtAuthenticationFilter, BrowserRequestGuardFilter.class)
 			// 强制下发 CSRF Cookie，供前端读取
 			.addFilterAfter(new CsrfCookieFilter(), UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
+	}
+
+	/**
+	 * API CORS 白名单配置。
+	 * @return CORS 配置源
+	 */
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowCredentials(true);
+		configuration.setAllowedOrigins(browserSecurityProperties.getAllowedOrigins());
+		configuration.setAllowedMethods(List.of(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(),
+				HttpMethod.DELETE.name(), HttpMethod.PATCH.name(), HttpMethod.OPTIONS.name()));
+		configuration.setAllowedHeaders(
+				List.of(HttpHeaders.CONTENT_TYPE, HttpHeaders.AUTHORIZATION, "X-Requested-With", "X-XSRF-TOKEN"));
+		configuration.setExposedHeaders(List.of(HttpHeaders.SET_COOKIE));
+		configuration.setMaxAge(3600L);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/api/**", configuration);
+		return source;
 	}
 
 }
