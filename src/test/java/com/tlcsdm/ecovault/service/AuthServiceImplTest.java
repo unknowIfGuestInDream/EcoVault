@@ -48,7 +48,7 @@ class AuthServiceImplTest {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private final JwtTokenProvider tokenProvider =
-            new JwtTokenProvider("test-secret-key-for-unit-tests", 86400000L);
+            new JwtTokenProvider("test-secret-key-for-unit-tests", 7200000L);
 
     private AuthServiceImpl service;
 

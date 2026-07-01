@@ -66,7 +66,7 @@ class EcoVaultApplicationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Set-Cookie", containsString("Max-Age=86400")))
+                .andExpect(header().string("Set-Cookie", containsString("Max-Age=7200")))
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.token").isNotEmpty());
     }
