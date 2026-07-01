@@ -21,8 +21,9 @@ import java.util.Optional;
 /**
  * JWT 认证过滤器。
  *
- * <p>从请求头 Authorization 携带的 ****** Cookie ECOVAULT_TOKEN 中提取令牌，
- * 校验签名与有效期，并进一步校验令牌所属会话仍处于活跃状态 (实现单设备登录约束)。</p>
+ * <p>令牌可来源于两处 (二者其一即可)：请求头 {@code Authorization} 的 {@code BEARER_PREFIX}
+ * 认证方案，或名为 {@code ECOVAULT_TOKEN} 的 Cookie；校验签名与有效期后，
+ * 进一步校验令牌所属会话仍处于活跃状态 (实现单设备登录约束)。</p>
  *
  * @author 梦里不知身是客
  */
