@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * 密码强度检测工具单元测试。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 class PasswordStrengthUtilTest {
 

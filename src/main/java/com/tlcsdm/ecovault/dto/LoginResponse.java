@@ -7,7 +7,7 @@ package com.tlcsdm.ecovault.dto;
  * @param username 用户名
  * @param nickname 昵称
  * @param role     角色
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record LoginResponse(
         String token,

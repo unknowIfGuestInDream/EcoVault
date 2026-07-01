@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
  * 并可派生出税前总额与实发金额，用于统计分析与趋势图表。
  * 后续可在财务管理下扩展消费数据等其它实体。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Entity
 @Table(name = "salary_records",

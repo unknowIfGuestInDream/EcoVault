@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
  *
  * @param username 用户名
  * @param password 明文密码
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record LoginRequest(
         @NotBlank(message = "用户名不能为空")

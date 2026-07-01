@@ -29,7 +29,7 @@ import java.util.List;
  *
  * <p>工资数据管理属于财务管理模块，后续可在该模块下扩展消费数据管理等子模块。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @RestController
 @RequestMapping("/api/finance/salaries")

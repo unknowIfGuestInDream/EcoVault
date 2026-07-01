@@ -1,5 +1,16 @@
 # 测试专用配置：使用独立的 SQLite 数据库文件，避免污染开发数据
+server:
+  shutdown: graceful
+
 spring:
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy/MM/dd HH:mm:ss
+  mvc:
+    format:
+      date: yyyy/MM/dd
+      date-time: yyyy/MM/dd HH:mm:ss
+      time: HH:mm:ss
   datasource:
     url: jdbc:sqlite:${ECOVAULT_DB_PATH:target/test-ecovault.db}
     driver-class-name: org.sqlite.JDBC
@@ -12,6 +23,8 @@ spring:
       hibernate:
         dialect: org.hibernate.community.dialect.SQLiteDialect
     open-in-view: false
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 ecovault:
   security:

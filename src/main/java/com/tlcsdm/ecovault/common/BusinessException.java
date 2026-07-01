@@ -5,7 +5,7 @@ package com.tlcsdm.ecovault.common;
  *
  * <p>用于在业务逻辑中主动抛出可预期的错误，由全局异常处理器统一转换为友好的响应。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public class BusinessException extends RuntimeException {
 

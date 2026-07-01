@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * 密码管理服务。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface PasswordService {
 

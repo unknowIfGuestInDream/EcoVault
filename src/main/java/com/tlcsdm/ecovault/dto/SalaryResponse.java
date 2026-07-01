@@ -15,7 +15,7 @@ import java.math.BigDecimal;
  * @param gross      税前总额
  * @param net        实发金额
  * @param remark     备注
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record SalaryResponse(
         Long id,

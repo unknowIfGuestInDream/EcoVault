@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * 工资数据数据访问接口。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface SalaryRecordRepository extends JpaRepository<SalaryRecord, Long> {
 

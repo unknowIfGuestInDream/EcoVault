@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 /**
  * 认证服务单元测试。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {

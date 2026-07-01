@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 /**
  * 操作日志服务。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface OperationLogService {
 

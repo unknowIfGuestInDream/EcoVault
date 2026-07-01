@@ -6,7 +6,7 @@ package com.tlcsdm.ecovault.utils;
  * <p>综合长度、字符种类 (小写、大写、数字、特殊字符) 计算 0-100 的评分，
  * 并映射为 WEAK / MEDIUM / STRONG 三个等级。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public final class PasswordStrengthUtil {
 

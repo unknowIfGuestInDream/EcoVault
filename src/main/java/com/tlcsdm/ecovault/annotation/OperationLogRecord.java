@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  *
  * <p>标注在 Controller 方法上，由 {@code OperationLogAspect} 切面拦截并自动记录操作日志。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

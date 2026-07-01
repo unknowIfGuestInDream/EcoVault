@@ -5,7 +5,6 @@ import com.tlcsdm.ecovault.common.ApiResponse;
 import com.tlcsdm.ecovault.dto.ChangePasswordRequest;
 import com.tlcsdm.ecovault.dto.LoginRequest;
 import com.tlcsdm.ecovault.dto.LoginResponse;
-import com.tlcsdm.ecovault.dto.RegisterRequest;
 import com.tlcsdm.ecovault.dto.UpdateProfileRequest;
 import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.security.JwtAuthenticationFilter;
@@ -31,8 +30,6 @@ import java.util.Map;
 
 /**
  * 认证与用户信息接口。
- *
- * @author 梦里不知身是客
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -45,19 +42,6 @@ public class AuthController {
     public AuthController(AuthService authService, JwtTokenProvider tokenProvider) {
         this.authService = authService;
         this.tokenProvider = tokenProvider;
-    }
-
-    /**
-     * 用户注册。
-     *
-     * @param request 注册请求
-     * @return 注册结果
-     */
-    @PostMapping("/register")
-    @OperationLogRecord(module = "用户管理", operation = "用户注册")
-    public ApiResponse<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
-        User user = authService.register(request);
-        return ApiResponse.success(Map.of("id", user.getId(), "username", user.getUsername()));
     }
 
     /**

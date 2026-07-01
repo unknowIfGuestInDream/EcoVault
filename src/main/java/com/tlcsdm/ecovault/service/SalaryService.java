@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * 财务 - 工资数据管理服务。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface SalaryService {
 

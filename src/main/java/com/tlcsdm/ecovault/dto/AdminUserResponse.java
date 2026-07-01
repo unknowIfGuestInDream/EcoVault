@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * @param role      角色
  * @param enabled   是否启用
  * @param createdAt 注册时间
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record AdminUserResponse(
         Long id,

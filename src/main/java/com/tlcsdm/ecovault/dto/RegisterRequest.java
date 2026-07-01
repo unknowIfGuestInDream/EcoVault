@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
  * @param password 明文密码 (服务端使用 BCrypt 加密后存储)
  * @param nickname 昵称
  * @param email    邮箱
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record RegisterRequest(
         @NotBlank(message = "用户名不能为空")

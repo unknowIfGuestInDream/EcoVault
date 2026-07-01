@@ -1,5 +1,6 @@
 server:
-  port: 8080
+  port: 8100
+  shutdown: graceful
   servlet:
     encoding:
       charset: UTF-8
@@ -9,6 +10,19 @@ server:
 spring:
   application:
     name: EcoVault
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy/MM/dd HH:mm:ss
+  mvc:
+    format:
+      date: yyyy/MM/dd
+      date-time: yyyy/MM/dd HH:mm:ss
+      time: HH:mm:ss
+    hiddenmethod:
+      filter:
+        enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   # SQLite 嵌入式数据库
   datasource:
     url: jdbc:sqlite:${ECOVAULT_DB_PATH:data/ecovault.db}
@@ -26,10 +40,6 @@ spring:
     open-in-view: false
   thymeleaf:
     cache: false
-  mvc:
-    hiddenmethod:
-      filter:
-        enabled: true
 
 # EcoVault 自定义配置
 ecovault:

@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 管理后台服务 (仅管理员)。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface AdminService {
 

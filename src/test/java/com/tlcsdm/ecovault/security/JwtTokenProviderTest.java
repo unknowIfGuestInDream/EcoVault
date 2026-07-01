@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * JWT 令牌提供者单元测试。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 class JwtTokenProviderTest {
 

@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
  * 当同一用户的活跃会话数超过配置的最大设备数时，最早的会话会被强制失效。
  * JWT 校验时会检查对应会话是否仍然处于活跃状态。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Entity
 @Table(name = "user_sessions", indexes = {

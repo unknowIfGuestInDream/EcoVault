@@ -18,7 +18,7 @@ import java.util.List;
  * @param strengthLevel 密码强度等级
  * @param createdAt     创建时间
  * @param updatedAt     更新时间
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record PasswordEntryResponse(
         Long id,

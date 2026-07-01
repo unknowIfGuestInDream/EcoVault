@@ -6,7 +6,7 @@ import java.io.Serializable;
  * 统一 API 响应封装。
  *
  * @param <T> 响应数据类型
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public class ApiResponse<T> implements Serializable {
 

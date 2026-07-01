@@ -17,7 +17,7 @@ import java.util.Base64;
  * <p>用于对密码条目中的敏感字段 (密码、备注、标签) 进行加密存储，
  * 确保数据库中不保存明文，即使数据库泄露也难以还原。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Component
 public class AesUtil {

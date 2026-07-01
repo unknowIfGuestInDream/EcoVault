@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 /**
  * 自定义用户详情服务，从数据库加载用户。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

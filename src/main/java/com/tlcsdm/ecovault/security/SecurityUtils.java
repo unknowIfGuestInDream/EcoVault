@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * 安全上下文工具，便于在业务层获取当前登录用户信息。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public final class SecurityUtils {
 

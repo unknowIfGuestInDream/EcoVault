@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * 密码条目数据访问接口。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface PasswordEntryRepository extends JpaRepository<PasswordEntry, Long> {
 

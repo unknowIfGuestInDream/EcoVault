@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * 密码管理接口。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @RestController
 @RequestMapping("/api/passwords")

@@ -10,15 +10,15 @@ import com.tlcsdm.ecovault.entity.User;
 /**
  * 认证与用户信息服务。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface AuthService {
 
     /**
-     * 用户注册。
+     * 由管理员创建普通用户。
      *
-     * @param request 注册请求
-     * @return 注册后的用户
+     * @param request 创建请求
+     * @return 创建后的用户
      */
     User register(RegisterRequest request);
 

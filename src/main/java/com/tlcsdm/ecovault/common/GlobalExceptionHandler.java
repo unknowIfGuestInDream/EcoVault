@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * <p>将业务异常、参数校验异常与未知异常统一转换为 {@link ApiResponse} 结构，
  * 避免向客户端泄露堆栈等敏感信息。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {

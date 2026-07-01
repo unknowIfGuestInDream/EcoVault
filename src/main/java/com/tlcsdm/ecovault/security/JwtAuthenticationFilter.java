@@ -25,7 +25,7 @@ import java.util.Optional;
  * 认证方案，或名为 {@code ECOVAULT_TOKEN} 的 Cookie；校验签名与有效期后，
  * 进一步校验令牌所属会话仍处于活跃状态 (实现单设备登录约束)。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

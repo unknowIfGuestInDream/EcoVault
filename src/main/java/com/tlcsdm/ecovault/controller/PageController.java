@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
  *
  * <p>仅负责返回视图名称，具体数据通过前端 JS 调用 REST 接口获取。
  * 受保护页面的访问控制由 Spring Security 统一处理。</p>
- *
- * @author 梦里不知身是客
  */
 @Controller
 public class PageController {
@@ -32,16 +30,6 @@ public class PageController {
     @GetMapping("/login")
     public String login() {
         return "login";
-    }
-
-    /**
-     * 注册页。
-     *
-     * @return 视图名
-     */
-    @GetMapping("/register")
-    public String register() {
-        return "register";
     }
 
     /**

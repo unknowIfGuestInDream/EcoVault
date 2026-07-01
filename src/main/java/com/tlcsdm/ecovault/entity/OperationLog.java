@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
  * <p>由 AOP 切面自动记录用户在系统中的关键操作，用于审计与问题排查。
  * 管理员可查看所有用户日志，普通用户仅可查看自己的日志。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Entity
 @Table(name = "operation_logs", indexes = {

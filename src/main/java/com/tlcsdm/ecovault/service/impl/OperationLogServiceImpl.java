@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 /**
  * 操作日志服务实现。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Service
 public class OperationLogServiceImpl implements OperationLogService {

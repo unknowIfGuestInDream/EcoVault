@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * <p>拦截标注了 {@link OperationLogRecord} 的方法，自动记录操作人、模块、
  * 操作描述、参数、IP、执行结果与耗时到数据库，实现操作审计。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Aspect
 @Component

@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
  *
  * <p>存储系统用户的基本信息、加密后的密码 (BCrypt) 以及角色。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Entity
 @Table(name = "users", indexes = {

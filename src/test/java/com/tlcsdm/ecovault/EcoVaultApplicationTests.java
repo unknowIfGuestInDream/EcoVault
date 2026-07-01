@@ -18,13 +18,12 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 应用集成测试：验证上下文加载、注册登录流程与 RBAC 权限控制。
- *
- * @author 梦里不知身是客
+ * 应用集成测试：验证上下文加载、管理员创建用户、登录流程与 RBAC 权限控制。
  */
 @SpringBootTest
 class EcoVaultApplicationTests {
@@ -49,13 +48,14 @@ class EcoVaultApplicationTests {
     }
 
     @Test
-    @DisplayName("注册后可成功登录并返回令牌")
-    void registerThenLogin() throws Exception {
-        RegisterRequest register = new RegisterRequest("ituser", "Passw0rd!", "集成用户", "it@ecovault.com");
-        mockMvc.perform(post("/api/auth/register")
+    @DisplayName("管理员创建用户后可成功登录并返回令牌")
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void adminCreateUserThenLogin() throws Exception {
+        RegisterRequest request = new RegisterRequest("ituser", "Passw0rd!", "集成用户", "it@ecovault.com");
+        mockMvc.perform(post("/api/admin/users")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(register)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0));
 
@@ -67,6 +67,25 @@ class EcoVaultApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.token").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("匿名用户无法调用外部注册接口")
+    void publicRegisterEndpointUnavailable() throws Exception {
+        RegisterRequest request = new RegisterRequest("ghost", "Passw0rd!", "匿名", "ghost@ecovault.com");
+        mockMvc.perform(post("/api/auth/register")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("匿名用户访问旧注册页将跳转到登录页")
+    void registerPageRedirectsToLogin() throws Exception {
+        mockMvc.perform(get("/register"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(header().string("Location", "/login"));
     }
 
     @Test

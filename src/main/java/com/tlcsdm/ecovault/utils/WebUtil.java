@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 /**
  * 请求相关工具方法。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public final class WebUtil {
 

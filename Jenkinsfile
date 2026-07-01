@@ -49,10 +49,10 @@ pipeline {
 
         stage('Deploy') {
             when {
-                branch 'main'
+                branch 'master'
             }
             steps {
-                // 仅 main 分支执行部署脚本。
+                // 仅 master 分支执行部署脚本。
                 sh 'bash deploy/deploy.sh'
             }
         }

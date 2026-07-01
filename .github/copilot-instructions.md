@@ -7,7 +7,7 @@
 - Java 基础包名：`com.tlcsdm.ecovault`。
 - 应用主类：`com.tlcsdm.ecovault.EcoVaultApplication`。
 - Jar artifact id：`ecovault`。
-- 技术栈：Java 25、Spring Boot 4.0.x、SQLite 3、Thymeleaf、可选 Vue 3、Maven、JUnit 5、JaCoCo、Docker、Jenkins。
+- 技术栈：Java 25、Spring Boot 4.1.x、SQLite 3、Thymeleaf、Maven、JUnit 5、JaCoCo、Jenkins。
 - 前端图表可使用 Chart.js 或 ECharts。
 - UI 风格应现代、响应式，支持玻璃拟态、渐变、暗色/亮色主题。
 
@@ -27,6 +27,7 @@
 - API 设计必须符合 RESTful 规范。
 - 数据库查询必须使用参数绑定，并根据查询场景优化索引。
 - Actuator 端点限制为 ADMIN 访问，健康检查端点按部署需要最小暴露。
+- 不提供外部自助注册，普通用户仅能由管理员在后台创建。
 
 ## 测试要求
 
@@ -37,8 +38,8 @@
 
 ## 部署与运维要求
 
-- 保持 Dockerfile、Jenkinsfile 与 `deploy/deploy.sh` 可用。
-- Docker 镜像应使用 Java 25 运行时，应用以 `prod` profile 启动。
+- 保持 `Jenkinsfile` 与 `deploy/deploy.sh` 可用。
+- 应用以 `prod` profile 启动。
 - Jenkins 流水线应包含构建、测试、覆盖率、归档与主分支部署。
 - 部署脚本必须包含停止旧服务、备份旧版本、部署新 Jar、启动服务与健康检查。
 - 健康检查使用 Actuator `/actuator/health`。

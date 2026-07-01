@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 /**
  * 财务 - 工资服务单元测试。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @ExtendWith(MockitoExtension.class)
 class SalaryServiceImplTest {

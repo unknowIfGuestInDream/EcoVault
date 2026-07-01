@@ -11,7 +11,7 @@ import java.io.File;
  * <p>EcoVault (生态保险箱) 是一个个人数据安全存储与智能管理平台，
  * 提供用户管理、密码管理、财务(工资)数据管理、操作日志审计与管理后台等功能。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @SpringBootApplication
 public class EcoVaultApplication {

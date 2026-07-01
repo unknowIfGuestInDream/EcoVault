@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * <p>密码、备注、标签等敏感字段使用 AES 加密后落库，读取时解密返回。
  * 标签加密存储可避免包含敏感关键字时被 Web 防火墙误拦截。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Service
 public class PasswordServiceImpl implements PasswordService {

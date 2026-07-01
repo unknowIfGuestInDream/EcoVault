@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  * @param allowance  补贴
  * @param deduction  扣款
  * @param remark     备注
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record SalaryRequest(
         @NotNull(message = "年份不能为空")

@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 /**
  * 操作日志数据访问接口。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface OperationLogRepository extends JpaRepository<OperationLog, Long> {
 

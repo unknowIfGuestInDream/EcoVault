@@ -13,7 +13,7 @@ import java.util.List;
  * @param totalBonus    奖金合计
  * @param monthlyTrend  月度趋势 (按时间排序)
  * @param composition   收入构成 (基本工资/奖金/补贴合计)
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record SalaryStatistics(
         BigDecimal totalNet,

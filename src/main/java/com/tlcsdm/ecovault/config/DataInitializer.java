@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * <p>应用首次启动时，如果系统中没有管理员账户，则创建一个默认管理员，
  * 便于开发者/管理员登录管理后台。生产环境请通过环境变量覆盖默认密码并在首次登录后修改。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Component
 public class DataInitializer implements CommandLineRunner {

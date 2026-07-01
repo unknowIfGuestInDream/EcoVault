@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Spring Security 用户主体，包装 {@link User} 实体，便于在认证上下文中获取用户 ID 与角色。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public class SecurityUser implements UserDetails {
 

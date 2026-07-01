@@ -8,7 +8,7 @@ package com.tlcsdm.ecovault.entity;
  *     <li>{@link #ADMIN} 管理员 (即开发者，可访问管理后台与 actuator)</li>
  * </ul>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public enum Role {
 

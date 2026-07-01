@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * 用户数据访问接口。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 

@@ -24,7 +24,7 @@ import java.util.List;
  *
  * <p>普通用户只能查看自己的操作日志；管理员可查看所有用户的日志。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @RestController
 @RequestMapping("/api/logs")

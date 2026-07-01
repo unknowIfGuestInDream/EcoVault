@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * 用户会话数据访问接口。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public interface UserSessionRepository extends JpaRepository<UserSession, Long> {
 

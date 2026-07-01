@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
  * 在落库前使用 AES 加密，读取时解密，确保数据库中不保存明文。
  * {@code tags} 用于标签筛选，同样以加密形式存储，避免包含敏感关键字时被 Web 防火墙拦截。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Entity
 @Table(name = "password_entries", indexes = {

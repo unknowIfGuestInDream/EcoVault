@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * 财务 - 工资数据管理服务实现。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Service
 public class SalaryServiceImpl implements SalaryService {

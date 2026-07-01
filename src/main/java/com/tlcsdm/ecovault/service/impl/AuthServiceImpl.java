@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * 认证与用户信息服务实现。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Service
 public class AuthServiceImpl implements AuthService {

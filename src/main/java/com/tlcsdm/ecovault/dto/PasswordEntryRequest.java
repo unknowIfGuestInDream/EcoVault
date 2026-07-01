@@ -15,7 +15,7 @@ import java.util.List;
  * @param notes    备注 (服务端 AES 加密后存储)
  * @param category 分类
  * @param tags     标签列表
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record PasswordEntryRequest(
         @NotBlank(message = "标题不能为空")

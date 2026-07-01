@@ -18,7 +18,7 @@ import java.util.UUID;
 /**
  * JWT 令牌提供者，负责令牌的生成与解析校验。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @Component
 public class JwtTokenProvider {

@@ -25,12 +25,10 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
  * <ul>
  *     <li>无状态会话，基于 JWT 认证 (令牌存放于 HttpOnly + SameSite=Strict 的 Cookie，防御 XSS/CSRF)</li>
  *     <li>密码使用 BCrypt 加密</li>
- *     <li>启用 CSRF 保护 (CookieCsrfTokenRepository)，登录/注册等公开接口除外</li>
+ *     <li>启用 CSRF 保护 (CookieCsrfTokenRepository)，仅登录公开接口除外</li>
  *     <li>actuator 与管理后台仅 ADMIN 角色可访问</li>
  *     <li>方法级权限控制 ({@code @EnableMethodSecurity})</li>
  * </ul>
- *
- * @author 梦里不知身是客
  */
 @Configuration
 @EnableWebSecurity
@@ -79,13 +77,13 @@ public class SecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         // 使用普通请求处理器：前端将 Cookie 中的令牌原值通过 X-XSRF-TOKEN 头回传
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        // 公开接口 (登录/注册) 无需 CSRF 令牌
-                        .ignoringRequestMatchers("/api/auth/login", "/api/auth/register"))
+                        // 公开接口 (登录) 无需 CSRF 令牌
+                        .ignoringRequestMatchers("/api/auth/login"))
                 .authorizeHttpRequests(auth -> auth
                         // 公开页面与静态资源
-                        .requestMatchers("/", "/login", "/register", "/error",
+                        .requestMatchers("/", "/login", "/error",
                                 "/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
                         // actuator 与管理后台仅管理员
                         .requestMatchers("/actuator/**", "/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

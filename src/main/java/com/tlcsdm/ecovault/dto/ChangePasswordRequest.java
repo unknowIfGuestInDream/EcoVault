@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
  *
  * @param oldPassword 原密码
  * @param newPassword 新密码
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public record ChangePasswordRequest(
         @NotBlank(message = "原密码不能为空")

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
  * <p>使用真实 {@link AesUtil} 校验敏感字段加密落库与解密还原，
  * 仓储层通过 Mockito 模拟。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 @ExtendWith(MockitoExtension.class)
 class PasswordServiceImplTest {

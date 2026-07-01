@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * AES-GCM 加解密工具单元测试。
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 class AesUtilTest {
 

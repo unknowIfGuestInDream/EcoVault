@@ -16,7 +16,7 @@ import java.io.IOException;
  * 本过滤器在每次请求时主动读取一次令牌，触发 {@code CookieCsrfTokenRepository} 写出 Cookie，
  * 便于前端 JavaScript 读取并在后续请求中通过 {@code X-XSRF-TOKEN} 头回传，实现 CSRF 防护。</p>
  *
- * @author 梦里不知身是客
+ * @author unknowIfGuestInDream
  */
 public class CsrfCookieFilter extends OncePerRequestFilter {
 
