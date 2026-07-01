@@ -13,19 +13,18 @@ import java.util.Optional;
  */
 public interface UserSessionRepository extends JpaRepository<UserSession, Long> {
 
-    /**
-     * 根据 JWT 唯一标识查询会话。
-     *
-     * @param jti JWT ID
-     * @return 会话 (可能为空)
-     */
-    Optional<UserSession> findByJti(String jti);
+	/**
+	 * 根据 JWT 唯一标识查询会话。
+	 * @param jti JWT ID
+	 * @return 会话 (可能为空)
+	 */
+	Optional<UserSession> findByJti(String jti);
 
-    /**
-     * 查询用户所有活跃会话，按创建时间升序 (最早的在前)。
-     *
-     * @param userId 用户 ID
-     * @return 活跃会话列表
-     */
-    List<UserSession> findByUserIdAndActiveTrueOrderByCreatedAtAsc(Long userId);
+	/**
+	 * 查询用户所有活跃会话，按创建时间升序 (最早的在前)。
+	 * @param userId 用户 ID
+	 * @return 活跃会话列表
+	 */
+	List<UserSession> findByUserIdAndActiveTrueOrderByCreatedAtAsc(Long userId);
+
 }

@@ -15,21 +15,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class OperationLogServiceImpl implements OperationLogService {
 
-    private final OperationLogRepository repository;
+	private final OperationLogRepository repository;
 
-    public OperationLogServiceImpl(OperationLogRepository repository) {
-        this.repository = repository;
-    }
+	public OperationLogServiceImpl(OperationLogRepository repository) {
+		this.repository = repository;
+	}
 
-    @Override
-    public void save(OperationLog log) {
-        repository.save(log);
-    }
+	@Override
+	public void save(OperationLog log) {
+		repository.save(log);
+	}
 
-    @Override
-    public Page<OperationLog> query(Long enforcedUserId, String module, String keyword, Pageable pageable) {
-        String normalizedModule = (module == null || module.isBlank()) ? null : module;
-        String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
-        return repository.search(enforcedUserId, normalizedModule, normalizedKeyword, pageable);
-    }
+	@Override
+	public Page<OperationLog> query(Long enforcedUserId, String module, String keyword, Pageable pageable) {
+		String normalizedModule = (module == null || module.isBlank()) ? null : module;
+		String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+		return repository.search(enforcedUserId, normalizedModule, normalizedKeyword, pageable);
+	}
+
 }

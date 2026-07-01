@@ -11,18 +11,17 @@ import java.util.List;
  */
 public interface AdminService {
 
-    /**
-     * 查询全部用户列表。
-     *
-     * @return 用户列表
-     */
-    List<AdminUserResponse> listUsers();
+	/**
+	 * 查询全部用户列表。
+	 * @return 用户列表
+	 */
+	List<AdminUserResponse> listUsers();
 
-    /**
-     * 启用或禁用用户。
-     *
-     * @param userId  用户 ID
-     * @param enabled 是否启用
-     */
-    void setUserEnabled(Long userId, boolean enabled);
+	/**
+	 * 启用或禁用用户。
+	 * @param userId 用户 ID
+	 * @param enabled 是否启用
+	 */
+	void setUserEnabled(Long userId, boolean enabled);
+
 }

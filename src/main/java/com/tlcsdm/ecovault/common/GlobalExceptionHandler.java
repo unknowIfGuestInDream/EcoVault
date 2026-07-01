@@ -15,64 +15,62 @@ import java.util.stream.Collectors;
 /**
  * 全局异常处理器。
  *
- * <p>将业务异常、参数校验异常与未知异常统一转换为 {@link ApiResponse} 结构，
- * 避免向客户端泄露堆栈等敏感信息。</p>
+ * <p>
+ * 将业务异常、参数校验异常与未知异常统一转换为 {@link ApiResponse} 结构， 避免向客户端泄露堆栈等敏感信息。
+ * </p>
  *
  * @author unknowIfGuestInDream
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /**
-     * 处理业务异常。
-     *
-     * @param ex 业务异常
-     * @return 统一响应
-     */
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex) {
-        log.warn("业务异常: {}", ex.getMessage());
-        return ResponseEntity.badRequest().body(ApiResponse.error(ex.getCode(), ex.getMessage()));
-    }
+	/**
+	 * 处理业务异常。
+	 * @param ex 业务异常
+	 * @return 统一响应
+	 */
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex) {
+		log.warn("业务异常: {}", ex.getMessage());
+		return ResponseEntity.badRequest().body(ApiResponse.error(ex.getCode(), ex.getMessage()));
+	}
 
-    /**
-     * 处理参数校验异常。
-     *
-     * @param ex 参数校验异常
-     * @return 统一响应
-     */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.joining("; "));
-        return ResponseEntity.badRequest().body(ApiResponse.error(400, message));
-    }
+	/**
+	 * 处理参数校验异常。
+	 * @param ex 参数校验异常
+	 * @return 统一响应
+	 */
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
+		String message = ex.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.map(FieldError::getDefaultMessage)
+			.collect(Collectors.joining("; "));
+		return ResponseEntity.badRequest().body(ApiResponse.error(400, message));
+	}
 
-    /**
-     * 处理权限不足异常。
-     *
-     * @param ex 权限异常
-     * @return 统一响应
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error(403, "无权访问该资源"));
-    }
+	/**
+	 * 处理权限不足异常。
+	 * @param ex 权限异常
+	 * @return 统一响应
+	 */
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(403, "无权访问该资源"));
+	}
 
-    /**
-     * 处理未预期的系统异常。
-     *
-     * @param ex 异常
-     * @return 统一响应
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleUnknown(Exception ex) {
-        log.error("系统异常", ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(500, "系统内部错误，请稍后重试"));
-    }
+	/**
+	 * 处理未预期的系统异常。
+	 * @param ex 异常
+	 * @return 统一响应
+	 */
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ApiResponse<Void>> handleUnknown(Exception ex) {
+		log.error("系统异常", ex);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error(500, "系统内部错误，请稍后重试"));
+	}
+
 }

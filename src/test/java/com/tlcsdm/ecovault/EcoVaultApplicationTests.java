@@ -29,88 +29,83 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 class EcoVaultApplicationTests {
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+	@Autowired
+	private WebApplicationContext webApplicationContext;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private MockMvc mockMvc;
+	private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-                .apply(springSecurity())
-                .build();
-    }
+	@BeforeEach
+	void setUp() {
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).apply(springSecurity()).build();
+	}
 
-    @Test
-    @DisplayName("Spring 上下文正常加载")
-    void contextLoads() {
-    }
+	@Test
+	@DisplayName("Spring 上下文正常加载")
+	void contextLoads() {
+	}
 
-    @Test
-    @DisplayName("管理员创建用户后可成功登录并返回令牌")
-    @WithMockUser(username = "admin", roles = "ADMIN")
-    void adminCreateUserThenLogin() throws Exception {
-        RegisterRequest request = new RegisterRequest("ituser", "Passw0rd!", "集成用户", "it@ecovault.com");
-        mockMvc.perform(post("/api/admin/users")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(0));
+	@Test
+	@DisplayName("管理员创建用户后可成功登录并返回令牌")
+	@WithMockUser(username = "admin", roles = "ADMIN")
+	void adminCreateUserThenLogin() throws Exception {
+		RegisterRequest request = new RegisterRequest("ituser", "Passw0rd!", "集成用户", "it@ecovault.com");
+		mockMvc
+			.perform(post("/api/admin/users").with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value(0));
 
-        LoginRequest login = new LoginRequest("ituser", "Passw0rd!");
-        mockMvc.perform(post("/api/auth/login")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isOk())
-                .andExpect(header().string("Set-Cookie", containsString("Max-Age=7200")))
-                .andExpect(jsonPath("$.code").value(0))
-                .andExpect(jsonPath("$.data.token").isNotEmpty());
-    }
+		LoginRequest login = new LoginRequest("ituser", "Passw0rd!");
+		mockMvc
+			.perform(post("/api/auth/login").with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(login)))
+			.andExpect(status().isOk())
+			.andExpect(header().string("Set-Cookie", containsString("Max-Age=7200")))
+			.andExpect(jsonPath("$.code").value(0))
+			.andExpect(jsonPath("$.data.token").isNotEmpty());
+	}
 
-    @Test
-    @DisplayName("匿名用户无法调用外部注册接口")
-    void publicRegisterEndpointUnavailable() throws Exception {
-        RegisterRequest request = new RegisterRequest("ghost", "Passw0rd!", "匿名", "ghost@ecovault.com");
-        mockMvc.perform(post("/api/auth/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
-    }
+	@Test
+	@DisplayName("匿名用户无法调用外部注册接口")
+	void publicRegisterEndpointUnavailable() throws Exception {
+		RegisterRequest request = new RegisterRequest("ghost", "Passw0rd!", "匿名", "ghost@ecovault.com");
+		mockMvc
+			.perform(post("/api/auth/register").with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isUnauthorized());
+	}
 
-    @Test
-    @DisplayName("匿名用户访问旧注册页将跳转到登录页")
-    void registerPageRedirectsToLogin() throws Exception {
-        mockMvc.perform(get("/register"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(header().string("Location", "/login"));
-    }
+	@Test
+	@DisplayName("匿名用户访问旧注册页将跳转到登录页")
+	void registerPageRedirectsToLogin() throws Exception {
+		mockMvc.perform(get("/register"))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(header().string("Location", "/login"));
+	}
 
-    @Test
-    @DisplayName("普通用户访问管理接口返回 403")
-    @WithMockUser(username = "user", roles = "USER")
-    void userForbiddenOnAdminApi() throws Exception {
-        mockMvc.perform(get("/api/admin/users"))
-                .andExpect(status().isForbidden());
-    }
+	@Test
+	@DisplayName("普通用户访问管理接口返回 403")
+	@WithMockUser(username = "user", roles = "USER")
+	void userForbiddenOnAdminApi() throws Exception {
+		mockMvc.perform(get("/api/admin/users")).andExpect(status().isForbidden());
+	}
 
-    @Test
-    @DisplayName("管理员可访问管理接口")
-    @WithMockUser(username = "admin", roles = "ADMIN")
-    void adminAllowedOnAdminApi() throws Exception {
-        mockMvc.perform(get("/api/admin/users"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(0));
-    }
+	@Test
+	@DisplayName("管理员可访问管理接口")
+	@WithMockUser(username = "admin", roles = "ADMIN")
+	void adminAllowedOnAdminApi() throws Exception {
+		mockMvc.perform(get("/api/admin/users")).andExpect(status().isOk()).andExpect(jsonPath("$.code").value(0));
+	}
 
-    @Test
-    @DisplayName("未认证访问受保护接口返回 401")
-    void unauthenticatedReturns401() throws Exception {
-        mockMvc.perform(get("/api/passwords"))
-                .andExpect(status().isUnauthorized());
-    }
+	@Test
+	@DisplayName("未认证访问受保护接口返回 401")
+	void unauthenticatedReturns401() throws Exception {
+		mockMvc.perform(get("/api/passwords")).andExpect(status().isUnauthorized());
+	}
+
 }

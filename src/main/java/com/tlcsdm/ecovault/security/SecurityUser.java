@@ -15,63 +15,62 @@ import java.util.List;
  */
 public class SecurityUser implements UserDetails {
 
-    private final User user;
+	private final User user;
 
-    public SecurityUser(User user) {
-        this.user = user;
-    }
+	public SecurityUser(User user) {
+		this.user = user;
+	}
 
-    /**
-     * 获取底层用户实体。
-     *
-     * @return 用户实体
-     */
-    public User getUser() {
-        return user;
-    }
+	/**
+	 * 获取底层用户实体。
+	 * @return 用户实体
+	 */
+	public User getUser() {
+		return user;
+	}
 
-    /**
-     * 获取用户 ID。
-     *
-     * @return 用户 ID
-     */
-    public Long getId() {
-        return user.getId();
-    }
+	/**
+	 * 获取用户 ID。
+	 * @return 用户 ID
+	 */
+	public Long getId() {
+		return user.getId();
+	}
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Spring Security 约定角色以 ROLE_ 前缀表示
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
-    }
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		// Spring Security 约定角色以 ROLE_ 前缀表示
+		return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+	}
 
-    @Override
-    public String getPassword() {
-        return user.getPassword();
-    }
+	@Override
+	public String getPassword() {
+		return user.getPassword();
+	}
 
-    @Override
-    public String getUsername() {
-        return user.getUsername();
-    }
+	@Override
+	public String getUsername() {
+		return user.getUsername();
+	}
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
 
-    @Override
-    public boolean isEnabled() {
-        return user.isEnabled();
-    }
+	@Override
+	public boolean isEnabled() {
+		return user.isEnabled();
+	}
+
 }

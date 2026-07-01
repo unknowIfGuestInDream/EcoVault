@@ -32,83 +32,77 @@ import java.util.Map;
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    private static final DateTimeFormatter BUILD_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern(DateTimeConfig.DATE_TIME_PATTERN);
+	private static final DateTimeFormatter BUILD_TIME_FORMATTER = DateTimeFormatter
+		.ofPattern(DateTimeConfig.DATE_TIME_PATTERN);
 
-    private final AdminService adminService;
+	private final AdminService adminService;
 
-    private final AuthService authService;
+	private final AuthService authService;
 
-    private final ObjectProvider<BuildProperties> buildProperties;
+	private final ObjectProvider<BuildProperties> buildProperties;
 
-    public AdminController(AdminService adminService,
-                           AuthService authService,
-                           ObjectProvider<BuildProperties> buildProperties) {
-        this.adminService = adminService;
-        this.authService = authService;
-        this.buildProperties = buildProperties;
-    }
+	public AdminController(AdminService adminService, AuthService authService,
+			ObjectProvider<BuildProperties> buildProperties) {
+		this.adminService = adminService;
+		this.authService = authService;
+		this.buildProperties = buildProperties;
+	}
 
-    /**
-     * 由管理员创建普通用户。
-     *
-     * @param request 创建请求
-     * @return 创建结果
-     */
-    @PostMapping("/users")
-    @OperationLogRecord(module = "管理后台", operation = "创建用户")
-    public ApiResponse<Map<String, Object>> createUser(@Valid @RequestBody RegisterRequest request) {
-        User user = authService.register(request);
-        return ApiResponse.success(Map.of(
-                "id", user.getId(),
-                "username", user.getUsername()
-        ));
-    }
+	/**
+	 * 由管理员创建普通用户。
+	 * @param request 创建请求
+	 * @return 创建结果
+	 */
+	@PostMapping("/users")
+	@OperationLogRecord(module = "管理后台", operation = "创建用户")
+	public ApiResponse<Map<String, Object>> createUser(@Valid @RequestBody RegisterRequest request) {
+		User user = authService.register(request);
+		return ApiResponse.success(Map.of("id", user.getId(), "username", user.getUsername()));
+	}
 
-    /**
-     * 查询全部用户。
-     *
-     * @return 用户列表
-     */
-    @GetMapping("/users")
-    public ApiResponse<List<AdminUserResponse>> listUsers() {
-        return ApiResponse.success(adminService.listUsers());
-    }
+	/**
+	 * 查询全部用户。
+	 * @return 用户列表
+	 */
+	@GetMapping("/users")
+	public ApiResponse<List<AdminUserResponse>> listUsers() {
+		return ApiResponse.success(adminService.listUsers());
+	}
 
-    /**
-     * 启用/禁用用户。
-     *
-     * @param id      用户 ID
-     * @param enabled 是否启用
-     * @return 操作结果
-     */
-    @PutMapping("/users/{id}/status")
-    @OperationLogRecord(module = "管理后台", operation = "修改用户状态")
-    public ApiResponse<Void> setStatus(@PathVariable Long id, @RequestParam boolean enabled) {
-        adminService.setUserEnabled(id, enabled);
-        return ApiResponse.success();
-    }
+	/**
+	 * 启用/禁用用户。
+	 * @param id 用户 ID
+	 * @param enabled 是否启用
+	 * @return 操作结果
+	 */
+	@PutMapping("/users/{id}/status")
+	@OperationLogRecord(module = "管理后台", operation = "修改用户状态")
+	public ApiResponse<Void> setStatus(@PathVariable Long id, @RequestParam boolean enabled) {
+		adminService.setUserEnabled(id, enabled);
+		return ApiResponse.success();
+	}
 
-    /**
-     * 获取系统构建信息 (供管理员/开发者查看当前部署版本)。
-     *
-     * @return 构建信息
-     */
-    @GetMapping("/build-info")
-    public ApiResponse<Map<String, Object>> buildInfo() {
-        Map<String, Object> info = new LinkedHashMap<>();
-        BuildProperties props = buildProperties.getIfAvailable();
-        if (props != null) {
-            info.put("group", props.getGroup());
-            info.put("artifact", props.getArtifact());
-            info.put("name", props.getName());
-            info.put("version", props.getVersion());
-            info.put("buildTime", props.getTime() == null ? null
-                    : BUILD_TIME_FORMATTER.format(props.getTime().atZone(DateTimeConfig.DEFAULT_ZONE_ID)));
-        } else {
-            info.put("version", "开发环境 (未生成构建信息)");
-        }
-        info.put("javaVersion", System.getProperty("java.version"));
-        return ApiResponse.success(info);
-    }
+	/**
+	 * 获取系统构建信息 (供管理员/开发者查看当前部署版本)。
+	 * @return 构建信息
+	 */
+	@GetMapping("/build-info")
+	public ApiResponse<Map<String, Object>> buildInfo() {
+		Map<String, Object> info = new LinkedHashMap<>();
+		BuildProperties props = buildProperties.getIfAvailable();
+		if (props != null) {
+			info.put("group", props.getGroup());
+			info.put("artifact", props.getArtifact());
+			info.put("name", props.getName());
+			info.put("version", props.getVersion());
+			info.put("buildTime", props.getTime() == null ? null
+					: BUILD_TIME_FORMATTER.format(props.getTime().atZone(DateTimeConfig.DEFAULT_ZONE_ID)));
+		}
+		else {
+			info.put("version", "开发环境 (未生成构建信息)");
+		}
+		info.put("javaVersion", System.getProperty("java.version"));
+		return ApiResponse.success(info);
+	}
+
 }

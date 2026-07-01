@@ -12,19 +12,18 @@ import java.util.Optional;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    /**
-     * 根据用户名查询用户。
-     *
-     * @param username 用户名
-     * @return 用户 (可能为空)
-     */
-    Optional<User> findByUsername(String username);
+	/**
+	 * 根据用户名查询用户。
+	 * @param username 用户名
+	 * @return 用户 (可能为空)
+	 */
+	Optional<User> findByUsername(String username);
 
-    /**
-     * 判断用户名是否已存在。
-     *
-     * @param username 用户名
-     * @return 是否存在
-     */
-    boolean existsByUsername(String username);
+	/**
+	 * 判断用户名是否已存在。
+	 * @param username 用户名
+	 * @return 是否存在
+	 */
+	boolean existsByUsername(String username);
+
 }
