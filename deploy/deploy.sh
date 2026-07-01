@@ -6,7 +6,8 @@ set -euo pipefail
 APP_NAME="ecovault"
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET_JAR="${BASE_DIR}/target/${APP_NAME}.jar"
-DEPLOY_DIR="${BASE_DIR}/runtime"
+# 根据自己情况修改部署目录，确保 Jenkins 有权限写入。
+DEPLOY_DIR="/usr/local/runtime/ecovault"
 BACKUP_DIR="${DEPLOY_DIR}/backup"
 LOG_DIR="${DEPLOY_DIR}/logs"
 PID_FILE="${DEPLOY_DIR}/${APP_NAME}.pid"
