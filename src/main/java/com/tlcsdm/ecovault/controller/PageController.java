@@ -1,5 +1,7 @@
 package com.tlcsdm.ecovault.controller;
 
+import com.tlcsdm.ecovault.security.SecurityUtils;
+import com.tlcsdm.ecovault.service.RolePermissionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -7,11 +9,18 @@ import org.springframework.web.bind.annotation.GetMapping;
  * 页面路由控制器 (Thymeleaf 服务端渲染)。
  *
  * <p>
- * 仅负责返回视图名称，具体数据通过前端 JS 调用 REST 接口获取。 受保护页面的访问控制由 Spring Security 统一处理。
+ * 仅负责返回视图名称，具体数据通过前端 JS 调用 REST 接口获取。受保护页面的访问控制由 Spring Security
+ * 统一处理；对于「可配置页面」，进一步依据角色页面权限进行校验，无权限时重定向到控制台。
  * </p>
  */
 @Controller
 public class PageController {
+
+	private final RolePermissionService rolePermissionService;
+
+	public PageController(RolePermissionService rolePermissionService) {
+		this.rolePermissionService = rolePermissionService;
+	}
 
 	/**
 	 * 首页。
@@ -46,25 +55,25 @@ public class PageController {
 	 */
 	@GetMapping("/passwords")
 	public String passwords() {
-		return "passwords";
+		return guard("/passwords", "passwords");
 	}
 
 	/**
-	 * 财务管理页。
+	 * 财务管理 - 工资管理页。
 	 * @return 视图名
 	 */
 	@GetMapping("/finance")
 	public String finance() {
-		return "finance";
+		return guard("/finance", "finance");
 	}
 
 	/**
-	 * 日志管理页。
+	 * 财务管理 - 收入支出管理页。
 	 * @return 视图名
 	 */
-	@GetMapping("/logs")
-	public String logs() {
-		return "logs";
+	@GetMapping("/finance/ledger")
+	public String ledger() {
+		return guard("/finance/ledger", "ledger");
 	}
 
 	/**
@@ -77,12 +86,52 @@ public class PageController {
 	}
 
 	/**
-	 * 管理后台页 (仅管理员)。
+	 * 后台管理首页 (仅管理员)。
 	 * @return 视图名
 	 */
 	@GetMapping("/admin")
 	public String admin() {
 		return "admin";
+	}
+
+	/**
+	 * 后台管理 - 用户管理页 (仅管理员)。
+	 * @return 视图名
+	 */
+	@GetMapping("/admin/users")
+	public String users() {
+		return "users";
+	}
+
+	/**
+	 * 后台管理 - 日志管理页 (仅管理员)。
+	 * @return 视图名
+	 */
+	@GetMapping("/admin/logs")
+	public String logs() {
+		return "logs";
+	}
+
+	/**
+	 * 后台管理 - 角色管理页 (仅管理员)。
+	 * @return 视图名
+	 */
+	@GetMapping("/admin/roles")
+	public String roles() {
+		return "roles";
+	}
+
+	/**
+	 * 校验当前用户是否有权访问指定路径，无权限时重定向到控制台。
+	 * @param path 页面路径
+	 * @param view 目标视图名
+	 * @return 视图名或重定向
+	 */
+	private String guard(String path, String view) {
+		if (rolePermissionService.canAccessPath(SecurityUtils.getCurrentUser().getUser(), path)) {
+			return view;
+		}
+		return "redirect:/dashboard";
 	}
 
 }

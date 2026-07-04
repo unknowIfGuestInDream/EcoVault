@@ -6,7 +6,7 @@
 <div class="container">
     <div class="glass card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px">
-            <h2>💰 财务管理 - 工资数据</h2>
+            <h2>💰 工资管理</h2>
             <div class="row">
                 <input id="year" type="number" placeholder="年份筛选" style="width:120px" oninput="reload()"/>
                 <button class="btn" onclick="openModal()">➕ 录入</button>
@@ -206,11 +206,7 @@
         window.location.href = "/api/finance/salaries/export" + yearParam();
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const me = await api("/api/auth/me");
-            if (me.role === "ADMIN") document.getElementById("nav-admin").style.display = "inline-block";
-        } catch (e) {}
+    document.addEventListener("DOMContentLoaded", () => {
         reload();
     });
 </script>

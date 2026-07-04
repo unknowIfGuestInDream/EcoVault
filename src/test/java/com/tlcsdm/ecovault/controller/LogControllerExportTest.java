@@ -20,7 +20,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -69,10 +68,10 @@ class LogControllerExportTest {
 		withoutTime.setCreatedAt(null);
 		withoutTime.setDurationMs(8L);
 
-		when(operationLogService.query(isNull(), isNull(), isNull(), any(Pageable.class)))
+		when(operationLogService.query(isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of(withTime, withoutTime)));
 
-		ResponseEntity<byte[]> response = controller.export(null, null);
+		ResponseEntity<byte[]> response = controller.export(null, null, null, null);
 
 		String csv = new String(response.getBody(), StandardCharsets.UTF_8);
 		assertThat(csv).contains("2025-01-02 03:04:05,alice,登录");
@@ -81,21 +80,14 @@ class LogControllerExportTest {
 	}
 
 	@Test
-	@DisplayName("普通用户导出仅限定自身日志")
-	void exportForNormalUserScopesToSelf() {
-		User user = new User();
-		user.setId(42L);
-		user.setUsername("user");
-		user.setRole(Role.USER);
-		user.setEnabled(true);
-		SecurityUser principal = new SecurityUser(user);
-		SecurityContextHolder.getContext()
-			.setAuthentication(new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
+	@DisplayName("导出始终查询全部日志 (日志管理仅管理员可访问)")
+	void exportQueriesAllLogs() {
+		authenticateAdmin();
 
-		when(operationLogService.query(eq(42L), isNull(), isNull(), any(Pageable.class)))
+		when(operationLogService.query(isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
 			.thenReturn(new PageImpl<>(List.of()));
 
-		ResponseEntity<byte[]> response = controller.export(null, null);
+		ResponseEntity<byte[]> response = controller.export(null, null, null, null);
 
 		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 	}

@@ -84,7 +84,7 @@ public class SecurityConfig {
 				.requestMatchers("/api/auth/login")
 				.permitAll()
 				// actuator 与管理后台仅管理员
-				.requestMatchers("/actuator/**", "/admin/**", "/api/admin/**")
+				.requestMatchers("/actuator/**", "/admin/**", "/api/admin/**", "/api/logs/**")
 				.hasRole("ADMIN")
 				.anyRequest()
 				.authenticated())

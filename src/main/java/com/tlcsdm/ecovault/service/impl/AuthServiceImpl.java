@@ -62,9 +62,26 @@ public class AuthServiceImpl implements AuthService {
 		user.setNickname(
 				request.nickname() == null || request.nickname().isBlank() ? request.username() : request.nickname());
 		user.setEmail(request.email());
-		user.setRole(Role.USER);
+		user.setRole(parseRole(request.role()));
 		user.setEnabled(true);
 		return userRepository.save(user);
+	}
+
+	/**
+	 * 解析请求中的角色，非法或为空时默认为 {@link Role#USER}。
+	 * @param role 角色名称
+	 * @return 角色枚举
+	 */
+	private Role parseRole(String role) {
+		if (role == null || role.isBlank()) {
+			return Role.USER;
+		}
+		try {
+			return Role.valueOf(role.trim().toUpperCase());
+		}
+		catch (IllegalArgumentException ex) {
+			throw new BusinessException("角色不合法");
+		}
 	}
 
 	@Override

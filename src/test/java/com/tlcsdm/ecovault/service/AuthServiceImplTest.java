@@ -93,6 +93,27 @@ class AuthServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("注册传入非法角色时抛出业务异常")
+	void registerRejectsInvalidRole() {
+		when(userRepository.existsByUsername("bob")).thenReturn(false);
+
+		assertThatThrownBy(() -> service.register(new RegisterRequest("bob", "Secret123", "Bob", "b@c.com", "guest")))
+			.isInstanceOf(BusinessException.class)
+			.hasMessageContaining("角色不合法");
+	}
+
+	@Test
+	@DisplayName("注册传入空白角色时回退为普通用户")
+	void registerBlankRoleFallsBackToUser() {
+		when(userRepository.existsByUsername("bob")).thenReturn(false);
+		when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		User saved = service.register(new RegisterRequest("bob", "Secret123", "Bob", "b@c.com", "   "));
+
+		assertThat(saved.getRole()).isEqualTo(Role.USER);
+	}
+
+	@Test
 	@DisplayName("密码错误登录失败")
 	void loginWrongPassword() {
 		when(userRepository.findByUsername("alice")).thenReturn(Optional.of(existingUser()));

@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -40,6 +41,9 @@ class AdminServiceImplTest {
 
 	@Mock
 	private UserSessionRepository sessionRepository;
+
+	@Mock
+	private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
 	@InjectMocks
 	private AdminServiceImpl service;
@@ -110,6 +114,103 @@ class AdminServiceImplTest {
 	void missingUserThrows() {
 		when(userRepository.findById(99L)).thenReturn(Optional.empty());
 		assertThatThrownBy(() -> service.setUserEnabled(99L, true)).isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("更新用户密码时加密新密码并强制会话下线")
+	void updateUserWithPasswordRevokesSessions() {
+		User target = user(1L, "alice", Role.USER);
+		UserSession session = new UserSession();
+		session.setActive(true);
+		when(userRepository.findById(1L)).thenReturn(Optional.of(target));
+		when(passwordEncoder.encode("NewPass123")).thenReturn("encoded-password");
+		when(sessionRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(1L))
+			.thenReturn(new ArrayList<>(List.of(session)));
+		when(userRepository.save(target)).thenReturn(target);
+
+		AdminUserResponse response = service.updateUser(1L,
+				new com.tlcsdm.ecovault.dto.UpdateUserRequest("新昵称", "new@ecovault.com", "USER", true, "NewPass123"));
+
+		assertThat(target.getPassword()).isEqualTo("encoded-password");
+		assertThat(target.getNickname()).isEqualTo("新昵称");
+		assertThat(target.getEmail()).isEqualTo("new@ecovault.com");
+		assertThat(session.isActive()).isFalse();
+		assertThat(response.username()).isEqualTo("alice");
+		verify(sessionRepository).save(session);
+	}
+
+	@Test
+	@DisplayName("更新用户传入非法角色时抛出业务异常")
+	void updateUserRejectsInvalidRole() {
+		when(userRepository.findById(1L)).thenReturn(Optional.of(user(1L, "alice", Role.USER)));
+
+		assertThatThrownBy(() -> service.updateUser(1L,
+				new com.tlcsdm.ecovault.dto.UpdateUserRequest(null, null, "unknown", null, null)))
+			.isInstanceOf(BusinessException.class)
+			.hasMessageContaining("角色不合法");
+	}
+
+	@Test
+	@DisplayName("更新用户遇到空白可选字段时忽略对应修改，但禁用时仍下线会话")
+	void updateUserIgnoresBlankFieldsAndDisablesUser() {
+		User target = user(1L, "alice", Role.USER);
+		target.setPassword("origin-password");
+		UserSession session = new UserSession();
+		session.setActive(true);
+		when(userRepository.findById(1L)).thenReturn(Optional.of(target));
+		when(sessionRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(1L))
+			.thenReturn(new ArrayList<>(List.of(session)));
+		when(userRepository.save(target)).thenReturn(target);
+
+		service.updateUser(1L, new com.tlcsdm.ecovault.dto.UpdateUserRequest("   ", null, "   ", false, "   "));
+
+		assertThat(target.getNickname()).isEqualTo("昵称");
+		assertThat(target.getRole()).isEqualTo(Role.USER);
+		assertThat(target.getPassword()).isEqualTo("origin-password");
+		assertThat(target.isEnabled()).isFalse();
+		assertThat(session.isActive()).isFalse();
+		verify(sessionRepository).save(session);
+	}
+
+	@Test
+	@DisplayName("更新用户未提供可选字段时保留原值")
+	void updateUserKeepsOriginalValuesWhenOptionalFieldsMissing() {
+		User target = user(1L, "alice", Role.USER);
+		target.setPassword("origin-password");
+		when(userRepository.findById(1L)).thenReturn(Optional.of(target));
+		when(userRepository.save(target)).thenReturn(target);
+
+		AdminUserResponse response = service.updateUser(1L,
+				new com.tlcsdm.ecovault.dto.UpdateUserRequest(null, null, null, null, null));
+
+		assertThat(target.getNickname()).isEqualTo("昵称");
+		assertThat(target.getEmail()).isEqualTo("u@ecovault.com");
+		assertThat(target.getRole()).isEqualTo(Role.USER);
+		assertThat(target.getPassword()).isEqualTo("origin-password");
+		assertThat(response.enabled()).isTrue();
+		verify(sessionRepository, never()).findByUserIdAndActiveTrueOrderByCreatedAtAsc(any());
+	}
+
+	@Test
+	@DisplayName("删除用户前先下线活跃会话")
+	void deleteUserRevokesSessionsBeforeDelete() {
+		User target = user(1L, "alice", Role.USER);
+		UserSession session1 = new UserSession();
+		session1.setActive(true);
+		UserSession session2 = new UserSession();
+		session2.setActive(true);
+		when(userRepository.findById(1L)).thenReturn(Optional.of(target));
+		when(sessionRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(1L))
+			.thenReturn(new ArrayList<>(List.of(session1, session2)));
+
+		service.deleteUser(1L);
+
+		assertThat(session1.isActive()).isFalse();
+		assertThat(session2.isActive()).isFalse();
+		verify(sessionRepository).save(session1);
+		verify(sessionRepository).save(session2);
+		verify(userRepository).delete(target);
+		verifyNoMoreInteractions(passwordEncoder);
 	}
 
 }

@@ -14,13 +14,25 @@
 <!-- 顶部导航栏 (登录后页面使用) -->
 <header th:fragment="navbar" class="navbar">
     <div class="brand">🔐 EcoVault</div>
-    <nav>
-        <a th:href="@{/dashboard}">控制台</a>
-        <a th:href="@{/passwords}">密码管理</a>
-        <a th:href="@{/finance}">财务管理</a>
-        <a th:href="@{/logs}">操作日志</a>
-        <a th:href="@{/profile}">个人中心</a>
-        <a th:href="@{/admin}" id="nav-admin" style="display:none">管理后台</a>
+    <nav id="main-nav">
+        <a th:href="@{/dashboard}" data-page="dashboard">控制台</a>
+        <a th:href="@{/passwords}" data-page="passwords">密码管理</a>
+        <div class="nav-dropdown" data-group="finance">
+            <span class="nav-dropdown-toggle">财务管理 ▾</span>
+            <div class="nav-dropdown-menu">
+                <a th:href="@{/finance}" data-page="salary">工资管理</a>
+                <a th:href="@{/finance/ledger}" data-page="ledger">收入支出管理</a>
+            </div>
+        </div>
+        <a th:href="@{/profile}" data-page="profile">个人中心</a>
+        <div class="nav-dropdown" data-group="admin" id="nav-admin" style="display:none">
+            <a class="nav-dropdown-toggle" th:href="@{/admin}">后台管理 ▾</a>
+            <div class="nav-dropdown-menu">
+                <a th:href="@{/admin/users}" data-page="users">用户管理</a>
+                <a th:href="@{/admin/logs}" data-page="logs">日志管理</a>
+                <a th:href="@{/admin/roles}" data-page="roles">角色管理</a>
+            </div>
+        </div>
     </nav>
     <div style="display:flex; gap:10px; align-items:center">
         <button class="theme-toggle" onclick="toggleTheme()">🌙</button>

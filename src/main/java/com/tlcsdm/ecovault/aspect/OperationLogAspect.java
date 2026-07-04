@@ -19,8 +19,15 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * 操作日志切面。
@@ -40,10 +47,20 @@ public class OperationLogAspect {
 	/** 参数摘要最大长度，避免超长内容 */
 	private static final int MAX_PARAM_LENGTH = 1000;
 
+	/** 敏感字段关键字，命中后其值将被脱敏 */
+	private static final String[] SENSITIVE_KEYWORDS = { "password", "pwd", "secret", "token", "credential",
+			"privatekey" };
+
+	/** 脱敏后的占位值 */
+	private static final String MASKED = "******";
+
 	private final OperationLogService operationLogService;
 
-	public OperationLogAspect(OperationLogService operationLogService) {
+	private final ObjectMapper objectMapper;
+
+	public OperationLogAspect(OperationLogService operationLogService, ObjectMapper objectMapper) {
 		this.operationLogService = operationLogService;
+		this.objectMapper = objectMapper;
 	}
 
 	/**
@@ -111,19 +128,80 @@ public class OperationLogAspect {
 	}
 
 	/**
-	 * 构建参数摘要，过滤敏感对象并限制长度。
+	 * 构建参数摘要：将方法参数序列化为 JSON，并对敏感字段脱敏，限制长度。
 	 * @param args 方法参数
-	 * @return 参数摘要
+	 * @return 参数摘要 (JSON)
 	 */
 	private String buildParams(Object[] args) {
 		if (args == null || args.length == 0) {
 			return "";
 		}
-		String params = Arrays.stream(args)
-			.filter(arg -> !(arg instanceof HttpServletRequest))
-			.map(arg -> arg == null ? "null" : arg.getClass().getSimpleName())
-			.collect(Collectors.joining(", "));
+		ArrayNode array = objectMapper.createArrayNode();
+		for (Object arg : args) {
+			if (arg == null) {
+				array.addNull();
+				continue;
+			}
+			// 跳过 Servlet 请求/响应等框架对象，避免序列化异常与无关信息
+			if (arg instanceof HttpServletRequest || arg instanceof jakarta.servlet.http.HttpServletResponse) {
+				continue;
+			}
+			try {
+				JsonNode node = objectMapper.valueToTree(arg);
+				maskSensitive(node);
+				array.add(node);
+			}
+			catch (Exception ex) {
+				// 无法序列化时退化为类型名，避免影响主流程
+				array.add(arg.getClass().getSimpleName());
+			}
+		}
+		String params;
+		try {
+			params = objectMapper.writeValueAsString(array);
+		}
+		catch (Exception ex) {
+			params = "";
+		}
 		return truncate(params, MAX_PARAM_LENGTH);
+	}
+
+	/**
+	 * 递归遍历 JSON 节点，对敏感字段的值进行脱敏。
+	 * @param node JSON 节点
+	 */
+	private void maskSensitive(JsonNode node) {
+		if (node instanceof ObjectNode objectNode) {
+			List<Map.Entry<String, JsonNode>> fields = new ArrayList<>(objectNode.properties());
+			for (Map.Entry<String, JsonNode> field : fields) {
+				if (isSensitive(field.getKey())) {
+					objectNode.put(field.getKey(), MASKED);
+				}
+				else {
+					maskSensitive(field.getValue());
+				}
+			}
+		}
+		else if (node instanceof ArrayNode arrayNode) {
+			for (JsonNode child : arrayNode) {
+				maskSensitive(child);
+			}
+		}
+	}
+
+	/**
+	 * 判断字段名是否为敏感字段。
+	 * @param name 字段名
+	 * @return 是否敏感
+	 */
+	private boolean isSensitive(String name) {
+		String lower = name.toLowerCase(Locale.ROOT);
+		for (String keyword : SENSITIVE_KEYWORDS) {
+			if (lower.contains(keyword)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private HttpServletRequest currentRequest() {

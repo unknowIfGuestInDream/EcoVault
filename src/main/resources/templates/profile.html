@@ -27,7 +27,6 @@
         document.getElementById("username").value = me.username;
         document.getElementById("nickname").value = me.nickname || "";
         document.getElementById("email").value = me.email || "";
-        if (me.role === "ADMIN") document.getElementById("nav-admin").style.display = "inline-block";
     }
 
     async function saveProfile() {

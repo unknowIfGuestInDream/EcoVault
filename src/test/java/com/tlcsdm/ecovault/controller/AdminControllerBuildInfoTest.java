@@ -30,11 +30,14 @@ class AdminControllerBuildInfoTest {
 
 	private final AuthService authService = mock(AuthService.class);
 
+	private final com.tlcsdm.ecovault.service.RolePermissionService rolePermissionService = mock(
+			com.tlcsdm.ecovault.service.RolePermissionService.class);
+
 	@SuppressWarnings("unchecked")
 	private AdminController controllerWith(BuildProperties props) {
 		ObjectProvider<BuildProperties> provider = mock(ObjectProvider.class);
 		when(provider.getIfAvailable()).thenReturn(props);
-		return new AdminController(adminService, authService, provider);
+		return new AdminController(adminService, authService, rolePermissionService, provider);
 	}
 
 	@Test

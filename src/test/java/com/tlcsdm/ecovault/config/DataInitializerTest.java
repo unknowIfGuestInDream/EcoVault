@@ -3,6 +3,7 @@ package com.tlcsdm.ecovault.config;
 import com.tlcsdm.ecovault.entity.Role;
 import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.repository.UserRepository;
+import com.tlcsdm.ecovault.service.RolePermissionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,8 @@ class DataInitializerTest {
 	void createsAdminWhenAbsent() throws Exception {
 		UserRepository userRepository = mock(UserRepository.class);
 		when(userRepository.existsByUsername("admin")).thenReturn(false);
-		DataInitializer initializer = new DataInitializer(userRepository, passwordEncoder, "admin", "Admin@123");
+		DataInitializer initializer = new DataInitializer(userRepository, passwordEncoder,
+				mock(RolePermissionService.class), "admin", "Admin@123");
 
 		initializer.run();
 
@@ -50,7 +52,8 @@ class DataInitializerTest {
 	void skipsWhenAdminExists() throws Exception {
 		UserRepository userRepository = mock(UserRepository.class);
 		when(userRepository.existsByUsername("admin")).thenReturn(true);
-		DataInitializer initializer = new DataInitializer(userRepository, passwordEncoder, "admin", "Admin@123");
+		DataInitializer initializer = new DataInitializer(userRepository, passwordEncoder,
+				mock(RolePermissionService.class), "admin", "Admin@123");
 
 		initializer.run();
 

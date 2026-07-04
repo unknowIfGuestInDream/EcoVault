@@ -2,15 +2,22 @@ package com.tlcsdm.ecovault.controller;
 
 import com.tlcsdm.ecovault.annotation.OperationLogRecord;
 import com.tlcsdm.ecovault.common.ApiResponse;
+import com.tlcsdm.ecovault.common.BusinessException;
 import com.tlcsdm.ecovault.config.DateTimeConfig;
 import com.tlcsdm.ecovault.dto.AdminUserResponse;
 import com.tlcsdm.ecovault.dto.RegisterRequest;
+import com.tlcsdm.ecovault.dto.RoleMatrixResponse;
+import com.tlcsdm.ecovault.dto.UpdateRolePermissionRequest;
+import com.tlcsdm.ecovault.dto.UpdateUserRequest;
+import com.tlcsdm.ecovault.entity.Role;
 import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.service.AdminService;
 import com.tlcsdm.ecovault.service.AuthService;
+import com.tlcsdm.ecovault.service.RolePermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,12 +46,15 @@ public class AdminController {
 
 	private final AuthService authService;
 
+	private final RolePermissionService rolePermissionService;
+
 	private final ObjectProvider<BuildProperties> buildProperties;
 
 	public AdminController(AdminService adminService, AuthService authService,
-			ObjectProvider<BuildProperties> buildProperties) {
+			RolePermissionService rolePermissionService, ObjectProvider<BuildProperties> buildProperties) {
 		this.adminService = adminService;
 		this.authService = authService;
+		this.rolePermissionService = rolePermissionService;
 		this.buildProperties = buildProperties;
 	}
 
@@ -79,6 +89,61 @@ public class AdminController {
 	@OperationLogRecord(module = "管理后台", operation = "修改用户状态")
 	public ApiResponse<Void> setStatus(@PathVariable Long id, @RequestParam boolean enabled) {
 		adminService.setUserEnabled(id, enabled);
+		return ApiResponse.success();
+	}
+
+	/**
+	 * 更新用户信息。
+	 * @param id 用户 ID
+	 * @param request 更新请求
+	 * @return 更新后的用户信息
+	 */
+	@PutMapping("/users/{id}")
+	@OperationLogRecord(module = "管理后台", operation = "更新用户")
+	public ApiResponse<AdminUserResponse> updateUser(@PathVariable Long id,
+			@Valid @RequestBody UpdateUserRequest request) {
+		return ApiResponse.success(adminService.updateUser(id, request));
+	}
+
+	/**
+	 * 删除用户。
+	 * @param id 用户 ID
+	 * @return 操作结果
+	 */
+	@DeleteMapping("/users/{id}")
+	@OperationLogRecord(module = "管理后台", operation = "删除用户")
+	public ApiResponse<Void> deleteUser(@PathVariable Long id) {
+		adminService.deleteUser(id);
+		return ApiResponse.success();
+	}
+
+	/**
+	 * 查询角色权限矩阵。
+	 * @return 角色与可访问页面矩阵
+	 */
+	@GetMapping("/roles")
+	public ApiResponse<RoleMatrixResponse> roleMatrix() {
+		return ApiResponse.success(rolePermissionService.getMatrix());
+	}
+
+	/**
+	 * 更新指定角色的页面访问权限。
+	 * @param role 角色名称
+	 * @param request 权限请求
+	 * @return 操作结果
+	 */
+	@PutMapping("/roles/{role}/permissions")
+	@OperationLogRecord(module = "管理后台", operation = "更新角色权限")
+	public ApiResponse<Void> updateRolePermissions(@PathVariable String role,
+			@RequestBody UpdateRolePermissionRequest request) {
+		Role parsed;
+		try {
+			parsed = Role.valueOf(role.trim().toUpperCase());
+		}
+		catch (IllegalArgumentException ex) {
+			throw new BusinessException("角色不合法");
+		}
+		rolePermissionService.updatePermissions(parsed, request.pages());
 		return ApiResponse.success();
 	}
 

@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
-<head th:replace="~{fragments/common :: head('操作日志 - EcoVault')}"></head>
+<head th:replace="~{fragments/common :: head('日志管理 - EcoVault')}"></head>
 <body>
 <header th:replace="~{fragments/common :: navbar}"></header>
 <div class="container">
     <div class="glass card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px">
-            <h2>📋 操作日志</h2>
-            <div class="row">
-                <input id="module" placeholder="模块筛选" oninput="debouncedLoad()"/>
-                <input id="keyword" placeholder="关键字搜索" oninput="debouncedLoad()"/>
+            <h2>📋 日志管理</h2>
+            <div class="filter-toolbar">
+                <input id="module" class="filter-field" placeholder="模块筛选" oninput="debouncedLoad()"/>
+                <input id="keyword" class="filter-field" placeholder="关键字搜索" oninput="debouncedLoad()"/>
+                <div class="range-field">
+                    <input id="start" type="datetime-local" onchange="debouncedLoad()" aria-label="开始时间"/>
+                    <span class="range-separator">至</span>
+                    <input id="end" type="datetime-local" onchange="debouncedLoad()" aria-label="结束时间"/>
+                </div>
+                <button class="btn secondary" onclick="clearFilters()">清空筛选</button>
                 <button class="btn secondary" onclick="exportCsv()">⬇ 导出CSV</button>
             </div>
         </div>
         <div style="overflow-x:auto; margin-top:16px">
             <table class="table">
                 <thead>
-                <tr><th>时间</th><th>用户</th><th>模块</th><th>操作</th><th>方法</th><th>IP</th><th>状态</th><th>耗时(ms)</th></tr>
+                <tr><th>时间</th><th>用户</th><th>模块</th><th>操作</th><th>方法</th><th>IP</th><th>状态</th><th>耗时(ms)</th><th>操作</th></tr>
                 </thead>
                 <tbody id="log-body"></tbody>
             </table>
@@ -28,6 +34,36 @@
         </div>
     </div>
 </div>
+
+<!-- 日志详情弹窗 -->
+<div id="detail-modal" class="modal-backdrop">
+    <div class="glass modal">
+        <h3>🔍 日志详情</h3>
+        <table class="table"><tbody id="detail-body"></tbody></table>
+        <label style="margin-top:10px">请求参数</label>
+        <pre id="detail-params" class="code-block"></pre>
+        <div style="display:flex; gap:10px; margin-top:16px">
+            <button class="btn secondary" style="flex:1" onclick="closeDetail()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑日志弹窗 -->
+<div id="edit-modal" class="modal-backdrop">
+    <div class="glass modal">
+        <h3>✏️ 修改日志</h3>
+        <input type="hidden" id="edit-id"/>
+        <label for="edit-module">模块</label>
+        <input id="edit-module" maxlength="64"/>
+        <label for="edit-operation">操作描述</label>
+        <input id="edit-operation" maxlength="256"/>
+        <div style="display:flex; gap:10px; margin-top:16px">
+            <button class="btn" style="flex:1" onclick="saveEdit()">保存</button>
+            <button class="btn secondary" style="flex:1" onclick="closeEdit()">取消</button>
+        </div>
+    </div>
+</div>
+
 <script>
     let page = 0;
     const size = 20;
@@ -39,12 +75,30 @@
         timer = setTimeout(() => { page = 0; loadLogs(); }, 300);
     }
 
-    function params() {
+    /** 将 datetime-local 值 (yyyy-MM-ddTHH:mm) 转换为后端所需的 yyyy-MM-dd HH:mm:ss */
+    function toDateTime(value) {
+        if (!value) return "";
+        let v = value.replace("T", " ");
+        // 补齐秒
+        if (v.length === 16) v += ":00";
+        return v;
+    }
+
+    function filterParams() {
         const p = new URLSearchParams();
         const module = document.getElementById("module").value.trim();
         const keyword = document.getElementById("keyword").value.trim();
+        const start = toDateTime(document.getElementById("start").value);
+        const end = toDateTime(document.getElementById("end").value);
         if (module) p.append("module", module);
         if (keyword) p.append("keyword", keyword);
+        if (start) p.append("start", start);
+        if (end) p.append("end", end);
+        return p;
+    }
+
+    function params() {
+        const p = filterParams();
         p.append("page", page);
         p.append("size", size);
         return p;
@@ -56,7 +110,7 @@
         const body = document.getElementById("log-body");
         const rows = data.content || [];
         if (!rows.length) {
-            body.innerHTML = '<tr><td colspan="8" class="muted">暂无日志</td></tr>';
+            body.innerHTML = '<tr><td colspan="9" class="muted">暂无日志</td></tr>';
         } else {
             body.innerHTML = rows.map(l => `
                 <tr>
@@ -68,9 +122,90 @@
                     <td>${escapeHtml(l.ip || "")}</td>
                     <td><span class="badge ${l.status === 'SUCCESS' ? 'STRONG' : 'WEAK'}">${escapeHtml(l.status || "")}</span></td>
                     <td>${l.durationMs}</td>
+                    <td style="white-space:nowrap">
+                        <button class="btn btn-sm" onclick="showDetail(${l.id})">详情</button>
+                        <button class="btn btn-sm" onclick="openEdit(${l.id})">编辑</button>
+                        <button class="btn btn-sm danger" onclick="removeLog(${l.id})">删除</button>
+                    </td>
                 </tr>`).join("");
         }
         document.getElementById("page-info").textContent = `第 ${page + 1} / ${Math.max(totalPages, 1)} 页`;
+    }
+
+    function clearFilters() {
+        document.getElementById("module").value = "";
+        document.getElementById("keyword").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        page = 0;
+        loadLogs();
+    }
+
+    async function showDetail(id) {
+        try {
+            const l = await api(`/api/logs/${id}`);
+            const rows = [
+                ["时间", l.createdAt], ["用户", l.username], ["模块", l.module],
+                ["操作", l.operation], ["方法", l.method], ["IP", l.ip],
+                ["状态", l.status], ["耗时(ms)", l.durationMs], ["错误信息", l.errorMsg]
+            ];
+            document.getElementById("detail-body").innerHTML = rows
+                .map(([k, v]) => `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(v === null || v === undefined ? "" : v)}</td></tr>`)
+                .join("");
+            let params = l.params || "";
+            try { params = JSON.stringify(JSON.parse(params), null, 2); } catch (e) {}
+            document.getElementById("detail-params").textContent = params;
+            document.getElementById("detail-modal").classList.add("show");
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    function closeDetail() {
+        document.getElementById("detail-modal").classList.remove("show");
+    }
+
+    async function openEdit(id) {
+        try {
+            const l = await api(`/api/logs/${id}`);
+            document.getElementById("edit-id").value = l.id;
+            document.getElementById("edit-module").value = l.module || "";
+            document.getElementById("edit-operation").value = l.operation || "";
+            document.getElementById("edit-modal").classList.add("show");
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    function closeEdit() {
+        document.getElementById("edit-modal").classList.remove("show");
+    }
+
+    async function saveEdit() {
+        const id = document.getElementById("edit-id").value;
+        const payload = {
+            module: document.getElementById("edit-module").value.trim(),
+            operation: document.getElementById("edit-operation").value.trim()
+        };
+        try {
+            await api(`/api/logs/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+            toast("日志已更新");
+            closeEdit();
+            loadLogs();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    async function removeLog(id) {
+        if (!confirm("确认删除该日志？")) return;
+        try {
+            await api(`/api/logs/${id}`, { method: "DELETE" });
+            toast("日志已删除");
+            loadLogs();
+        } catch (e) {
+            toast(e.message, "error");
+        }
     }
 
     function prevPage() {
@@ -82,19 +217,10 @@
     }
 
     function exportCsv() {
-        const p = new URLSearchParams();
-        const module = document.getElementById("module").value.trim();
-        const keyword = document.getElementById("keyword").value.trim();
-        if (module) p.append("module", module);
-        if (keyword) p.append("keyword", keyword);
-        window.location.href = "/api/logs/export?" + p.toString();
+        window.location.href = "/api/logs/export?" + filterParams().toString();
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const me = await api("/api/auth/me");
-            if (me.role === "ADMIN") document.getElementById("nav-admin").style.display = "inline-block";
-        } catch (e) {}
+    document.addEventListener("DOMContentLoaded", () => {
         loadLogs();
     });
 </script>

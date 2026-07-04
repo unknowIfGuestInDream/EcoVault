@@ -6,102 +6,21 @@
 <div class="container">
     <div class="glass card">
         <h2>🛠️ 管理后台</h2>
-        <p class="muted">仅管理员可见：用户创建、状态维护与系统构建信息。</p>
+        <p class="muted">仅管理员可见：查看系统构建信息与运行状态；用户创建与维护请进入「用户管理」页面。</p>
     </div>
 
     <div class="grid two" style="margin-top:20px">
         <div class="glass card">
-            <h3>➕ 创建用户</h3>
-            <label for="new-username">用户名</label>
-            <input id="new-username" name="username" maxlength="32" autocomplete="off"/>
-            <label for="new-password">初始密码</label>
-            <input id="new-password" name="password" type="password" maxlength="64" autocomplete="new-password"/>
-            <label for="new-nickname">昵称</label>
-            <input id="new-nickname" name="nickname" maxlength="64"/>
-            <label for="new-email">邮箱</label>
-            <input id="new-email" name="email" maxlength="128" type="email"/>
-            <button class="btn" style="margin-top:16px" onclick="createUser()">创建用户</button>
-            <p class="muted" style="margin-top:12px">外部不提供自助注册，账号仅能由管理员在此处创建。</p>
-        </div>
-        <div class="glass card">
             <h3>📦 构建信息</h3>
             <table class="table"><tbody id="build-info"></tbody></table>
         </div>
-    </div>
-
-    <div class="glass card" style="margin-top:20px">
-        <h3>❤️ 系统状态</h3>
-        <table class="table"><tbody id="health-info"></tbody></table>
-    </div>
-
-    <div class="glass card" style="margin-top:20px">
-        <h3>👥 用户列表</h3>
-        <div style="overflow-x:auto">
-            <table class="table">
-                <thead>
-                <tr><th>ID</th><th>用户名</th><th>昵称</th><th>邮箱</th><th>角色</th><th>状态</th><th>注册时间</th><th>操作</th></tr>
-                </thead>
-                <tbody id="user-body"></tbody>
-            </table>
+        <div class="glass card">
+            <h3>❤️ 系统状态</h3>
+            <table class="table"><tbody id="health-info"></tbody></table>
         </div>
     </div>
 </div>
 <script>
-    async function createUser() {
-        const username = document.getElementById("new-username").value.trim();
-        const password = document.getElementById("new-password").value;
-        const nickname = document.getElementById("new-nickname").value.trim();
-        const email = document.getElementById("new-email").value.trim();
-        if (!username || !password) {
-            toast("用户名和初始密码必填", "error");
-            return;
-        }
-        try {
-            await api("/api/admin/users", {
-                method: "POST",
-                body: JSON.stringify({ username, password, nickname, email })
-            });
-            document.getElementById("new-username").value = "";
-            document.getElementById("new-password").value = "";
-            document.getElementById("new-nickname").value = "";
-            document.getElementById("new-email").value = "";
-            toast("用户创建成功");
-            await loadUsers();
-        } catch (e) {
-            toast(e.message, "error");
-        }
-    }
-
-    async function loadUsers() {
-        const data = await api("/api/admin/users");
-        document.getElementById("user-body").innerHTML = data.map(u => `
-            <tr>
-                <td>${u.id}</td>
-                <td>${escapeHtml(u.username)}</td>
-                <td>${escapeHtml(u.nickname || "")}</td>
-                <td>${escapeHtml(u.email || "")}</td>
-                <td><span class="badge ${u.role === 'ADMIN' ? 'STRONG' : 'MEDIUM'}">${u.role}</span></td>
-                <td>${u.enabled ? '<span class="badge STRONG">启用</span>' : '<span class="badge WEAK">禁用</span>'}</td>
-                <td>${escapeHtml(u.createdAt || "")}</td>
-                <td>
-                    <button class="btn btn-sm ${u.enabled ? 'danger' : 'secondary'}"
-                            onclick="toggleUser(${u.id}, ${!u.enabled})">
-                        ${u.enabled ? '禁用' : '启用'}
-                    </button>
-                </td>
-            </tr>`).join("");
-    }
-
-    async function toggleUser(id, enabled) {
-        try {
-            await api(`/api/admin/users/${id}/status?enabled=${enabled}`, { method: "PUT" });
-            toast("已更新用户状态");
-            loadUsers();
-        } catch (e) {
-            toast(e.message, "error");
-        }
-    }
-
     async function loadBuild() {
         const info = await api("/api/admin/build-info");
         document.getElementById("build-info").innerHTML = Object.entries(info)
@@ -126,9 +45,8 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-        document.getElementById("nav-admin").style.display = "inline-block";
         try {
-            await Promise.all([loadUsers(), loadBuild(), loadHealth()]);
+            await Promise.all([loadBuild(), loadHealth()]);
         } catch (e) {
             toast(e.message, "error");
         }

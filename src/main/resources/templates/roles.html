@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{fragments/common :: head('角色管理 - EcoVault')}"></head>
+<body>
+<header th:replace="~{fragments/common :: navbar}"></header>
+<div class="container">
+    <div class="glass card">
+        <h2>🎭 角色管理</h2>
+        <p class="muted">为角色分配可访问的页面。控制台与个人中心对所有登录用户开放；用户管理、日志管理、角色管理固定仅管理员可访问，不在此处配置。</p>
+    </div>
+
+    <div class="glass card" style="margin-top:20px">
+        <h3>页面访问权限矩阵</h3>
+        <div style="overflow-x:auto">
+            <table class="table">
+                <thead>
+                <tr id="matrix-head"><th>角色</th></tr>
+                </thead>
+                <tbody id="matrix-body"></tbody>
+            </table>
+        </div>
+        <div style="margin-top:16px">
+            <button class="btn" onclick="saveAll()">💾 保存权限</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let matrix = { pages: [], roles: [] };
+
+    async function loadMatrix() {
+        matrix = await api("/api/admin/roles");
+        // 表头
+        const head = document.getElementById("matrix-head");
+        head.innerHTML = "<th>角色</th>" + matrix.pages
+            .map(p => `<th>${escapeHtml(p.label)}</th>`)
+            .join("");
+        // 表体
+        const body = document.getElementById("matrix-body");
+        body.innerHTML = matrix.roles.map(r => {
+            const allowed = new Set(r.allowedPages || []);
+            const isAdmin = r.role === "ADMIN";
+            const cells = matrix.pages.map(p => {
+                const checked = (isAdmin || allowed.has(p.key)) ? "checked" : "";
+                const disabled = isAdmin ? "disabled" : "";
+                return `<td style="text-align:center">
+                    <input type="checkbox" data-role="${escapeHtml(r.role)}" data-page="${escapeHtml(p.key)}" ${checked} ${disabled}/>
+                </td>`;
+            }).join("");
+            const note = isAdmin ? ' <span class="muted">(全部)</span>' : "";
+            return `<tr><td><span class="badge ${isAdmin ? 'STRONG' : 'MEDIUM'}">${escapeHtml(r.role)}</span>${note}</td>${cells}</tr>`;
+        }).join("");
+    }
+
+    async function saveAll() {
+        try {
+            for (const r of matrix.roles) {
+                if (r.role === "ADMIN") {
+                    continue;
+                }
+                const checks = document.querySelectorAll(`input[data-role="${r.role}"]:checked`);
+                const pages = Array.from(checks).map(c => c.getAttribute("data-page"));
+                await api(`/api/admin/roles/${r.role}/permissions`, {
+                    method: "PUT",
+                    body: JSON.stringify({ pages })
+                });
+            }
+            toast("权限已保存");
+            await loadMatrix();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            await loadMatrix();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    });
+</script>
+</body>
+</html>
