@@ -167,7 +167,10 @@ public class LedgerServiceImpl implements LedgerService {
 	}
 
 	private List<String> sortedTags(Set<String> tags) {
-		return tags == null ? List.of() : new ArrayList<>(tags);
+		if (tags == null || tags.isEmpty()) {
+			return List.of();
+		}
+		return new ArrayList<>(tags);
 	}
 
 	private void accumulateTags(Map<String, BigDecimal> target, Set<String> tags, BigDecimal amount) {

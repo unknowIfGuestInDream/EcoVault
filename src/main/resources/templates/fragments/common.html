@@ -26,9 +26,8 @@
         </div>
         <a th:href="@{/profile}" data-page="profile">个人中心</a>
         <div class="nav-dropdown" data-group="admin" id="nav-admin" style="display:none">
-            <span class="nav-dropdown-toggle">后台管理 ▾</span>
+            <a class="nav-dropdown-toggle" th:href="@{/admin}">后台管理 ▾</a>
             <div class="nav-dropdown-menu">
-                <a th:href="@{/admin}">后台首页</a>
                 <a th:href="@{/admin/users}" data-page="users">用户管理</a>
                 <a th:href="@{/admin/logs}" data-page="logs">日志管理</a>
                 <a th:href="@{/admin/roles}" data-page="roles">角色管理</a>

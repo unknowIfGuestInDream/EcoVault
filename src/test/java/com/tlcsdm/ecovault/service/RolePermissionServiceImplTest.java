@@ -122,6 +122,13 @@ class RolePermissionServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("管理员访问可配置页面时无需查询角色授权")
+	void adminCanAccessConfigurablePageDirectly() {
+		assertThat(service.canAccessPath(user(Role.ADMIN), "/finance/ledger")).isTrue();
+		verifyNoInteractions(repository);
+	}
+
+	@Test
 	@DisplayName("普通用户不可访问后台页面，可访问已授权的可配置页面")
 	void userAccessRespectsPermissions() {
 		lenient().when(repository.findByRole(Role.USER))
@@ -143,6 +150,13 @@ class RolePermissionServiceImplTest {
 	@DisplayName("未知路径默认放行")
 	void unknownPathAllowed() {
 		assertThat(service.canAccessPath(user(Role.USER), "/some/other/path")).isTrue();
+	}
+
+	@Test
+	@DisplayName("未登录用户不可访问需要授权的可配置页面")
+	void anonymousCannotAccessConfigurablePage() {
+		assertThat(service.canAccessPath(null, "/finance/ledger")).isFalse();
+		verifyNoInteractions(repository);
 	}
 
 }

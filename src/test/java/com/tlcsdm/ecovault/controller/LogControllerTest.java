@@ -50,6 +50,7 @@ class LogControllerTest extends AbstractWebMvcTest {
 	@DisplayName("管理员分页查询全部日志")
 	void adminList() throws Exception {
 		var admin = authFor(securityUser(1L, "admin", Role.ADMIN));
+		saveLog("用户管理", "登录", "{}", LocalDateTime.now());
 		mockMvc
 			.perform(get("/api/logs").param("module", "用户管理")
 				.param("keyword", "登录")
@@ -58,7 +59,9 @@ class LogControllerTest extends AbstractWebMvcTest {
 				.with(authentication(admin)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.code").value(0))
-			.andExpect(jsonPath("$.data.content").exists());
+			.andExpect(jsonPath("$.data.content").exists())
+			.andExpect(jsonPath("$.data.number").value(0))
+			.andExpect(jsonPath("$.data.totalPages").value(1));
 	}
 
 	@Test

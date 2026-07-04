@@ -101,6 +101,15 @@ class LedgerServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("创建时缺少收支类型应抛出异常")
+	void createRejectsMissingType() {
+		LedgerRequest request = new LedgerRequest(null, new BigDecimal("500"), LocalDate.of(2026, 3, 1), List.of(),
+				null);
+		assertThatThrownBy(() -> service.create(1L, request)).isInstanceOf(BusinessException.class);
+		verify(repository, never()).save(any());
+	}
+
+	@Test
 	@DisplayName("更新不存在的记录应抛出异常")
 	void updateMissingThrows() {
 		when(repository.findByIdAndUserId(99L, 1L)).thenReturn(Optional.empty());
@@ -163,6 +172,20 @@ class LedgerServiceImplTest {
 	}
 
 	@Test
+	@DisplayName("统计对空标签记录归类为未分类")
+	void statisticsFallsBackToUncategorizedTag() {
+		LedgerEntry uncategorized = entry(4L, LedgerType.EXPENSE, "88", LocalDate.of(2026, 2, 6), Set.of(), "杂项");
+		when(repository.search(eq(1L), isNull(), isNull(), isNull(), isNull())).thenReturn(List.of(uncategorized));
+
+		LedgerStatistics stats = service.statistics(1L, null, null, null, null);
+
+		assertThat(stats.expenseByTag()).singleElement().satisfies(tagAmount -> {
+			assertThat(tagAmount.tag()).isEqualTo("未分类");
+			assertThat(tagAmount.amount()).isEqualByComparingTo("88");
+		});
+	}
+
+	@Test
 	@DisplayName("导出 CSV 含 BOM、表头并对含分隔符的字段转义")
 	void exportCsvEscapes() {
 		LedgerEntry tricky = entry(4L, LedgerType.EXPENSE, "88", LocalDate.of(2026, 2, 6), Set.of("生活"), "含,逗号\"引号");
@@ -175,6 +198,46 @@ class LedgerServiceImplTest {
 		assertThat(csv).contains("支出");
 		// 备注中的逗号与引号被正确转义
 		assertThat(csv).contains("\"含,逗号\"\"引号\"");
+	}
+
+	@Test
+	@DisplayName("导出 CSV 时空标签与空备注输出为空字符串")
+	void exportCsvHandlesEmptyValues() {
+		LedgerEntry blank = entry(5L, LedgerType.INCOME, "66", LocalDate.of(2026, 2, 7), Set.of(), "");
+		when(repository.search(eq(1L), isNull(), isNull(), isNull(), isNull())).thenReturn(List.of(blank));
+
+		String csv = service.exportCsv(1L, null, null, null, null);
+
+		assertThat(csv).contains("2026-02-07,收入,66,,");
+	}
+
+	@Test
+	@DisplayName("导出 CSV 时 null 标签集合与 null 备注安全回退为空")
+	void exportCsvHandlesNullValues() {
+		LedgerEntry blank = entry(6L, LedgerType.EXPENSE, "12", LocalDate.of(2026, 2, 8), Set.of("临时"), "普通备注");
+		blank.setTags(null);
+		blank.setRemark(null);
+		when(repository.search(eq(1L), isNull(), isNull(), isNull(), isNull())).thenReturn(List.of(blank));
+
+		String csv = service.exportCsv(1L, null, null, null, null);
+
+		assertThat(csv).contains("2026-02-08,支出,12,,");
+	}
+
+	@Test
+	@DisplayName("导出 CSV 对换行与普通文本分别按规则处理")
+	void exportCsvHandlesNewlineAndPlainText() {
+		LedgerEntry newline = entry(7L, LedgerType.EXPENSE, "20", LocalDate.of(2026, 2, 9), Set.of("日常"), "第一行\n第二行");
+		LedgerEntry plain = entry(8L, LedgerType.INCOME, "30", LocalDate.of(2026, 2, 10), Set.of("工资"), "普通备注");
+		LedgerEntry quoteOnly = entry(9L, LedgerType.EXPENSE, "40", LocalDate.of(2026, 2, 11), Set.of("其他"), "引号\"文本");
+		when(repository.search(eq(1L), isNull(), isNull(), isNull(), isNull()))
+			.thenReturn(List.of(newline, plain, quoteOnly));
+
+		String csv = service.exportCsv(1L, null, null, null, null);
+
+		assertThat(csv).contains("\"第一行\n第二行\"");
+		assertThat(csv).contains("2026-02-10,收入,30,工资,普通备注");
+		assertThat(csv).contains("\"引号\"\"文本\"");
 	}
 
 }

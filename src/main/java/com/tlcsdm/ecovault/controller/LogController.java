@@ -3,6 +3,7 @@ package com.tlcsdm.ecovault.controller;
 import com.tlcsdm.ecovault.annotation.OperationLogRecord;
 import com.tlcsdm.ecovault.common.ApiResponse;
 import com.tlcsdm.ecovault.config.DateTimeConfig;
+import com.tlcsdm.ecovault.dto.PageResponse;
 import com.tlcsdm.ecovault.dto.UpdateLogRequest;
 import com.tlcsdm.ecovault.entity.OperationLog;
 import com.tlcsdm.ecovault.service.OperationLogService;
@@ -61,7 +62,7 @@ public class LogController {
 	 * @return 分页日志
 	 */
 	@GetMapping
-	public ApiResponse<Page<OperationLog>> list(@RequestParam(required = false) String module,
+	public ApiResponse<PageResponse<OperationLog>> list(@RequestParam(required = false) String module,
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) @DateTimeFormat(
 					pattern = DateTimeConfig.DATE_TIME_PATTERN) LocalDateTime start,
@@ -70,7 +71,7 @@ public class LogController {
 			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
 		Pageable pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 100));
 		Page<OperationLog> result = operationLogService.query(null, module, keyword, start, end, pageable);
-		return ApiResponse.success(result);
+		return ApiResponse.success(PageResponse.from(result));
 	}
 
 	/**

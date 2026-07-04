@@ -7,6 +7,7 @@ import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.security.SecurityUser;
 import com.tlcsdm.ecovault.service.OperationLogService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -59,6 +61,10 @@ class OperationLogAspectTest {
 
 	@OperationLogRecord(module = "测试模块", operation = "测试操作")
 	public void annotated(String arg, HttpServletRequest request, Object nullable) {
+	}
+
+	@OperationLogRecord(module = "测试模块", operation = "测试响应过滤")
+	public void withResponse(String arg, HttpServletResponse response) {
 	}
 
 	@OperationLogRecord(module = "安全", operation = "登录")
@@ -180,6 +186,22 @@ class OperationLogAspectTest {
 	}
 
 	@Test
+	@DisplayName("HttpServletResponse 参数会被过滤，不写入日志摘要")
+	void filtersHttpServletResponse() throws Throwable {
+		MethodSignature signature = signatureFor("withResponse", String.class, HttpServletResponse.class);
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getSignature()).thenReturn(signature);
+		when(joinPoint.getArgs()).thenReturn(new Object[] { "hello", new MockHttpServletResponse() });
+		when(joinPoint.proceed()).thenReturn("ok");
+
+		aspect.around(joinPoint);
+
+		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+		verify(logService).save(captor.capture());
+		assertThat(captor.getValue().getParams()).isEqualTo("[\"hello\"]");
+	}
+
+	@Test
 	@DisplayName("方法无注解时模块与操作为空，仍记录方法与状态")
 	void withoutAnnotation() throws Throwable {
 		MethodSignature signature = signatureFor("noAnnotation");
@@ -247,6 +269,53 @@ class OperationLogAspectTest {
 		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
 		verify(logService).save(captor.capture());
 		assertThat(captor.getValue().getErrorMsg()).hasSize(1000);
+	}
+
+	@Test
+	@DisplayName("参数无法序列化时退化为类型名")
+	void fallsBackToSimpleTypeNameWhenSerializationFails() throws Throwable {
+		tools.jackson.databind.ObjectMapper realMapper = new tools.jackson.databind.ObjectMapper();
+		tools.jackson.databind.ObjectMapper failingMapper = mock(tools.jackson.databind.ObjectMapper.class);
+		when(failingMapper.createArrayNode()).thenReturn(realMapper.createArrayNode());
+		when(failingMapper.valueToTree(any())).thenThrow(new RuntimeException("serialize fail"));
+		when(failingMapper.writeValueAsString(any()))
+			.thenAnswer(inv -> realMapper.writeValueAsString(inv.getArgument(0)));
+		aspect = new OperationLogAspect(logService, failingMapper);
+
+		MethodSignature signature = signatureFor("noAnnotation");
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getSignature()).thenReturn(signature);
+		when(joinPoint.getArgs()).thenReturn(new Object[] { new java.io.ByteArrayInputStream(new byte[0]) });
+		when(joinPoint.proceed()).thenReturn("ok");
+
+		aspect.around(joinPoint);
+
+		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+		verify(logService).save(captor.capture());
+		assertThat(captor.getValue().getParams()).contains("ByteArrayInputStream");
+	}
+
+	@Test
+	@DisplayName("参数摘要 JSON 序列化失败时返回空字符串")
+	void returnsEmptyParamsWhenJsonSerializationFails() throws Throwable {
+		tools.jackson.databind.ObjectMapper realMapper = new tools.jackson.databind.ObjectMapper();
+		tools.jackson.databind.ObjectMapper failingMapper = mock(tools.jackson.databind.ObjectMapper.class);
+		when(failingMapper.createArrayNode()).thenReturn(realMapper.createArrayNode());
+		when(failingMapper.valueToTree(any())).thenAnswer(inv -> realMapper.valueToTree(inv.getArgument(0)));
+		when(failingMapper.writeValueAsString(any())).thenThrow(new RuntimeException("json fail"));
+		aspect = new OperationLogAspect(logService, failingMapper);
+
+		MethodSignature signature = signatureFor("noAnnotation");
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getSignature()).thenReturn(signature);
+		when(joinPoint.getArgs()).thenReturn(new Object[] { "hello" });
+		when(joinPoint.proceed()).thenReturn("ok");
+
+		aspect.around(joinPoint);
+
+		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+		verify(logService).save(captor.capture());
+		assertThat(captor.getValue().getParams()).isEmpty();
 	}
 
 }
