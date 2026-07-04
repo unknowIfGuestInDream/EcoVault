@@ -123,16 +123,6 @@ server:
   port: 8100
   shutdown: graceful
 
-spring:
-  jackson:
-    time-zone: GMT+8
-    date-format: yyyy/MM/dd HH:mm:ss
-  mvc:
-    format:
-      date: yyyy/MM/dd
-      date-time: yyyy/MM/dd HH:mm:ss
-      time: HH:mm:ss
-
 ecovault:
   security:
     jwt-secret: "请替换为生产环境强随机密钥"
@@ -143,9 +133,6 @@ ecovault:
 
 - `server.port`：默认服务端口为 `8100`。
 - `server.shutdown`：启用优雅停机，避免部署时中断正在处理的请求。
-- `spring.jackson.*`：统一 JSON 时区为 `GMT+8`，格式为 `yyyy/MM/dd HH:mm:ss`。
-- `spring.mvc.format.*`：统一 Spring MVC 参数绑定与表单时间格式。
-- `spring.banner.charset`：固定为 `UTF-8`，确保自定义启动 Banner 与中文日志输出稳定。
 - `ecovault.security.jwt-secret`：JWT 签名密钥，生产环境必须使用强随机值。
 - `ecovault.security.max-devices`：单用户允许同时登录设备数，默认建议为 `1`。
 - `ecovault.crypto.secret`：密码库 AES 主密钥，必须通过环境变量安全注入。
