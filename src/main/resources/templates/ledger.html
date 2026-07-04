@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{fragments/common :: head('收入支出管理 - EcoVault')}"></head>
+<body>
+<header th:replace="~{fragments/common :: navbar}"></header>
+<div class="container">
+    <div class="glass card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px">
+            <h2>📒 收入支出管理</h2>
+            <div class="row" style="flex-wrap:wrap; gap:8px">
+                <select id="f-type-filter" onchange="reload()">
+                    <option value="">全部类型</option>
+                    <option value="INCOME">收入</option>
+                    <option value="EXPENSE">支出</option>
+                </select>
+                <input id="f-tag-filter" placeholder="标签筛选" oninput="debouncedReload()"/>
+                <label class="muted" style="align-self:center">起</label>
+                <input id="f-start" type="date" onchange="reload()"/>
+                <label class="muted" style="align-self:center">止</label>
+                <input id="f-end" type="date" onchange="reload()"/>
+                <button class="btn" onclick="openModal()">➕ 记一笔</button>
+                <button class="btn secondary" onclick="exportCsv()">⬇ 导出CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid" id="stat-cards" style="margin-top:20px"></div>
+
+    <div class="grid two" style="margin-top:20px">
+        <div class="glass card">
+            <h3>月度收支趋势</h3>
+            <canvas id="trendChart" height="200"></canvas>
+        </div>
+        <div class="glass card">
+            <h3>支出标签构成</h3>
+            <canvas id="tagChart" height="200"></canvas>
+        </div>
+    </div>
+
+    <div class="glass card" style="margin-top:20px">
+        <h3>明细</h3>
+        <div style="overflow-x:auto">
+            <table class="table">
+                <thead>
+                <tr><th>日期</th><th>类型</th><th>金额</th><th>标签</th><th>备注</th><th>操作</th></tr>
+                </thead>
+                <tbody id="ledger-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 录入弹窗 -->
+<div class="modal-backdrop" id="modal">
+    <div class="glass modal">
+        <h3 id="modal-title">记一笔</h3>
+        <input type="hidden" id="rec-id"/>
+        <label>类型 *</label>
+        <select id="f-type">
+            <option value="INCOME">收入</option>
+            <option value="EXPENSE">支出</option>
+        </select>
+        <label>金额 *</label><input id="f-amount" type="number" step="0.01" min="0.01"/>
+        <label>日期 *</label><input id="f-date" type="date"/>
+        <label>标签 (逗号分隔，可多个)</label><input id="f-tags"/>
+        <label>备注</label><input id="f-remark" maxlength="256"/>
+        <div style="display:flex; gap:10px; margin-top:20px">
+            <button class="btn" style="flex:1" onclick="saveRecord()">保存</button>
+            <button class="btn secondary" style="flex:1" onclick="closeModal()">取消</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    let trendChart, tagChart;
+
+    function debouncedReload() {
+        clearTimeout(window.__t);
+        window.__t = setTimeout(reload, 300);
+    }
+
+    function filterParams() {
+        const p = new URLSearchParams();
+        const type = document.getElementById("f-type-filter").value;
+        const tag = document.getElementById("f-tag-filter").value.trim();
+        const start = document.getElementById("f-start").value;
+        const end = document.getElementById("f-end").value;
+        if (type) p.append("type", type);
+        if (tag) p.append("tag", tag);
+        if (start) p.append("start", start);
+        if (end) p.append("end", end);
+        return p;
+    }
+
+    async function reload() {
+        await Promise.all([loadList(), loadStats()]);
+    }
+
+    async function loadList() {
+        const data = await api("/api/finance/ledger?" + filterParams().toString());
+        const body = document.getElementById("ledger-body");
+        if (!data.length) {
+            body.innerHTML = '<tr><td colspan="6" class="muted">暂无数据</td></tr>';
+            return;
+        }
+        body.innerHTML = data.map(r => `
+            <tr>
+                <td>${escapeHtml(r.entryDate || "")}</td>
+                <td><span class="badge ${r.type === 'INCOME' ? 'STRONG' : 'WEAK'}">${r.type === 'INCOME' ? '收入' : '支出'}</span></td>
+                <td>${escapeHtml(String(r.amount))}</td>
+                <td>${(r.tags || []).map(t => `<span class="badge MEDIUM">${escapeHtml(t)}</span>`).join(" ")}</td>
+                <td>${escapeHtml(r.remark || "")}</td>
+                <td style="white-space:nowrap">
+                    <button class="btn btn-sm secondary" onclick='editRecord(${JSON.stringify(r)})'>编辑</button>
+                    <button class="btn btn-sm danger" onclick="delRecord(${r.id})">删除</button>
+                </td>
+            </tr>`).join("");
+    }
+
+    async function loadStats() {
+        const s = await api("/api/finance/ledger/statistics?" + filterParams().toString());
+        document.getElementById("stat-cards").innerHTML = `
+            <div class="glass stat"><span class="muted">收入合计</span><strong>${s.totalIncome}</strong></div>
+            <div class="glass stat"><span class="muted">支出合计</span><strong>${s.totalExpense}</strong></div>
+            <div class="glass stat"><span class="muted">结余</span><strong>${s.balance}</strong></div>
+            <div class="glass stat"><span class="muted">记录条数</span><strong>${s.count}</strong></div>`;
+
+        const labels = s.monthlyTrend.map(p => p.label);
+        const income = s.monthlyTrend.map(p => Number(p.income));
+        const expense = s.monthlyTrend.map(p => Number(p.expense));
+        if (trendChart) trendChart.destroy();
+        trendChart = new Chart(document.getElementById("trendChart"), {
+            type: "bar",
+            data: {
+                labels,
+                datasets: [
+                    { label: "收入", data: income, backgroundColor: "#22c55e" },
+                    { label: "支出", data: expense, backgroundColor: "#ef4444" }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: "bottom" } } }
+        });
+
+        const tagLabels = s.expenseByTag.map(t => t.tag);
+        const tagData = s.expenseByTag.map(t => Number(t.amount));
+        if (tagChart) tagChart.destroy();
+        tagChart = new Chart(document.getElementById("tagChart"), {
+            type: "doughnut",
+            data: {
+                labels: tagLabels.length ? tagLabels : ["暂无"],
+                datasets: [{
+                    data: tagData.length ? tagData : [1],
+                    backgroundColor: ["#6366f1", "#f59e0b", "#22c55e", "#ef4444", "#06b6d4", "#a855f7", "#eab308"]
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: "bottom" } } }
+        });
+    }
+
+    function openModal() {
+        document.getElementById("modal-title").textContent = "记一笔";
+        ["rec-id", "f-amount", "f-tags", "f-remark"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("f-type").value = "EXPENSE";
+        document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+        document.getElementById("modal").classList.add("show");
+    }
+
+    function editRecord(r) {
+        document.getElementById("modal-title").textContent = "编辑记录";
+        document.getElementById("rec-id").value = r.id;
+        document.getElementById("f-type").value = r.type;
+        document.getElementById("f-amount").value = r.amount;
+        document.getElementById("f-date").value = r.entryDate;
+        document.getElementById("f-tags").value = (r.tags || []).join(",");
+        document.getElementById("f-remark").value = r.remark || "";
+        document.getElementById("modal").classList.add("show");
+    }
+
+    function closeModal() {
+        document.getElementById("modal").classList.remove("show");
+    }
+
+    function parseTags(value) {
+        return value.split(",").map(t => t.trim()).filter(t => t.length > 0);
+    }
+
+    async function saveRecord() {
+        const id = document.getElementById("rec-id").value;
+        const payload = {
+            type: document.getElementById("f-type").value,
+            amount: Number(document.getElementById("f-amount").value),
+            entryDate: document.getElementById("f-date").value,
+            tags: parseTags(document.getElementById("f-tags").value),
+            remark: document.getElementById("f-remark").value.trim()
+        };
+        if (!payload.amount || !payload.entryDate) {
+            toast("金额和日期必填", "error");
+            return;
+        }
+        try {
+            if (id) {
+                await api("/api/finance/ledger/" + id, { method: "PUT", body: JSON.stringify(payload) });
+            } else {
+                await api("/api/finance/ledger", { method: "POST", body: JSON.stringify(payload) });
+            }
+            toast("保存成功");
+            closeModal();
+            reload();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    async function delRecord(id) {
+        if (!confirm("确认删除该记录？")) return;
+        try {
+            await api("/api/finance/ledger/" + id, { method: "DELETE" });
+            toast("已删除");
+            reload();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    function exportCsv() {
+        window.location.href = "/api/finance/ledger/export?" + filterParams().toString();
+    }
+
+    document.addEventListener("DOMContentLoaded", reload);
+</script>
+</body>
+</html>

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+
 /**
  * 操作日志数据访问接口。
  *
@@ -23,13 +25,17 @@ public interface OperationLogRepository extends JpaRepository<OperationLog, Long
 	 * @param userId 用户 ID (可空)
 	 * @param module 模块 (可空)
 	 * @param keyword 关键字 (可空，匹配操作描述)
+	 * @param start 起始时间 (可空)
+	 * @param end 结束时间 (可空)
 	 * @param pageable 分页参数
 	 * @return 分页结果
 	 */
 	@Query("SELECT l FROM OperationLog l WHERE " + "(:userId IS NULL OR l.userId = :userId) AND "
-			+ "(:module IS NULL OR l.module = :module) AND " + "(:keyword IS NULL OR l.operation LIKE %:keyword%) "
+			+ "(:module IS NULL OR l.module = :module) AND " + "(:keyword IS NULL OR l.operation LIKE %:keyword%) AND "
+			+ "(:start IS NULL OR l.createdAt >= :start) AND " + "(:end IS NULL OR l.createdAt <= :end) "
 			+ "ORDER BY l.createdAt DESC")
 	Page<OperationLog> search(@Param("userId") Long userId, @Param("module") String module,
-			@Param("keyword") String keyword, Pageable pageable);
+			@Param("keyword") String keyword, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end,
+			Pageable pageable);
 
 }

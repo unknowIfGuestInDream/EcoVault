@@ -1,5 +1,8 @@
 package com.tlcsdm.ecovault.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.tlcsdm.ecovault.config.DateTimeConfig;
+
 import java.time.LocalDateTime;
 
 /**
@@ -15,5 +18,5 @@ import java.time.LocalDateTime;
  * @author unknowIfGuestInDream
  */
 public record AdminUserResponse(Long id, String username, String nickname, String email, String role, boolean enabled,
-		LocalDateTime createdAt) {
+		@JsonFormat(pattern = DateTimeConfig.DATE_TIME_PATTERN, timezone = DateTimeConfig.TIME_ZONE) LocalDateTime createdAt) {
 }

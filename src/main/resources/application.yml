@@ -14,11 +14,11 @@ spring:
     charset: UTF-8
   jackson:
     time-zone: GMT+8
-    date-format: yyyy/MM/dd HH:mm:ss
+    date-format: yyyy-MM-dd HH:mm:ss
   mvc:
     format:
-      date: yyyy/MM/dd
-      date-time: yyyy/MM/dd HH:mm:ss
+      date: yyyy-MM-dd
+      date-time: yyyy-MM-dd HH:mm:ss
       time: HH:mm:ss
     hiddenmethod:
       filter:

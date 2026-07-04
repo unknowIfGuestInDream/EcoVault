@@ -41,6 +41,9 @@ class AdminServiceImplTest {
 	@Mock
 	private UserSessionRepository sessionRepository;
 
+	@Mock
+	private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
 	@InjectMocks
 	private AdminServiceImpl service;
 

@@ -3,6 +3,7 @@ package com.tlcsdm.ecovault.config;
 import com.tlcsdm.ecovault.entity.Role;
 import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.repository.UserRepository;
+import com.tlcsdm.ecovault.service.RolePermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,21 +29,27 @@ public class DataInitializer implements CommandLineRunner {
 
 	private final PasswordEncoder passwordEncoder;
 
+	private final RolePermissionService rolePermissionService;
+
 	private final String adminUsername;
 
 	private final String adminPassword;
 
 	public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder,
+			RolePermissionService rolePermissionService,
 			@Value("${ecovault.admin.username:admin}") String adminUsername,
 			@Value("${ecovault.admin.password:Admin@123}") String adminPassword) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
+		this.rolePermissionService = rolePermissionService;
 		this.adminUsername = adminUsername;
 		this.adminPassword = adminPassword;
 	}
 
 	@Override
 	public void run(String... args) {
+		// 初始化角色默认页面权限
+		rolePermissionService.initDefaults();
 		if (userRepository.existsByUsername(adminUsername)) {
 			return;
 		}

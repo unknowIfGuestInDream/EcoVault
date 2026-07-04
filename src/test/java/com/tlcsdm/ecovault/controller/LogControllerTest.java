@@ -35,13 +35,11 @@ class LogControllerTest extends AbstractWebMvcTest {
 	}
 
 	@Test
-	@DisplayName("普通用户仅查询自身日志，且分页参数被规整")
-	void userListPagination() throws Exception {
+	@DisplayName("普通用户访问日志接口被拒绝 (仅管理员可见)")
+	void userForbidden() throws Exception {
 		var user = authFor(securityUser(4001L, "loguser", Role.USER));
-		// 负页码与超大 size 会被规整到合法范围
-		mockMvc.perform(get("/api/logs").param("page", "-5").param("size", "9999").with(authentication(user)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.content").exists());
+		mockMvc.perform(get("/api/logs").param("page", "0").param("size", "10").with(authentication(user)))
+			.andExpect(status().isForbidden());
 	}
 
 	@Test

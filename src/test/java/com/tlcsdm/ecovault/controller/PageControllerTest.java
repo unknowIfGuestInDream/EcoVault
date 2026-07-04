@@ -28,7 +28,8 @@ class PageControllerTest extends AbstractWebMvcTest {
 	@Test
 	@DisplayName("受保护页面匿名访问跳转到登录页")
 	void protectedPagesRedirect() throws Exception {
-		for (String path : new String[] { "/dashboard", "/passwords", "/finance", "/logs", "/profile" }) {
+		for (String path : new String[] { "/dashboard", "/passwords", "/finance", "/finance/ledger", "/profile",
+				"/admin/logs", "/admin/roles" }) {
 			mockMvc.perform(get(path))
 				.andExpect(status().is3xxRedirection())
 				.andExpect(header().string("Location", "/login"));
@@ -39,18 +40,20 @@ class PageControllerTest extends AbstractWebMvcTest {
 	@DisplayName("认证用户可访问受保护页面")
 	void authenticatedPages() throws Exception {
 		var user = authFor(securityUser(1000L, "pageuser", Role.USER));
-		for (String path : new String[] { "/dashboard", "/passwords", "/finance", "/logs", "/profile" }) {
+		for (String path : new String[] { "/dashboard", "/passwords", "/finance", "/finance/ledger", "/profile" }) {
 			mockMvc.perform(get(path).with(authentication(user))).andExpect(status().isOk());
 		}
 	}
 
 	@Test
-	@DisplayName("管理后台页仅管理员可访问，普通用户 403")
+	@DisplayName("后台页面仅管理员可访问，普通用户 403")
 	void adminPage() throws Exception {
-		mockMvc.perform(get("/admin").with(authentication(authFor(securityUser(1L, "admin", Role.ADMIN)))))
-			.andExpect(status().isOk());
-		mockMvc.perform(get("/admin").with(authentication(authFor(securityUser(2L, "user", Role.USER)))))
-			.andExpect(status().isForbidden());
+		var admin = authFor(securityUser(1L, "admin", Role.ADMIN));
+		var user = authFor(securityUser(2L, "user", Role.USER));
+		for (String path : new String[] { "/admin", "/admin/logs", "/admin/roles" }) {
+			mockMvc.perform(get(path).with(authentication(admin))).andExpect(status().isOk());
+			mockMvc.perform(get(path).with(authentication(user))).andExpect(status().isForbidden());
+		}
 	}
 
 }

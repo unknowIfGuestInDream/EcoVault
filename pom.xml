@@ -316,6 +316,8 @@
                             <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
                             <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                             <Bundle-Vendor>Tlcsdm</Bundle-Vendor>
+                            <!-- 允许 SQLite JDBC 等模块进行原生访问，消除 java -jar 启动时的 restricted method 警告 -->
+                            <Enable-Native-Access>ALL-UNNAMED</Enable-Native-Access>
                         </manifestEntries>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>

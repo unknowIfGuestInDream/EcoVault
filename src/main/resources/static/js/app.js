@@ -100,4 +100,47 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
     };
+
+    /**
+     * 初始化导航栏：根据当前用户可访问的页面 (me.pages) 显示/隐藏菜单项与分组。
+     * @returns {Promise<object|null>} 当前用户信息
+     */
+    window.initNav = async function () {
+        const nav = document.getElementById("main-nav");
+        if (!nav) {
+            return null;
+        }
+        try {
+            const me = await window.api("/api/auth/me");
+            const pages = new Set(me.pages || []);
+            // 控制台与个人中心对所有登录用户开放，其余按权限显示
+            nav.querySelectorAll("[data-page]").forEach((el) => {
+                const key = el.getAttribute("data-page");
+                if (key === "dashboard" || key === "profile") {
+                    return;
+                }
+                el.style.display = pages.has(key) ? "" : "none";
+            });
+            // 分组下拉：无任何可见子项时隐藏整个分组
+            nav.querySelectorAll(".nav-dropdown").forEach((group) => {
+                const links = group.querySelectorAll(".nav-dropdown-menu [data-page]");
+                const anyVisible = Array.from(links).some((a) => a.style.display !== "none");
+                group.style.display = anyVisible ? "" : "none";
+            });
+            return me;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    // 主题按钮初始文案
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.querySelector(".theme-toggle");
+        if (btn) {
+            btn.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+        }
+        if (document.getElementById("main-nav")) {
+            window.initNav();
+        }
+    });
 })();

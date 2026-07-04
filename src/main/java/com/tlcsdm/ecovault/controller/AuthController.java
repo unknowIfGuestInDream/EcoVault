@@ -11,6 +11,7 @@ import com.tlcsdm.ecovault.security.JwtAuthenticationFilter;
 import com.tlcsdm.ecovault.security.JwtTokenProvider;
 import com.tlcsdm.ecovault.security.SecurityUtils;
 import com.tlcsdm.ecovault.service.AuthService;
+import com.tlcsdm.ecovault.service.RolePermissionService;
 import com.tlcsdm.ecovault.utils.WebUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -39,9 +41,13 @@ public class AuthController {
 
 	private final JwtTokenProvider tokenProvider;
 
-	public AuthController(AuthService authService, JwtTokenProvider tokenProvider) {
+	private final RolePermissionService rolePermissionService;
+
+	public AuthController(AuthService authService, JwtTokenProvider tokenProvider,
+			RolePermissionService rolePermissionService) {
 		this.authService = authService;
 		this.tokenProvider = tokenProvider;
+		this.rolePermissionService = rolePermissionService;
 	}
 
 	/**
@@ -85,9 +91,14 @@ public class AuthController {
 	@GetMapping("/me")
 	public ApiResponse<Map<String, Object>> me() {
 		User user = SecurityUtils.getCurrentUser().getUser();
-		return ApiResponse.success(
-				Map.of("username", user.getUsername(), "nickname", user.getNickname() == null ? "" : user.getNickname(),
-						"email", user.getEmail() == null ? "" : user.getEmail(), "role", user.getRole().name()));
+		Map<String, Object> info = new LinkedHashMap<>();
+		info.put("username", user.getUsername());
+		info.put("nickname", user.getNickname() == null ? "" : user.getNickname());
+		info.put("email", user.getEmail() == null ? "" : user.getEmail());
+		info.put("role", user.getRole().name());
+		// 当前用户可访问的页面 key 集合，供前端渲染菜单
+		info.put("pages", rolePermissionService.accessiblePageKeys(user));
+		return ApiResponse.success(info);
 	}
 
 	/**

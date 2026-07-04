@@ -50,12 +50,12 @@ class OperationLogServiceImplTest {
 	void queryNormalizesBlank() {
 		Pageable pageable = PageRequest.of(0, 20);
 		Page<OperationLog> page = new PageImpl<>(List.of());
-		when(repository.search(isNull(), isNull(), isNull(), eq(pageable))).thenReturn(page);
+		when(repository.search(isNull(), isNull(), isNull(), isNull(), isNull(), eq(pageable))).thenReturn(page);
 
-		Page<OperationLog> result = service.query(null, "   ", "  ", pageable);
+		Page<OperationLog> result = service.query(null, "   ", "  ", null, null, pageable);
 
 		assertThat(result).isSameAs(page);
-		verify(repository).search(isNull(), isNull(), isNull(), eq(pageable));
+		verify(repository).search(isNull(), isNull(), isNull(), isNull(), isNull(), eq(pageable));
 	}
 
 	@Test
@@ -63,13 +63,13 @@ class OperationLogServiceImplTest {
 	void queryTrimsKeyword() {
 		Pageable pageable = PageRequest.of(0, 10);
 		Page<OperationLog> page = new PageImpl<>(List.of(new OperationLog()));
-		when(repository.search(eq(5L), eq("密码管理"), eq("github"), eq(pageable))).thenReturn(page);
+		when(repository.search(eq(5L), eq("密码管理"), eq("github"), isNull(), isNull(), eq(pageable))).thenReturn(page);
 
-		Page<OperationLog> result = service.query(5L, "密码管理", "  github  ", pageable);
+		Page<OperationLog> result = service.query(5L, "密码管理", "  github  ", null, null, pageable);
 
 		assertThat(result.getContent()).hasSize(1);
 		ArgumentCaptor<String> keywordCaptor = ArgumentCaptor.forClass(String.class);
-		verify(repository).search(eq(5L), eq("密码管理"), keywordCaptor.capture(), eq(pageable));
+		verify(repository).search(eq(5L), eq("密码管理"), keywordCaptor.capture(), isNull(), isNull(), eq(pageable));
 		assertThat(keywordCaptor.getValue()).isEqualTo("github");
 	}
 

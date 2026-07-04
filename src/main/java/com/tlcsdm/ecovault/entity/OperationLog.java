@@ -1,5 +1,7 @@
 package com.tlcsdm.ecovault.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.tlcsdm.ecovault.config.DateTimeConfig;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -75,6 +77,7 @@ public class OperationLog {
 	private long durationMs;
 
 	/** 创建时间 */
+	@JsonFormat(pattern = DateTimeConfig.DATE_TIME_PATTERN, timezone = DateTimeConfig.TIME_ZONE)
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 

@@ -48,7 +48,7 @@ class OperationLogAspectTest {
 	@BeforeEach
 	void setUp() {
 		logService = mock(OperationLogService.class);
-		aspect = new OperationLogAspect(logService);
+		aspect = new OperationLogAspect(logService, new tools.jackson.databind.ObjectMapper());
 	}
 
 	@AfterEach
@@ -59,6 +59,10 @@ class OperationLogAspectTest {
 
 	@OperationLogRecord(module = "测试模块", operation = "测试操作")
 	public void annotated(String arg, HttpServletRequest request, Object nullable) {
+	}
+
+	@OperationLogRecord(module = "安全", operation = "登录")
+	public void sensitive(com.tlcsdm.ecovault.dto.LoginRequest request) {
 	}
 
 	public void noAnnotation() {
@@ -110,8 +114,8 @@ class OperationLogAspectTest {
 		assertThat(saved.getModule()).isEqualTo("测试模块");
 		assertThat(saved.getOperation()).isEqualTo("测试操作");
 		assertThat(saved.getMethod()).isEqualTo("OperationLogAspectTest.annotated");
-		// HttpServletRequest 参数被过滤，仅保留类型摘要，null 记录为 null
-		assertThat(saved.getParams()).isEqualTo("String, null");
+		// HttpServletRequest 参数被过滤，其余参数按实际值序列化为 JSON，null 记录为 null
+		assertThat(saved.getParams()).isEqualTo("[\"hello\",null]");
 		assertThat(saved.getUserId()).isEqualTo(1L);
 		assertThat(saved.getUsername()).isEqualTo("alice");
 		assertThat(saved.getIp()).isEqualTo("10.1.2.3");
@@ -155,6 +159,24 @@ class OperationLogAspectTest {
 
 		assertThat(result).isEqualTo("done");
 		verify(logService).save(any(OperationLog.class));
+	}
+
+	@Test
+	@DisplayName("参数中的敏感字段 (如密码) 在记录时被脱敏")
+	void masksSensitiveFields() throws Throwable {
+		MethodSignature signature = signatureFor("sensitive", com.tlcsdm.ecovault.dto.LoginRequest.class);
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getSignature()).thenReturn(signature);
+		when(joinPoint.getArgs())
+			.thenReturn(new Object[] { new com.tlcsdm.ecovault.dto.LoginRequest("alice", "Secret123!") });
+		when(joinPoint.proceed()).thenReturn("ok");
+
+		aspect.around(joinPoint);
+
+		ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+		verify(logService).save(captor.capture());
+		String params = captor.getValue().getParams();
+		assertThat(params).contains("alice").contains("******").doesNotContain("Secret123!");
 	}
 
 	@Test
