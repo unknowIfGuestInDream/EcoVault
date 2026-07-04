@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +102,15 @@ class RolePermissionServiceImplTest {
 	void updatePermissionsRejectsIllegalPage() {
 		assertThatThrownBy(() -> service.updatePermissions(Role.USER, List.of("users")))
 			.isInstanceOf(BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("ADMIN 角色权限固定开放，不允许修改")
+	void updatePermissionsRejectsAdminRole() {
+		assertThatThrownBy(() -> service.updatePermissions(Role.ADMIN, List.of("passwords")))
+			.isInstanceOf(BusinessException.class)
+			.hasMessageContaining("ADMIN 角色");
+		verifyNoInteractions(repository);
 	}
 
 	@Test

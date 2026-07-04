@@ -86,12 +86,21 @@ public class PageController {
 	}
 
 	/**
-	 * 后台管理 - 用户管理页 (仅管理员)。
+	 * 后台管理首页 (仅管理员)。
 	 * @return 视图名
 	 */
 	@GetMapping("/admin")
 	public String admin() {
 		return "admin";
+	}
+
+	/**
+	 * 后台管理 - 用户管理页 (仅管理员)。
+	 * @return 视图名
+	 */
+	@GetMapping("/admin/users")
+	public String users() {
+		return "users";
 	}
 
 	/**

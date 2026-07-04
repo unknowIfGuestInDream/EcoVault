@@ -32,7 +32,7 @@ public enum MenuPage {
 	PROFILE("profile", "个人中心", "/profile", MenuGroup.MAIN, false, false),
 
 	/** 后台 - 用户管理 (仅管理员) */
-	USERS("users", "用户管理", "/admin", MenuGroup.ADMIN, true, false),
+	USERS("users", "用户管理", "/admin/users", MenuGroup.ADMIN, true, false),
 
 	/** 后台 - 日志管理 (仅管理员) */
 	LOGS("logs", "日志管理", "/admin/logs", MenuGroup.ADMIN, true, false),

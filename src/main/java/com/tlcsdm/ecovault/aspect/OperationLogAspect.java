@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -171,13 +172,13 @@ public class OperationLogAspect {
 	 */
 	private void maskSensitive(JsonNode node) {
 		if (node instanceof ObjectNode objectNode) {
-			List<String> names = new ArrayList<>(objectNode.propertyNames());
-			for (String name : names) {
-				if (isSensitive(name)) {
-					objectNode.put(name, MASKED);
+			List<Map.Entry<String, JsonNode>> fields = new ArrayList<>(objectNode.properties());
+			for (Map.Entry<String, JsonNode> field : fields) {
+				if (isSensitive(field.getKey())) {
+					objectNode.put(field.getKey(), MASKED);
 				}
 				else {
-					maskSensitive(objectNode.get(name));
+					maskSensitive(field.getValue());
 				}
 			}
 		}

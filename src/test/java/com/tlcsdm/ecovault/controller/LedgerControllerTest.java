@@ -134,6 +134,18 @@ class LedgerControllerTest extends AbstractWebMvcTest {
 	}
 
 	@Test
+	@DisplayName("查询日期范围非法时返回业务错误")
+	void invalidDateRangeReturnsBusinessError() throws Exception {
+		mockMvc
+			.perform(get("/api/finance/ledger").param("start", "2030-02-01")
+				.param("end", "2030-01-01")
+				.with(authentication(auth(4005L))))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value(400))
+			.andExpect(jsonPath("$.message").value("起始日期不能晚于结束日期"));
+	}
+
+	@Test
 	@DisplayName("更新不存在的收支记录返回业务错误")
 	void updateMissing() throws Exception {
 		mockMvc

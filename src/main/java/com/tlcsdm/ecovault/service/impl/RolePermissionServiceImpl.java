@@ -64,6 +64,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 	@Override
 	@Transactional
 	public void updatePermissions(Role role, List<String> pageKeys) {
+		if (role == Role.ADMIN) {
+			throw new BusinessException("ADMIN 角色默认拥有全部页面访问权限，不允许修改");
+		}
 		Set<String> configurableKeys = MenuPage.configurablePages()
 			.stream()
 			.map(MenuPage::getKey)

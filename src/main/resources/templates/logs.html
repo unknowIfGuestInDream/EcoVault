@@ -7,13 +7,15 @@
     <div class="glass card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px">
             <h2>📋 日志管理</h2>
-            <div class="row" style="flex-wrap:wrap; gap:8px">
-                <input id="module" placeholder="模块筛选" oninput="debouncedLoad()"/>
-                <input id="keyword" placeholder="关键字搜索" oninput="debouncedLoad()"/>
-                <label class="muted" style="align-self:center">起</label>
-                <input id="start" type="datetime-local" onchange="debouncedLoad()"/>
-                <label class="muted" style="align-self:center">止</label>
-                <input id="end" type="datetime-local" onchange="debouncedLoad()"/>
+            <div class="filter-toolbar">
+                <input id="module" class="filter-field" placeholder="模块筛选" oninput="debouncedLoad()"/>
+                <input id="keyword" class="filter-field" placeholder="关键字搜索" oninput="debouncedLoad()"/>
+                <div class="range-field">
+                    <input id="start" type="datetime-local" onchange="debouncedLoad()" aria-label="开始时间"/>
+                    <span class="range-separator">至</span>
+                    <input id="end" type="datetime-local" onchange="debouncedLoad()" aria-label="结束时间"/>
+                </div>
+                <button class="btn secondary" onclick="clearFilters()">清空筛选</button>
                 <button class="btn secondary" onclick="exportCsv()">⬇ 导出CSV</button>
             </div>
         </div>
@@ -82,7 +84,7 @@
         return v;
     }
 
-    function params() {
+    function filterParams() {
         const p = new URLSearchParams();
         const module = document.getElementById("module").value.trim();
         const keyword = document.getElementById("keyword").value.trim();
@@ -92,6 +94,11 @@
         if (keyword) p.append("keyword", keyword);
         if (start) p.append("start", start);
         if (end) p.append("end", end);
+        return p;
+    }
+
+    function params() {
+        const p = filterParams();
         p.append("page", page);
         p.append("size", size);
         return p;
@@ -123,6 +130,15 @@
                 </tr>`).join("");
         }
         document.getElementById("page-info").textContent = `第 ${page + 1} / ${Math.max(totalPages, 1)} 页`;
+    }
+
+    function clearFilters() {
+        document.getElementById("module").value = "";
+        document.getElementById("keyword").value = "";
+        document.getElementById("start").value = "";
+        document.getElementById("end").value = "";
+        page = 0;
+        loadLogs();
     }
 
     async function showDetail(id) {
@@ -201,16 +217,7 @@
     }
 
     function exportCsv() {
-        const p = new URLSearchParams();
-        const module = document.getElementById("module").value.trim();
-        const keyword = document.getElementById("keyword").value.trim();
-        const start = toDateTime(document.getElementById("start").value);
-        const end = toDateTime(document.getElementById("end").value);
-        if (module) p.append("module", module);
-        if (keyword) p.append("keyword", keyword);
-        if (start) p.append("start", start);
-        if (end) p.append("end", end);
-        window.location.href = "/api/logs/export?" + p.toString();
+        window.location.href = "/api/logs/export?" + filterParams().toString();
     }
 
     document.addEventListener("DOMContentLoaded", () => {

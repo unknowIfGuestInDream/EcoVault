@@ -158,6 +158,19 @@ class AdminControllerTest extends AbstractWebMvcTest {
 	}
 
 	@Test
+	@DisplayName("不允许修改 ADMIN 角色页面权限")
+	void updateAdminRoleRejected() throws Exception {
+		mockMvc
+			.perform(put("/api/admin/roles/{role}/permissions", "ADMIN").with(authentication(admin()))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"pages\":[\"passwords\"]}"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value(400))
+			.andExpect(jsonPath("$.message").value("ADMIN 角色默认拥有全部页面访问权限，不允许修改"));
+	}
+
+	@Test
 	@DisplayName("获取构建信息 (开发环境返回占位版本与 Java 版本)")
 	void buildInfo() throws Exception {
 		mockMvc.perform(get("/api/admin/build-info").with(authentication(admin())))

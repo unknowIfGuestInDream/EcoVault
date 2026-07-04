@@ -266,6 +266,47 @@ input:focus, select:focus, textarea:focus {
     min-width: 180px;
 }
 
+.filter-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-field {
+    flex: 1 1 180px;
+    min-width: 180px;
+}
+
+.range-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: var(--input-bg);
+    min-width: min(100%, 420px);
+    flex: 1 1 320px;
+}
+
+.range-field input {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    min-width: 0;
+}
+
+.range-field input:focus {
+    box-shadow: none;
+}
+
+.range-separator {
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

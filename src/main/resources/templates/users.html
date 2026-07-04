@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{fragments/common :: head('用户管理 - EcoVault')}"></head>
+<body>
+<header th:replace="~{fragments/common :: navbar}"></header>
+<div class="container">
+    <div class="glass card">
+        <h2>👥 用户管理</h2>
+        <p class="muted">管理员可在此创建、编辑、禁用或删除用户；系统不提供外部自助注册。</p>
+    </div>
+
+    <div class="grid two" style="margin-top:20px">
+        <div class="glass card">
+            <h3>➕ 创建用户</h3>
+            <label for="new-username">用户名</label>
+            <input id="new-username" name="username" maxlength="32" autocomplete="off"/>
+            <label for="new-password">初始密码</label>
+            <input id="new-password" name="password" type="password" maxlength="64" autocomplete="new-password"/>
+            <label for="new-nickname">昵称</label>
+            <input id="new-nickname" name="nickname" maxlength="64"/>
+            <label for="new-email">邮箱</label>
+            <input id="new-email" name="email" maxlength="128" type="email"/>
+            <label for="new-role">角色</label>
+            <select id="new-role" name="role">
+                <option value="USER">普通用户 (USER)</option>
+                <option value="ADMIN">管理员 (ADMIN)</option>
+            </select>
+            <button class="btn" style="margin-top:16px" onclick="createUser()">创建用户</button>
+        </div>
+        <div class="glass card">
+            <h3>📌 管理说明</h3>
+            <p class="muted">创建用户时可直接指定角色；编辑时支持修改昵称、邮箱、角色、启用状态与重置密码。</p>
+            <p class="muted" style="margin-top:12px">如需查看构建信息与运行状态，请前往「后台首页」。</p>
+        </div>
+    </div>
+
+    <div class="glass card" style="margin-top:20px">
+        <h3>📋 用户列表</h3>
+        <div style="overflow-x:auto">
+            <table class="table">
+                <thead>
+                <tr><th>ID</th><th>用户名</th><th>昵称</th><th>邮箱</th><th>角色</th><th>状态</th><th>注册时间</th><th>操作</th></tr>
+                </thead>
+                <tbody id="user-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑用户弹窗 -->
+<div id="edit-modal" class="modal-backdrop">
+    <div class="glass modal">
+        <h3>✏️ 编辑用户</h3>
+        <p class="muted">用户名：<span id="edit-username"></span></p>
+        <input type="hidden" id="edit-id"/>
+        <label for="edit-nickname">昵称</label>
+        <input id="edit-nickname" maxlength="64"/>
+        <label for="edit-email">邮箱</label>
+        <input id="edit-email" maxlength="128" type="email"/>
+        <label for="edit-role">角色</label>
+        <select id="edit-role">
+            <option value="USER">普通用户 (USER)</option>
+            <option value="ADMIN">管理员 (ADMIN)</option>
+        </select>
+        <label for="edit-enabled">状态</label>
+        <select id="edit-enabled">
+            <option value="true">启用</option>
+            <option value="false">禁用</option>
+        </select>
+        <label for="edit-password">重置密码 (留空则不修改)</label>
+        <input id="edit-password" type="password" maxlength="64" autocomplete="new-password"/>
+        <div style="display:flex; gap:10px; margin-top:20px">
+            <button class="btn" style="flex:1" onclick="saveEdit()">保存</button>
+            <button class="btn secondary" style="flex:1" onclick="closeEdit()">取消</button>
+        </div>
+    </div>
+</div>
+<script>
+    async function createUser() {
+        const username = document.getElementById("new-username").value.trim();
+        const password = document.getElementById("new-password").value;
+        const nickname = document.getElementById("new-nickname").value.trim();
+        const email = document.getElementById("new-email").value.trim();
+        const role = document.getElementById("new-role").value;
+        if (!username || !password) {
+            toast("用户名和初始密码必填", "error");
+            return;
+        }
+        try {
+            await api("/api/admin/users", {
+                method: "POST",
+                body: JSON.stringify({ username, password, nickname, email, role })
+            });
+            document.getElementById("new-username").value = "";
+            document.getElementById("new-password").value = "";
+            document.getElementById("new-nickname").value = "";
+            document.getElementById("new-email").value = "";
+            document.getElementById("new-role").value = "USER";
+            toast("用户创建成功");
+            await loadUsers();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    async function loadUsers() {
+        const data = await api("/api/admin/users");
+        window.__users = data;
+        document.getElementById("user-body").innerHTML = data.map(u => `
+            <tr>
+                <td>${u.id}</td>
+                <td>${escapeHtml(u.username)}</td>
+                <td>${escapeHtml(u.nickname || "")}</td>
+                <td>${escapeHtml(u.email || "")}</td>
+                <td><span class="badge ${u.role === 'ADMIN' ? 'STRONG' : 'MEDIUM'}">${u.role}</span></td>
+                <td>${u.enabled ? '<span class="badge STRONG">启用</span>' : '<span class="badge WEAK">禁用</span>'}</td>
+                <td>${escapeHtml(u.createdAt || "")}</td>
+                <td style="white-space:nowrap">
+                    <button class="btn btn-sm ${u.enabled ? 'danger' : 'secondary'}"
+                            onclick="toggleUser(${u.id}, ${!u.enabled})">
+                        ${u.enabled ? '禁用' : '启用'}
+                    </button>
+                    <button class="btn btn-sm" onclick="openEdit(${u.id})">编辑</button>
+                    <button class="btn btn-sm danger" onclick="removeUser(${u.id})">删除</button>
+                </td>
+            </tr>`).join("");
+    }
+
+    function openEdit(id) {
+        const u = (window.__users || []).find(x => x.id === id);
+        if (!u) {
+            return;
+        }
+        document.getElementById("edit-id").value = u.id;
+        document.getElementById("edit-username").textContent = u.username;
+        document.getElementById("edit-nickname").value = u.nickname || "";
+        document.getElementById("edit-email").value = u.email || "";
+        document.getElementById("edit-role").value = u.role;
+        document.getElementById("edit-enabled").value = String(u.enabled);
+        document.getElementById("edit-password").value = "";
+        document.getElementById("edit-modal").classList.add("show");
+    }
+
+    function closeEdit() {
+        document.getElementById("edit-modal").classList.remove("show");
+    }
+
+    async function saveEdit() {
+        const id = document.getElementById("edit-id").value;
+        const payload = {
+            nickname: document.getElementById("edit-nickname").value.trim(),
+            email: document.getElementById("edit-email").value.trim(),
+            role: document.getElementById("edit-role").value,
+            enabled: document.getElementById("edit-enabled").value === "true"
+        };
+        const pwd = document.getElementById("edit-password").value;
+        if (pwd) {
+            payload.password = pwd;
+        }
+        try {
+            await api(`/api/admin/users/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+            toast("用户已更新");
+            closeEdit();
+            await loadUsers();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    async function removeUser(id) {
+        if (!confirm("确认删除该用户？该操作不可恢复。")) {
+            return;
+        }
+        try {
+            await api(`/api/admin/users/${id}`, { method: "DELETE" });
+            toast("用户已删除");
+            await loadUsers();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    async function toggleUser(id, enabled) {
+        try {
+            await api(`/api/admin/users/${id}/status?enabled=${enabled}`, { method: "PUT" });
+            toast("已更新用户状态");
+            loadUsers();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            await loadUsers();
+        } catch (e) {
+            toast(e.message, "error");
+        }
+    });
+</script>
+</body>
+</html>
