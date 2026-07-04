@@ -84,11 +84,12 @@ public class SalaryRecordSchemaMigration implements ApplicationRunner {
 	}
 
 	private Set<String> loadColumns(String tableName) {
-		String safeTableName = switch (tableName) {
-			case TABLE_NAME, LEGACY_TABLE_NAME -> tableName;
+		String sql = switch (tableName) {
+			case TABLE_NAME -> "PRAGMA table_info(salary_records)";
+			case LEGACY_TABLE_NAME -> "PRAGMA table_info(salary_records_legacy)";
 			default -> throw new IllegalArgumentException("不支持读取该表结构: " + tableName);
 		};
-		List<String> columns = jdbcTemplate.query("PRAGMA table_info(" + safeTableName + ")", COLUMN_NAME_MAPPER);
+		List<String> columns = jdbcTemplate.query(sql, COLUMN_NAME_MAPPER);
 		return new LinkedHashSet<>(columns);
 	}
 
@@ -128,7 +129,7 @@ public class SalaryRecordSchemaMigration implements ApplicationRunner {
 	}
 
 	private void copyLegacyData(Set<String> originalColumns) {
-		List<String> selectColumns = List.of(columnExpr(originalColumns, "rowid", "id"),
+		List<String> selectColumns = List.of(columnExpr(originalColumns, "rowid", "id", "rowid"),
 				columnExpr(originalColumns, "0", "user_id"), columnExpr(originalColumns, "0", "year"),
 				columnExpr(originalColumns, "0", "month"), columnExpr(originalColumns, "0", "base_salary"),
 				columnExpr(originalColumns, "0", "performance_salary"),
@@ -162,6 +163,9 @@ public class SalaryRecordSchemaMigration implements ApplicationRunner {
 				""".formatted(String.join(", ", selectColumns), LEGACY_TABLE_NAME));
 	}
 
+	/**
+	 * 旧表经 Hibernate 自动升级后，部分新列可能"存在但值全为 NULL"；此时仍需回退到旧列或默认值， 避免迁移后命中新表的 NOT NULL 约束。
+	 */
 	private String columnExpr(Set<String> columns, String defaultValue, String... candidates) {
 		List<String> existingColumns = List.of(candidates)
 			.stream()
