@@ -18,5 +18,6 @@ import java.time.LocalDateTime;
  * @author unknowIfGuestInDream
  */
 public record AdminUserResponse(Long id, String username, String nickname, String email, String role, boolean enabled,
-		@JsonFormat(pattern = DateTimeConfig.DATE_TIME_PATTERN, timezone = DateTimeConfig.TIME_ZONE) LocalDateTime createdAt) {
+		@JsonFormat(pattern = DateTimeConfig.DATE_TIME_PATTERN,
+				timezone = DateTimeConfig.TIME_ZONE) LocalDateTime createdAt) {
 }

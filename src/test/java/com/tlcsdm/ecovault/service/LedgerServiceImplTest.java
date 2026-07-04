@@ -120,8 +120,7 @@ class LedgerServiceImplTest {
 	@Test
 	@DisplayName("查询起始日期晚于结束日期应抛出异常")
 	void listRejectsInvalidRange() {
-		assertThatThrownBy(
-				() -> service.list(1L, null, LocalDate.of(2026, 2, 1), LocalDate.of(2026, 1, 1), null))
+		assertThatThrownBy(() -> service.list(1L, null, LocalDate.of(2026, 2, 1), LocalDate.of(2026, 1, 1), null))
 			.isInstanceOf(BusinessException.class);
 		verify(repository, never()).search(any(), any(), any(), any(), any());
 	}
@@ -141,8 +140,7 @@ class LedgerServiceImplTest {
 	@Test
 	@DisplayName("统计计算收入、支出、结余与按标签/月度汇总")
 	void statisticsAggregates() {
-		when(repository.search(eq(1L), isNull(), isNull(), isNull(), isNull()))
-			.thenReturn(List.of(salary, rent, food));
+		when(repository.search(eq(1L), isNull(), isNull(), isNull(), isNull())).thenReturn(List.of(salary, rent, food));
 
 		LedgerStatistics stats = service.statistics(1L, null, null, null, null);
 
@@ -167,8 +165,7 @@ class LedgerServiceImplTest {
 	@Test
 	@DisplayName("导出 CSV 含 BOM、表头并对含分隔符的字段转义")
 	void exportCsvEscapes() {
-		LedgerEntry tricky = entry(4L, LedgerType.EXPENSE, "88", LocalDate.of(2026, 2, 6), Set.of("生活"),
-				"含,逗号\"引号");
+		LedgerEntry tricky = entry(4L, LedgerType.EXPENSE, "88", LocalDate.of(2026, 2, 6), Set.of("生活"), "含,逗号\"引号");
 		when(repository.search(eq(1L), isNull(), isNull(), isNull(), isNull())).thenReturn(List.of(tricky));
 
 		String csv = service.exportCsv(1L, null, null, null, null);

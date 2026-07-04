@@ -33,7 +33,8 @@ class DataInitializerTest {
 	void createsAdminWhenAbsent() throws Exception {
 		UserRepository userRepository = mock(UserRepository.class);
 		when(userRepository.existsByUsername("admin")).thenReturn(false);
-		DataInitializer initializer = new DataInitializer(userRepository, passwordEncoder, mock(RolePermissionService.class), "admin", "Admin@123");
+		DataInitializer initializer = new DataInitializer(userRepository, passwordEncoder,
+				mock(RolePermissionService.class), "admin", "Admin@123");
 
 		initializer.run();
 
@@ -51,7 +52,8 @@ class DataInitializerTest {
 	void skipsWhenAdminExists() throws Exception {
 		UserRepository userRepository = mock(UserRepository.class);
 		when(userRepository.existsByUsername("admin")).thenReturn(true);
-		DataInitializer initializer = new DataInitializer(userRepository, passwordEncoder, mock(RolePermissionService.class), "admin", "Admin@123");
+		DataInitializer initializer = new DataInitializer(userRepository, passwordEncoder,
+				mock(RolePermissionService.class), "admin", "Admin@123");
 
 		initializer.run();
 

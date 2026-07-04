@@ -16,113 +16,113 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PageController {
 
-private final RolePermissionService rolePermissionService;
+	private final RolePermissionService rolePermissionService;
 
-public PageController(RolePermissionService rolePermissionService) {
-this.rolePermissionService = rolePermissionService;
-}
+	public PageController(RolePermissionService rolePermissionService) {
+		this.rolePermissionService = rolePermissionService;
+	}
 
-/**
- * 首页。
- * @return 视图名
- */
-@GetMapping("/")
-public String index() {
-return "index";
-}
+	/**
+	 * 首页。
+	 * @return 视图名
+	 */
+	@GetMapping("/")
+	public String index() {
+		return "index";
+	}
 
-/**
- * 登录页。
- * @return 视图名
- */
-@GetMapping("/login")
-public String login() {
-return "login";
-}
+	/**
+	 * 登录页。
+	 * @return 视图名
+	 */
+	@GetMapping("/login")
+	public String login() {
+		return "login";
+	}
 
-/**
- * 控制台首页。
- * @return 视图名
- */
-@GetMapping("/dashboard")
-public String dashboard() {
-return "dashboard";
-}
+	/**
+	 * 控制台首页。
+	 * @return 视图名
+	 */
+	@GetMapping("/dashboard")
+	public String dashboard() {
+		return "dashboard";
+	}
 
-/**
- * 密码管理页。
- * @return 视图名
- */
-@GetMapping("/passwords")
-public String passwords() {
-return guard("/passwords", "passwords");
-}
+	/**
+	 * 密码管理页。
+	 * @return 视图名
+	 */
+	@GetMapping("/passwords")
+	public String passwords() {
+		return guard("/passwords", "passwords");
+	}
 
-/**
- * 财务管理 - 工资管理页。
- * @return 视图名
- */
-@GetMapping("/finance")
-public String finance() {
-return guard("/finance", "finance");
-}
+	/**
+	 * 财务管理 - 工资管理页。
+	 * @return 视图名
+	 */
+	@GetMapping("/finance")
+	public String finance() {
+		return guard("/finance", "finance");
+	}
 
-/**
- * 财务管理 - 收入支出管理页。
- * @return 视图名
- */
-@GetMapping("/finance/ledger")
-public String ledger() {
-return guard("/finance/ledger", "ledger");
-}
+	/**
+	 * 财务管理 - 收入支出管理页。
+	 * @return 视图名
+	 */
+	@GetMapping("/finance/ledger")
+	public String ledger() {
+		return guard("/finance/ledger", "ledger");
+	}
 
-/**
- * 个人中心页。
- * @return 视图名
- */
-@GetMapping("/profile")
-public String profile() {
-return "profile";
-}
+	/**
+	 * 个人中心页。
+	 * @return 视图名
+	 */
+	@GetMapping("/profile")
+	public String profile() {
+		return "profile";
+	}
 
-/**
- * 后台管理 - 用户管理页 (仅管理员)。
- * @return 视图名
- */
-@GetMapping("/admin")
-public String admin() {
-return "admin";
-}
+	/**
+	 * 后台管理 - 用户管理页 (仅管理员)。
+	 * @return 视图名
+	 */
+	@GetMapping("/admin")
+	public String admin() {
+		return "admin";
+	}
 
-/**
- * 后台管理 - 日志管理页 (仅管理员)。
- * @return 视图名
- */
-@GetMapping("/admin/logs")
-public String logs() {
-return "logs";
-}
+	/**
+	 * 后台管理 - 日志管理页 (仅管理员)。
+	 * @return 视图名
+	 */
+	@GetMapping("/admin/logs")
+	public String logs() {
+		return "logs";
+	}
 
-/**
- * 后台管理 - 角色管理页 (仅管理员)。
- * @return 视图名
- */
-@GetMapping("/admin/roles")
-public String roles() {
-return "roles";
-}
+	/**
+	 * 后台管理 - 角色管理页 (仅管理员)。
+	 * @return 视图名
+	 */
+	@GetMapping("/admin/roles")
+	public String roles() {
+		return "roles";
+	}
 
-/**
- * 校验当前用户是否有权访问指定路径，无权限时重定向到控制台。
- * @param path 页面路径
- * @param view 目标视图名
- * @return 视图名或重定向
- */
-private String guard(String path, String view) {
-if (rolePermissionService.canAccessPath(SecurityUtils.getCurrentUser().getUser(), path)) {
-return view;
-}
-return "redirect:/dashboard";
-}
+	/**
+	 * 校验当前用户是否有权访问指定路径，无权限时重定向到控制台。
+	 * @param path 页面路径
+	 * @param view 目标视图名
+	 * @return 视图名或重定向
+	 */
+	private String guard(String path, String view) {
+		if (rolePermissionService.canAccessPath(SecurityUtils.getCurrentUser().getUser(), path)) {
+			return view;
+		}
+		return "redirect:/dashboard";
+	}
 
 }
