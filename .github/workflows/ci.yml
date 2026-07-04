@@ -4,6 +4,11 @@ name: CI 构建与测试
 on:
   pull_request:
     branches: [ "master" ]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'LICENSE'
+      - '.gitignore'
 
 permissions:
   contents: read
