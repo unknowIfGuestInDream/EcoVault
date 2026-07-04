@@ -139,6 +139,7 @@ class SalaryRecordSchemaResetTest {
 
 	private JdbcTemplate jdbcTemplate(String prefix) throws Exception {
 		Path dbPath = Files.createTempFile(prefix, ".db");
+		dbPath.toFile().deleteOnExit();
 		SQLiteDataSource dataSource = new SQLiteDataSource();
 		dataSource.setUrl("jdbc:sqlite:" + dbPath);
 		return new JdbcTemplate(dataSource);
