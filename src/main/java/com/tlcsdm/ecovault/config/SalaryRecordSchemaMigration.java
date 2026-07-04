@@ -84,7 +84,11 @@ public class SalaryRecordSchemaMigration implements ApplicationRunner {
 	}
 
 	private Set<String> loadColumns(String tableName) {
-		List<String> columns = jdbcTemplate.query("PRAGMA table_info(" + tableName + ")", COLUMN_NAME_MAPPER);
+		String safeTableName = switch (tableName) {
+			case TABLE_NAME, LEGACY_TABLE_NAME -> tableName;
+			default -> throw new IllegalArgumentException("不支持读取该表结构: " + tableName);
+		};
+		List<String> columns = jdbcTemplate.query("PRAGMA table_info(" + safeTableName + ")", COLUMN_NAME_MAPPER);
 		return new LinkedHashSet<>(columns);
 	}
 
@@ -124,23 +128,10 @@ public class SalaryRecordSchemaMigration implements ApplicationRunner {
 	}
 
 	private void copyLegacyData(Set<String> originalColumns) {
-		jdbcTemplate.execute("""
-				INSERT INTO salary_records (
-					id, user_id, year, month, base_salary, performance_salary, housing_allowance,
-					meal_allowance, transport_allowance, overtime_pay, overtime_allowance, bonus,
-					medical_base, pension_unemployment_base, housing_fund_base, medical_deduction,
-					pension_deduction, unemployment_deduction, housing_fund_deduction, income_tax,
-					serious_illness_medical, heating_allowance, remark, created_at, updated_at
-				)
-				SELECT %s, %s, %s, %s, %s, %s, %s,
-					%s, %s, %s, %s, %s,
-					%s, %s, %s, %s,
-					%s, %s, %s, %s,
-					%s, %s, %s, %s, %s
-				FROM salary_records_legacy
-				""".formatted(columnExpr(originalColumns, "NULL", "id"), columnExpr(originalColumns, "0", "user_id"),
-				columnExpr(originalColumns, "0", "year"), columnExpr(originalColumns, "0", "month"),
-				columnExpr(originalColumns, "0", "base_salary"), columnExpr(originalColumns, "0", "performance_salary"),
+		List<String> selectColumns = List.of(columnExpr(originalColumns, "rowid", "id"),
+				columnExpr(originalColumns, "0", "user_id"), columnExpr(originalColumns, "0", "year"),
+				columnExpr(originalColumns, "0", "month"), columnExpr(originalColumns, "0", "base_salary"),
+				columnExpr(originalColumns, "0", "performance_salary"),
 				columnExpr(originalColumns, "0", "housing_allowance", "allowance"),
 				columnExpr(originalColumns, "0", "meal_allowance"),
 				columnExpr(originalColumns, "0", "transport_allowance"),
@@ -157,7 +148,18 @@ public class SalaryRecordSchemaMigration implements ApplicationRunner {
 				columnExpr(originalColumns, "0", "serious_illness_medical"),
 				columnExpr(originalColumns, "0", "heating_allowance"), columnExpr(originalColumns, "NULL", "remark"),
 				columnExpr(originalColumns, "CURRENT_TIMESTAMP", "created_at"),
-				columnExpr(originalColumns, "CURRENT_TIMESTAMP", "updated_at")));
+				columnExpr(originalColumns, "CURRENT_TIMESTAMP", "updated_at"));
+		jdbcTemplate.execute("""
+				INSERT INTO salary_records (
+					id, user_id, year, month, base_salary, performance_salary, housing_allowance,
+					meal_allowance, transport_allowance, overtime_pay, overtime_allowance, bonus,
+					medical_base, pension_unemployment_base, housing_fund_base, medical_deduction,
+					pension_deduction, unemployment_deduction, housing_fund_deduction, income_tax,
+					serious_illness_medical, heating_allowance, remark, created_at, updated_at
+				)
+				SELECT %s
+				FROM %s
+				""".formatted(String.join(", ", selectColumns), LEGACY_TABLE_NAME));
 	}
 
 	private String columnExpr(Set<String> columns, String defaultValue, String... candidates) {
