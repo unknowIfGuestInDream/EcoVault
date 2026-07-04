@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 public class PasswordServiceImpl implements PasswordService {
 
-	private static final String MASKED_SECRET = "******";
+	public static final String MASKED_SECRET = "******";
 
 	private final PasswordEntryRepository repository;
 

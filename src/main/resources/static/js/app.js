@@ -134,11 +134,54 @@
             const closeEl = document.getElementById("confirm-close");
             const cancelEl = document.getElementById("confirm-cancel");
             const okEl = document.getElementById("confirm-ok");
+            const dialogEl = modal.querySelector(".confirm-modal");
+            const previousActiveElement = document.activeElement;
 
             titleEl.textContent = options.title || "请确认操作";
             messageEl.textContent = options.message || "确认继续执行当前操作吗？";
             cancelEl.textContent = options.cancelText || "取消";
             okEl.textContent = options.confirmText || "确认";
+            dialogEl.setAttribute("role", "dialog");
+            dialogEl.setAttribute("aria-modal", "true");
+            dialogEl.setAttribute("aria-labelledby", "confirm-title");
+            dialogEl.setAttribute("aria-describedby", "confirm-message");
+            dialogEl.setAttribute("tabindex", "-1");
+
+            const focusableElements = () => Array.from(dialogEl.querySelectorAll(
+                'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )).filter((element) => element.offsetParent !== null);
+
+            const handleKeyDown = (event) => {
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    cleanup(false);
+                    return;
+                }
+                if (event.key === "Enter" && event.target !== cancelEl) {
+                    event.preventDefault();
+                    cleanup(true);
+                    return;
+                }
+                if (event.key !== "Tab") {
+                    return;
+                }
+                const focusables = focusableElements();
+                if (!focusables.length) {
+                    event.preventDefault();
+                    dialogEl.focus();
+                    return;
+                }
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                }
+                else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            };
 
             const cleanup = (confirmed) => {
                 modal.classList.remove("show");
@@ -146,6 +189,10 @@
                 closeEl.onclick = null;
                 cancelEl.onclick = null;
                 okEl.onclick = null;
+                dialogEl.onkeydown = null;
+                if (previousActiveElement instanceof HTMLElement) {
+                    previousActiveElement.focus();
+                }
                 resolve(confirmed);
             };
 
@@ -158,6 +205,9 @@
             cancelEl.onclick = () => cleanup(false);
             okEl.onclick = () => cleanup(true);
             modal.classList.add("show");
+            dialogEl.onkeydown = handleKeyDown;
+            const focusables = focusableElements();
+            (focusables[0] || dialogEl).focus();
         });
     };
 

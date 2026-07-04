@@ -49,7 +49,10 @@
 <!-- 录入弹窗 -->
 <div class="modal-backdrop" id="modal">
     <div class="glass modal" style="max-width:640px">
-        <h3 id="modal-title">录入工资</h3>
+        <div class="modal-header">
+            <h3 id="modal-title">录入工资</h3>
+            <button class="icon-btn modal-close" onclick="closeModal()" type="button" aria-label="关闭">✕</button>
+        </div>
         <input type="hidden" id="rec-id"/>
         <div class="row">
             <div style="flex:1"><label>年份 *</label><input id="f-year" type="number"/></div>
