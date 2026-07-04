@@ -11,5 +11,4 @@
 
 ### Changed
 
-- 启动时自动迁移旧版 `salary_records` 表中的 `allowance` / `deduction` 遗留列，避免升级到分类工资模型后因 SQLite `NOT NULL` 约束导致工资或年终奖录入失败。
 - 初版发布
