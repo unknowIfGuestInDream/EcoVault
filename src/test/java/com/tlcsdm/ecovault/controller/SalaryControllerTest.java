@@ -75,7 +75,11 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 		// 统计
 		mockMvc.perform(get("/api/finance/salaries/statistics").param("year", "2030").with(authentication(auth())))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.monthlyTrend.length()").value(2));
+			.andExpect(jsonPath("$.data.monthlyTrend.length()").value(2))
+			.andExpect(jsonPath("$.data.composition.baseSalary").value(21000))
+			.andExpect(jsonPath("$.data.composition.bonus").value(2000))
+			.andExpect(jsonPath("$.data.deductionComposition.medical").value(1600))
+			.andExpect(jsonPath("$.data.deductionComposition.incomeTax").value(0));
 
 		// 更新指定记录：仅基本工资 12000，其余为 0 -> 实发 = 12000
 		SalaryRequest update = new SalaryRequest(2030, 1, new BigDecimal("12000"), null, null, null, null, null, null,
@@ -109,17 +113,30 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 		mockMvc.perform(get("/api/finance/salaries/statistics").param("year", "2032").with(authentication(auth())))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.totalAnnualBonus").value(50000))
-			.andExpect(jsonPath("$.data.monthlyTrend.length()").value(0));
+			.andExpect(jsonPath("$.data.monthlyTrend.length()").value(0))
+			.andExpect(jsonPath("$.data.composition.baseSalary").value(0))
+			.andExpect(jsonPath("$.data.deductionComposition.medical").value(0));
 	}
 
 	@Test
 	@DisplayName("导出工资 CSV 含 BOM、表头与附件头")
 	void exportCsv() throws Exception {
 		save(2031, 6, "9000");
+		SalaryRequest annual = new SalaryRequest(2031, 0, null, null, null, null, null, null, null,
+				new BigDecimal("30000"), null, null, null, null, null, null, null, null, null, null, "年终奖");
+		mockMvc
+			.perform(post("/api/finance/salaries").with(authentication(auth()))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(annual)))
+			.andExpect(status().isOk());
 		mockMvc.perform(get("/api/finance/salaries/export").param("year", "2031").with(authentication(auth())))
 			.andExpect(status().isOk())
 			.andExpect(header().string("Content-Disposition", containsString("salary.csv")))
-			.andExpect(content().string(containsString("年份,月份,基本工资,绩效工资")));
+			.andExpect(content().string(containsString("年份,月份,基本工资,绩效工资")))
+			.andExpect(content().string(containsString("医疗,养老,失业,公积金")))
+			.andExpect(content().string(containsString("税后工资")))
+			.andExpect(content().string(containsString("年终奖")));
 	}
 
 	@Test

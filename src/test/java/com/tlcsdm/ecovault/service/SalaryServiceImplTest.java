@@ -85,8 +85,18 @@ class SalaryServiceImplTest {
 		assertThat(stats.monthlyTrend()).hasSize(2);
 		assertThat(stats.monthlyTrend().get(0).label()).isEqualTo("2025-01");
 		assertThat(stats.composition().baseSalary()).isEqualByComparingTo("20000");
+		assertThat(stats.composition().performanceSalary()).isEqualByComparingTo("0");
 		assertThat(stats.composition().housingAllowance()).isEqualByComparingTo("1000");
+		assertThat(stats.composition().mealAllowance()).isEqualByComparingTo("0");
+		assertThat(stats.composition().transportAllowance()).isEqualByComparingTo("0");
+		assertThat(stats.composition().overtimePay()).isEqualByComparingTo("0");
+		assertThat(stats.composition().overtimeAllowance()).isEqualByComparingTo("0");
+		assertThat(stats.composition().bonus()).isEqualByComparingTo("2000");
 		assertThat(stats.deductionComposition().medical()).isEqualByComparingTo("2000");
+		assertThat(stats.deductionComposition().pension()).isEqualByComparingTo("0");
+		assertThat(stats.deductionComposition().unemployment()).isEqualByComparingTo("0");
+		assertThat(stats.deductionComposition().housingFund()).isEqualByComparingTo("0");
+		assertThat(stats.deductionComposition().incomeTax()).isEqualByComparingTo("0");
 	}
 
 	@Test
