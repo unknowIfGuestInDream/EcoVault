@@ -78,6 +78,89 @@
         setTimeout(() => el.classList.remove("show"), 2800);
     };
 
+    /**
+     * 复制文本到剪贴板。
+     * @param {string} text 待复制内容
+     * @returns {Promise<void>} 复制结果
+     */
+    window.copyText = async function (text) {
+        if (!text) {
+            throw new Error("没有可复制的内容");
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+        const input = document.createElement("textarea");
+        input.value = text;
+        input.setAttribute("readonly", "readonly");
+        input.style.position = "fixed";
+        input.style.left = "-9999px";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+    };
+
+    /**
+     * 站内确认弹窗。
+     * @param {object} options 弹窗选项
+     * @returns {Promise<boolean>} 是否确认
+     */
+    window.confirmDialog = function (options = {}) {
+        return new Promise((resolve) => {
+            let modal = document.getElementById("global-confirm-modal");
+            if (!modal) {
+                modal = document.createElement("div");
+                modal.id = "global-confirm-modal";
+                modal.className = "modal-backdrop";
+                modal.innerHTML = `
+                    <div class="glass modal confirm-modal">
+                        <div class="modal-header">
+                            <h3 id="confirm-title">请确认操作</h3>
+                            <button class="icon-btn modal-close" id="confirm-close" type="button" aria-label="关闭">✕</button>
+                        </div>
+                        <p class="muted" id="confirm-message">确认继续执行当前操作吗？</p>
+                        <div class="confirm-actions">
+                            <button class="btn secondary" id="confirm-cancel" type="button">取消</button>
+                            <button class="btn danger" id="confirm-ok" type="button">确认</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+            }
+
+            const titleEl = document.getElementById("confirm-title");
+            const messageEl = document.getElementById("confirm-message");
+            const closeEl = document.getElementById("confirm-close");
+            const cancelEl = document.getElementById("confirm-cancel");
+            const okEl = document.getElementById("confirm-ok");
+
+            titleEl.textContent = options.title || "请确认操作";
+            messageEl.textContent = options.message || "确认继续执行当前操作吗？";
+            cancelEl.textContent = options.cancelText || "取消";
+            okEl.textContent = options.confirmText || "确认";
+
+            const cleanup = (confirmed) => {
+                modal.classList.remove("show");
+                modal.onclick = null;
+                closeEl.onclick = null;
+                cancelEl.onclick = null;
+                okEl.onclick = null;
+                resolve(confirmed);
+            };
+
+            modal.onclick = (event) => {
+                if (event.target === modal) {
+                    cleanup(false);
+                }
+            };
+            closeEl.onclick = () => cleanup(false);
+            cancelEl.onclick = () => cleanup(false);
+            okEl.onclick = () => cleanup(true);
+            modal.classList.add("show");
+        });
+    };
+
     /** 退出登录 */
     window.logout = async function () {
         try {

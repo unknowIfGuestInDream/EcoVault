@@ -16,7 +16,9 @@ import com.tlcsdm.ecovault.service.AuthService;
 import com.tlcsdm.ecovault.service.RolePermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,12 +52,16 @@ public class AdminController {
 
 	private final ObjectProvider<BuildProperties> buildProperties;
 
+	private final Environment environment;
+
 	public AdminController(AdminService adminService, AuthService authService,
-			RolePermissionService rolePermissionService, ObjectProvider<BuildProperties> buildProperties) {
+			RolePermissionService rolePermissionService, ObjectProvider<BuildProperties> buildProperties,
+			Environment environment) {
 		this.adminService = adminService;
 		this.authService = authService;
 		this.rolePermissionService = rolePermissionService;
 		this.buildProperties = buildProperties;
+		this.environment = environment;
 	}
 
 	/**
@@ -166,7 +172,11 @@ public class AdminController {
 		else {
 			info.put("version", "开发环境 (未生成构建信息)");
 		}
+		info.put("springBootVersion", SpringBootVersion.getVersion());
 		info.put("javaVersion", System.getProperty("java.version"));
+		info.put("javaVendor", System.getProperty("java.vendor"));
+		info.put("fileEncoding", System.getProperty("file.encoding"));
+		info.put("activeProfiles", String.join(", ", environment.getActiveProfiles()));
 		return ApiResponse.success(info);
 	}
 

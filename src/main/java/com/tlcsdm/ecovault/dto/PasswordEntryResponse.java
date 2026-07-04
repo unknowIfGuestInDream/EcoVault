@@ -4,7 +4,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 密码条目响应 (敏感字段已解密)。
+ * 密码条目响应。
+ *
+ * <p>
+ * 详情/新增/编辑接口返回解密后的敏感字段；列表接口可按需对密码等字段做脱敏处理。
+ * </p>
  *
  * @param id 条目 ID
  * @param title 标题

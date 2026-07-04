@@ -78,6 +78,7 @@ class PageControllerTest extends AbstractWebMvcTest {
 			.andExpect(status().isOk())
 			.andExpect(content().string(containsString("构建信息")))
 			.andExpect(content().string(containsString("系统状态")))
+			.andExpect(content().string(containsString("Actuator 端点概览")))
 			.andExpect(content().string(not(containsString("后台首页"))))
 			.andExpect(content().string(not(containsString("创建用户"))))
 			.andExpect(content().string(not(containsString("用户列表"))));
@@ -111,6 +112,20 @@ class PageControllerTest extends AbstractWebMvcTest {
 					.content("{\"pages\":[\"passwords\",\"salary\",\"ledger\"]}"))
 				.andExpect(status().isOk());
 		}
+	}
+
+	@Test
+	@DisplayName("密码管理页默认使用表格展示并提供详情与关闭按钮")
+	void passwordsPageShowsTableAndDetailUi() throws Exception {
+		var user = authFor(securityUser(1002L, "pwuser", Role.USER));
+		mockMvc.perform(get("/passwords").with(authentication(user)))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("列表默认仅显示脱敏密码")))
+			.andExpect(content().string(containsString("<th>密码</th>")))
+			.andExpect(content().string(containsString("密码详情")))
+			.andExpect(content().string(containsString("aria-label=\"关闭\"")))
+			.andExpect(content().string(not(containsString("分类</label>"))))
+			.andExpect(content().string(not(containsString("strengthLevel"))));
 	}
 
 }

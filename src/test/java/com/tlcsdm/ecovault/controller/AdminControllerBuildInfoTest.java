@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.core.env.Environment;
 
 import java.util.Map;
 import java.util.Properties;
@@ -33,11 +34,14 @@ class AdminControllerBuildInfoTest {
 	private final com.tlcsdm.ecovault.service.RolePermissionService rolePermissionService = mock(
 			com.tlcsdm.ecovault.service.RolePermissionService.class);
 
+	private final Environment environment = mock(Environment.class);
+
 	@SuppressWarnings("unchecked")
 	private AdminController controllerWith(BuildProperties props) {
 		ObjectProvider<BuildProperties> provider = mock(ObjectProvider.class);
 		when(provider.getIfAvailable()).thenReturn(props);
-		return new AdminController(adminService, authService, rolePermissionService, provider);
+		when(environment.getActiveProfiles()).thenReturn(new String[] { "prod" });
+		return new AdminController(adminService, authService, rolePermissionService, provider, environment);
 	}
 
 	@Test
@@ -56,6 +60,7 @@ class AdminControllerBuildInfoTest {
 		assertThat(response.getData()).containsEntry("version", "1.2.3").containsEntry("artifact", "ecovault");
 		assertThat(response.getData().get("buildTime")).isNotNull();
 		assertThat(response.getData()).containsKey("javaVersion");
+		assertThat(response.getData()).containsEntry("activeProfiles", "prod");
 	}
 
 	@Test
