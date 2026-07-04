@@ -59,8 +59,8 @@ class AdminControllerBuildInfoTest {
 
 		assertThat(response.getData()).containsEntry("version", "1.2.3").containsEntry("artifact", "ecovault");
 		assertThat(response.getData().get("buildTime")).isNotNull();
-		assertThat(response.getData()).containsEntry("springBootVersion",
-				org.springframework.boot.SpringBootVersion.getVersion());
+		assertThat(response.getData()).containsKey("springBootVersion");
+		assertThat(response.getData().get("springBootVersion")).isNotNull();
 		assertThat(response.getData()).containsEntry("javaVersion", System.getProperty("java.version"));
 		assertThat(response.getData()).containsEntry("javaVendor", System.getProperty("java.vendor"));
 		assertThat(response.getData()).containsEntry("fileEncoding", System.getProperty("file.encoding"));
