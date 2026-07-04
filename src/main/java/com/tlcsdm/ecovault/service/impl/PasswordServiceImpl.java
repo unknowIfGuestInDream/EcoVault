@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 @Service
 public class PasswordServiceImpl implements PasswordService {
 
+	public static final String MASKED_SECRET = "******";
+
 	private final PasswordEntryRepository repository;
 
 	private final AesUtil aesUtil;
@@ -78,7 +80,7 @@ public class PasswordServiceImpl implements PasswordService {
 				? repository.findByUserIdOrderByUpdatedAtDesc(userId)
 				: repository.findByUserIdAndTitleContainingIgnoreCaseOrderByUpdatedAtDesc(userId, keyword.trim());
 
-		List<PasswordEntryResponse> responses = entries.stream().map(this::toResponse).collect(Collectors.toList());
+		List<PasswordEntryResponse> responses = entries.stream().map(this::toListResponse).collect(Collectors.toList());
 
 		// 标签筛选在解密后进行 (标签以密文存储)
 		if (tag != null && !tag.isBlank()) {
@@ -147,10 +149,24 @@ public class PasswordServiceImpl implements PasswordService {
 	 * @return 响应
 	 */
 	private PasswordEntryResponse toResponse(PasswordEntry entry) {
-		return new PasswordEntryResponse(entry.getId(), entry.getTitle(), entry.getAccount(),
-				aesUtil.decrypt(entry.getSecret()), entry.getUrl(), aesUtil.decrypt(entry.getNotes()),
-				entry.getCategory(), decryptTags(entry.getTags()), entry.getStrengthScore(), entry.getStrengthLevel(),
-				entry.getCreatedAt(), entry.getUpdatedAt());
+		return buildResponse(entry, aesUtil.decrypt(entry.getSecret()), aesUtil.decrypt(entry.getNotes()),
+				entry.getCategory(), entry.getStrengthScore(), entry.getStrengthLevel());
+	}
+
+	/**
+	 * 实体转列表响应（默认脱敏密码，避免列表直接暴露明文）。
+	 * @param entry 实体
+	 * @return 列表响应
+	 */
+	private PasswordEntryResponse toListResponse(PasswordEntry entry) {
+		return buildResponse(entry, MASKED_SECRET, null, null, 0, null);
+	}
+
+	private PasswordEntryResponse buildResponse(PasswordEntry entry, String secret, String notes, String category,
+			int strengthScore, String strengthLevel) {
+		return new PasswordEntryResponse(entry.getId(), entry.getTitle(), entry.getAccount(), secret, entry.getUrl(),
+				notes, category, decryptTags(entry.getTags()), strengthScore, strengthLevel, entry.getCreatedAt(),
+				entry.getUpdatedAt());
 	}
 
 }

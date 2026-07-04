@@ -58,12 +58,14 @@ class PasswordControllerTest extends AbstractWebMvcTest {
 		// 详情
 		mockMvc.perform(get("/api/passwords/{id}", id).with(authentication(auth())))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.title").value("GitHub"));
+			.andExpect(jsonPath("$.data.title").value("GitHub"))
+			.andExpect(jsonPath("$.data.secret").value("Abcdef123!@#"));
 
 		// 列表 (含关键字与标签筛选)
 		mockMvc.perform(get("/api/passwords").param("keyword", "Git").param("tag", "工作").with(authentication(auth())))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data[0].title").value("GitHub"));
+			.andExpect(jsonPath("$.data[0].title").value("GitHub"))
+			.andExpect(jsonPath("$.data[0].secret").value("******"));
 
 		// 更新
 		PasswordEntryRequest update = new PasswordEntryRequest("GitLab", "acc2", "NewSecret1!", "https://gitlab.com",

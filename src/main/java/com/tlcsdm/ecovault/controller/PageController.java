@@ -2,7 +2,9 @@ package com.tlcsdm.ecovault.controller;
 
 import com.tlcsdm.ecovault.security.SecurityUtils;
 import com.tlcsdm.ecovault.service.RolePermissionService;
+import com.tlcsdm.ecovault.service.impl.PasswordServiceImpl;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
@@ -51,10 +53,12 @@ public class PageController {
 
 	/**
 	 * 密码管理页。
+	 * @param model 视图模型
 	 * @return 视图名
 	 */
 	@GetMapping("/passwords")
-	public String passwords() {
+	public String passwords(Model model) {
+		model.addAttribute("maskedSecret", PasswordServiceImpl.MASKED_SECRET);
 		return guard("/passwords", "passwords");
 	}
 

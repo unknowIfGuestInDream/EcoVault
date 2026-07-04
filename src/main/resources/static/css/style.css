@@ -255,6 +255,22 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.82rem;
 }
 
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background var(--transition), transform var(--transition);
+}
+
+.icon-btn:hover {
+    background: rgba(109, 94, 252, 0.15);
+    transform: translateY(-1px);
+}
+
 .row {
     display: flex;
     gap: 16px;
@@ -329,6 +345,44 @@ th, td {
 th {
     color: var(--text-muted);
     font-weight: 600;
+}
+
+.password-table td {
+    vertical-align: top;
+}
+
+.password-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.secret-value {
+    display: inline-block;
+    min-width: 96px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--glass-border);
+    word-break: break-all;
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.inline-tag {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 6px 6px 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(109, 94, 252, 0.12);
+    color: var(--accent);
+    font-size: 0.82rem;
 }
 
 .badge {
@@ -440,6 +494,50 @@ th {
     overflow-y: auto;
 }
 
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.modal-close {
+    flex-shrink: 0;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.detail-grid dt {
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.detail-grid dd {
+    margin: 0;
+    word-break: break-word;
+}
+
+.detail-span {
+    grid-column: 1 / -1;
+}
+
+.confirm-modal {
+    max-width: 420px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
 @media (max-width: 640px) {
     .navbar {
         flex-direction: column;
@@ -448,6 +546,10 @@ th {
 
     .hero h1 {
         font-size: 1.8rem;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
     }
 }
 

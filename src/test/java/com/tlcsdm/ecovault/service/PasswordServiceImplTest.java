@@ -233,6 +233,9 @@ class PasswordServiceImplTest {
 		List<PasswordEntryResponse> result = service.list(1L, null, null);
 
 		assertThat(result).hasSize(1);
+		assertThat(result.get(0).secret()).isEqualTo("******");
+		assertThat(result.get(0).notes()).isNull();
+		assertThat(result.get(0).category()).isNull();
 		assertThat(result.get(0).tags()).containsExactly("工作");
 	}
 
