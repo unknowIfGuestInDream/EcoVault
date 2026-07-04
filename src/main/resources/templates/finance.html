@@ -206,11 +206,7 @@
         window.location.href = "/api/finance/salaries/export" + yearParam();
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const me = await api("/api/auth/me");
-            if (me.role === "ADMIN") document.getElementById("nav-admin").style.display = "inline-block";
-        } catch (e) {}
+    document.addEventListener("DOMContentLoaded", () => {
         reload();
     });
 </script>

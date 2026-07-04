@@ -215,7 +215,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-        document.getElementById("nav-admin").style.display = "inline-block";
         try {
             await Promise.all([loadUsers(), loadBuild(), loadHealth()]);
         } catch (e) {
