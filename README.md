@@ -6,21 +6,6 @@
 
 EcoVault（生态保险箱）是一个个人数据安全存储与管理平台，面向个人、家庭与小团队私有化部署场景，提供密码、财务、日志与后台管理能力。项目强调安全存储、权限隔离、可审计、易部署与现代化用户体验。
 
-```mermaid
-graph TD
-    A[浏览器] --> B[Thymeleaf 页面]
-    A --> C[RESTful API]
-    B --> D[Controller]
-    C --> D
-    D --> E[Service 业务层]
-    E --> F[Repository 数据访问]
-    F --> G[(SQLite 3\ndata/ecovault.db)]
-    E --> H[Security\nJWT / RBAC / 单设备登录]
-    E --> I[AOP 操作日志]
-    E --> J[AES 加密工具]
-    K[ADMIN] --> L[管理后台 / Actuator]
-```
-
 ## 项目简介
 
 EcoVault 使用 Java 25 与 Spring Boot 4 构建。系统默认使用嵌入式 SQLite 数据库文件 `data/ecovault.db`，前端以 Thymeleaf 服务端渲染为主。
