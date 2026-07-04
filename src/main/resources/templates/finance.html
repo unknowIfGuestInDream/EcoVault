@@ -53,7 +53,7 @@
         <input type="hidden" id="rec-id"/>
         <div class="row">
             <div style="flex:1"><label>年份 *</label><input id="f-year" type="number"/></div>
-            <div style="flex:1"><label>月份 *</label><input id="f-month" type="number" min="1" max="12"/></div>
+            <div style="flex:1"><label>月份（年终奖可留空）</label><input id="f-month" type="number" min="1" max="12" placeholder="1-12，年终奖可留空"/></div>
         </div>
         <label style="display:flex; align-items:center; gap:8px; margin-top:8px">
             <input id="f-annual" type="checkbox" style="width:auto" onchange="toggleAnnual()"/> 年终奖 (按年录入，无需月份)
