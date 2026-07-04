@@ -165,17 +165,35 @@ class EntityTest {
 	}
 
 	@Test
-	@DisplayName("SalaryRecord 读写、生命周期与税前/实发计算正确")
+	@DisplayName("SalaryRecord 读写、生命周期与各派生金额计算正确")
 	void salaryRecordAccessorsAndDerived() {
 		SalaryRecord record = new SalaryRecord();
 		record.setId(8L);
 		record.setUserId(9L);
 		record.setYear(2025);
 		record.setMonth(6);
+		// 发放项
 		record.setBaseSalary(new BigDecimal("10000"));
-		record.setBonus(new BigDecimal("2000"));
-		record.setAllowance(new BigDecimal("500"));
-		record.setDeduction(new BigDecimal("1000"));
+		record.setPerformanceSalary(new BigDecimal("2000"));
+		record.setHousingAllowance(new BigDecimal("800"));
+		record.setMealAllowance(new BigDecimal("300"));
+		record.setTransportAllowance(new BigDecimal("200"));
+		record.setOvertimePay(new BigDecimal("400"));
+		record.setOvertimeAllowance(new BigDecimal("100"));
+		record.setBonus(new BigDecimal("1000"));
+		// 缴费基数
+		record.setMedicalBase(new BigDecimal("10000"));
+		record.setPensionUnemploymentBase(new BigDecimal("10000"));
+		record.setHousingFundBase(new BigDecimal("10000"));
+		// 扣除项
+		record.setMedicalDeduction(new BigDecimal("200"));
+		record.setPensionDeduction(new BigDecimal("800"));
+		record.setUnemploymentDeduction(new BigDecimal("50"));
+		record.setHousingFundDeduction(new BigDecimal("1200"));
+		record.setIncomeTax(new BigDecimal("500"));
+		// 税后附加项
+		record.setSeriousIllnessMedical(new BigDecimal("150"));
+		record.setHeatingAllowance(new BigDecimal("100"));
 		record.setRemark("6 月工资");
 		LocalDateTime t = LocalDateTime.now();
 		record.setCreatedAt(t);
@@ -185,17 +203,39 @@ class EntityTest {
 		assertThat(record.getUserId()).isEqualTo(9L);
 		assertThat(record.getYear()).isEqualTo(2025);
 		assertThat(record.getMonth()).isEqualTo(6);
+		assertThat(record.isAnnualBonus()).isFalse();
 		assertThat(record.getBaseSalary()).isEqualByComparingTo("10000");
-		assertThat(record.getBonus()).isEqualByComparingTo("2000");
-		assertThat(record.getAllowance()).isEqualByComparingTo("500");
-		assertThat(record.getDeduction()).isEqualByComparingTo("1000");
+		assertThat(record.getPerformanceSalary()).isEqualByComparingTo("2000");
+		assertThat(record.getHousingAllowance()).isEqualByComparingTo("800");
+		assertThat(record.getMealAllowance()).isEqualByComparingTo("300");
+		assertThat(record.getTransportAllowance()).isEqualByComparingTo("200");
+		assertThat(record.getOvertimePay()).isEqualByComparingTo("400");
+		assertThat(record.getOvertimeAllowance()).isEqualByComparingTo("100");
+		assertThat(record.getBonus()).isEqualByComparingTo("1000");
+		assertThat(record.getMedicalBase()).isEqualByComparingTo("10000");
+		assertThat(record.getPensionUnemploymentBase()).isEqualByComparingTo("10000");
+		assertThat(record.getHousingFundBase()).isEqualByComparingTo("10000");
+		assertThat(record.getMedicalDeduction()).isEqualByComparingTo("200");
+		assertThat(record.getPensionDeduction()).isEqualByComparingTo("800");
+		assertThat(record.getUnemploymentDeduction()).isEqualByComparingTo("50");
+		assertThat(record.getHousingFundDeduction()).isEqualByComparingTo("1200");
+		assertThat(record.getIncomeTax()).isEqualByComparingTo("500");
+		assertThat(record.getSeriousIllnessMedical()).isEqualByComparingTo("150");
+		assertThat(record.getHeatingAllowance()).isEqualByComparingTo("100");
 		assertThat(record.getRemark()).isEqualTo("6 月工资");
 		assertThat(record.getCreatedAt()).isEqualTo(t);
 		assertThat(record.getUpdatedAt()).isEqualTo(t);
 
-		// 税前 = 10000 + 2000 + 500 = 12500; 实发 = 12500 - 1000 = 11500
-		assertThat(record.getGross()).isEqualByComparingTo("12500");
-		assertThat(record.getNet()).isEqualByComparingTo("11500");
+		// 应发 = 10000+2000+800+300+200+400+100+1000 = 14800
+		assertThat(record.getGrossPay()).isEqualByComparingTo("14800");
+		// 扣除项合计 = 200+800+50+1200 = 2250
+		assertThat(record.getTotalDeduction()).isEqualByComparingTo("2250");
+		// 税前 = 14800 - 2250 = 12550
+		assertThat(record.getPreTaxSalary()).isEqualByComparingTo("12550");
+		// 税后 = 12550 - 500 = 12050
+		assertThat(record.getAfterTaxSalary()).isEqualByComparingTo("12050");
+		// 实发 = 12050 + 150 + 100 = 12300
+		assertThat(record.getNetPay()).isEqualByComparingTo("12300");
 
 		SalaryRecord fresh = new SalaryRecord();
 		fresh.prePersist();
@@ -206,16 +246,38 @@ class EntityTest {
 	}
 
 	@Test
-	@DisplayName("SalaryRecord 各金额为 null 时税前/实发按零计算")
+	@DisplayName("SalaryRecord 各金额为 null 时各派生金额按零计算")
 	void salaryRecordNullAmounts() {
 		SalaryRecord record = new SalaryRecord();
 		record.setBaseSalary(null);
+		record.setPerformanceSalary(null);
+		record.setHousingAllowance(null);
+		record.setMealAllowance(null);
+		record.setTransportAllowance(null);
+		record.setOvertimePay(null);
+		record.setOvertimeAllowance(null);
 		record.setBonus(null);
-		record.setAllowance(null);
-		record.setDeduction(null);
+		record.setMedicalDeduction(null);
+		record.setPensionDeduction(null);
+		record.setUnemploymentDeduction(null);
+		record.setHousingFundDeduction(null);
+		record.setIncomeTax(null);
+		record.setSeriousIllnessMedical(null);
+		record.setHeatingAllowance(null);
 
-		assertThat(record.getGross()).isEqualByComparingTo("0");
-		assertThat(record.getNet()).isEqualByComparingTo("0");
+		assertThat(record.getGrossPay()).isEqualByComparingTo("0");
+		assertThat(record.getTotalDeduction()).isEqualByComparingTo("0");
+		assertThat(record.getPreTaxSalary()).isEqualByComparingTo("0");
+		assertThat(record.getAfterTaxSalary()).isEqualByComparingTo("0");
+		assertThat(record.getNetPay()).isEqualByComparingTo("0");
+	}
+
+	@Test
+	@DisplayName("SalaryRecord 月份为 0 时识别为年终奖记录")
+	void salaryRecordAnnualBonus() {
+		SalaryRecord record = new SalaryRecord();
+		record.setMonth(SalaryRecord.ANNUAL_BONUS_MONTH);
+		assertThat(record.isAnnualBonus()).isTrue();
 	}
 
 }
