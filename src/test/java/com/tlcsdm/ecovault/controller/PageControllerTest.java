@@ -50,6 +50,16 @@ class PageControllerTest extends AbstractWebMvcTest {
 	}
 
 	@Test
+	@DisplayName("工资页明确提示年终奖可不填写月份")
+	void financePageShowsAnnualBonusMonthHint() throws Exception {
+		var user = authFor(securityUser(1001L, "financeuser", Role.USER));
+		mockMvc.perform(get("/finance").with(authentication(user)))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("月份（年终奖可留空）")))
+			.andExpect(content().string(containsString("const month = annual ? 0")));
+	}
+
+	@Test
 	@DisplayName("后台页面仅管理员可访问，普通用户 403")
 	void adminPage() throws Exception {
 		var admin = authFor(securityUser(1L, "admin", Role.ADMIN));

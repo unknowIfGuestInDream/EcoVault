@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 财务 - 工资接口集成测试，覆盖录入、更新、统计、导出与删除。
+ * 财务 - 工资接口集成测试，覆盖录入、更新、统计、导出、年终奖与删除。
  *
  * @author unknowIfGuestInDream
  */
@@ -35,14 +35,21 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 		return authFor(owner);
 	}
 
+	/**
+	 * 构造工资请求：基本工资 base、奖金 1000、租房补助 500、医疗扣除 800，其余为 null。
+	 */
+	private SalaryRequest requestOf(int year, int month, String base) {
+		return new SalaryRequest(year, month, new BigDecimal(base), null, new BigDecimal("500"), null, null, null, null,
+				new BigDecimal("1000"), null, null, null, new BigDecimal("800"), null, null, null, null, null, null,
+				"备注");
+	}
+
 	private long save(int year, int month, String base) throws Exception {
-		SalaryRequest request = new SalaryRequest(year, month, new BigDecimal(base), new BigDecimal("1000"),
-				new BigDecimal("500"), new BigDecimal("800"), "备注");
 		String body = mockMvc
 			.perform(post("/api/finance/salaries").with(authentication(auth()))
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
+				.content(objectMapper.writeValueAsString(requestOf(year, month, base))))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.code").value(0))
 			.andReturn()
@@ -68,18 +75,22 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 		// 统计
 		mockMvc.perform(get("/api/finance/salaries/statistics").param("year", "2030").with(authentication(auth())))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.monthlyTrend.length()").value(2));
+			.andExpect(jsonPath("$.data.monthlyTrend.length()").value(2))
+			.andExpect(jsonPath("$.data.composition.baseSalary").value(21000))
+			.andExpect(jsonPath("$.data.composition.bonus").value(2000))
+			.andExpect(jsonPath("$.data.deductionComposition.medical").value(1600))
+			.andExpect(jsonPath("$.data.deductionComposition.incomeTax").value(0));
 
-		// 更新指定记录
-		SalaryRequest update = new SalaryRequest(2030, 1, new BigDecimal("12000"), new BigDecimal("0"),
-				new BigDecimal("0"), new BigDecimal("0"), "调整");
+		// 更新指定记录：仅基本工资 12000，其余为 0 -> 实发 = 12000
+		SalaryRequest update = new SalaryRequest(2030, 1, new BigDecimal("12000"), null, null, null, null, null, null,
+				null, null, null, null, null, null, null, null, null, null, null, "调整");
 		mockMvc
 			.perform(put("/api/finance/salaries/{id}", id).with(authentication(auth()))
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(update)))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.net").value(12000));
+			.andExpect(jsonPath("$.data.netPay").value(12000));
 
 		// 删除
 		mockMvc.perform(delete("/api/finance/salaries/{id}", id).with(authentication(auth())).with(csrf()))
@@ -87,25 +98,55 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 	}
 
 	@Test
+	@DisplayName("录入年终奖记录 (月份为 0) 并在统计中单独汇总")
+	void annualBonusFlow() throws Exception {
+		SalaryRequest annual = new SalaryRequest(2032, 0, null, null, null, null, null, null, null,
+				new BigDecimal("50000"), null, null, null, null, null, null, null, null, null, null, "年终奖");
+		mockMvc
+			.perform(post("/api/finance/salaries").with(authentication(auth()))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(annual)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.annualBonus").value(true));
+
+		mockMvc.perform(get("/api/finance/salaries/statistics").param("year", "2032").with(authentication(auth())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.totalAnnualBonus").value(50000))
+			.andExpect(jsonPath("$.data.monthlyTrend.length()").value(0))
+			.andExpect(jsonPath("$.data.composition.baseSalary").value(0))
+			.andExpect(jsonPath("$.data.deductionComposition.medical").value(0));
+	}
+
+	@Test
 	@DisplayName("导出工资 CSV 含 BOM、表头与附件头")
 	void exportCsv() throws Exception {
 		save(2031, 6, "9000");
+		SalaryRequest annual = new SalaryRequest(2031, 0, null, null, null, null, null, null, null,
+				new BigDecimal("30000"), null, null, null, null, null, null, null, null, null, null, "年终奖");
+		mockMvc
+			.perform(post("/api/finance/salaries").with(authentication(auth()))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(annual)))
+			.andExpect(status().isOk());
 		mockMvc.perform(get("/api/finance/salaries/export").param("year", "2031").with(authentication(auth())))
 			.andExpect(status().isOk())
 			.andExpect(header().string("Content-Disposition", containsString("salary.csv")))
-			.andExpect(content().string(containsString("年份,月份,基本工资")));
+			.andExpect(content().string(containsString("年份,月份,基本工资,绩效工资")))
+			.andExpect(content().string(containsString("医疗,养老,失业,公积金")))
+			.andExpect(content().string(containsString("税后工资")))
+			.andExpect(content().string(containsString("年终奖")));
 	}
 
 	@Test
 	@DisplayName("更新不存在的工资记录返回业务错误")
 	void updateMissing() throws Exception {
-		SalaryRequest request = new SalaryRequest(2030, 3, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-				BigDecimal.ZERO, null);
 		mockMvc
 			.perform(put("/api/finance/salaries/{id}", 888888L).with(authentication(auth()))
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(request)))
+				.content(objectMapper.writeValueAsString(requestOf(2030, 3, "0"))))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value(400));
 	}
@@ -113,14 +154,12 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 	@Test
 	@DisplayName("参数校验失败返回 400")
 	void validationFails() throws Exception {
-		// 月份非法 (超出 1-12)
-		SalaryRequest invalid = new SalaryRequest(2030, 13, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-				BigDecimal.ZERO, null);
+		// 月份非法 (超出 0-12)
 		mockMvc
 			.perform(post("/api/finance/salaries").with(authentication(auth()))
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(invalid)))
+				.content(objectMapper.writeValueAsString(requestOf(2030, 13, "0"))))
 			.andExpect(status().isBadRequest());
 	}
 
