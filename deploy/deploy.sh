@@ -6,7 +6,6 @@ set -euo pipefail
 APP_NAME="ecovault"
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET_JAR="${BASE_DIR}/target/${APP_NAME}.jar"
-# 根据自己情况修改部署目录，确保 Jenkins 有权限写入。
 DEPLOY_DIR="${BASE_DIR}"
 BACKUP_DIR="${DEPLOY_DIR}/backup"
 LOG_DIR="${DEPLOY_DIR}/logs"
@@ -17,7 +16,7 @@ HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8100/actuator/health}"
 DEFAULT_JAVA_OPTS="--enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
 JAVA_OPTS="${JAVA_OPTS:-${DEFAULT_JAVA_OPTS}}"
 SPRING_PROFILE="${SPRING_PROFILE:-prod}"
-HEALTH_RETRY="${HEALTH_RETRY:-30}"
+HEALTH_RETRY="${HEALTH_RETRY:-60}"
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-2}"
 
 log() {
@@ -25,7 +24,7 @@ log() {
 }
 
 ensure_dirs() {
-  mkdir -p "${DEPLOY_DIR}" "${BACKUP_DIR}" "${LOG_DIR}"
+  mkdir -p "${DEPLOY_DIR}" "${BACKUP_DIR}" "${LOG_DIR}" "$(dirname "${TARGET_JAR}")"
 }
 
 is_running() {
@@ -60,7 +59,7 @@ stop_service() {
   done
 
   log "服务未在限定时间内停止，执行强制终止。"
-  kill -9 "${pid}"
+  kill -9 "${pid}" || true
   rm -f "${PID_FILE}"
 }
 
@@ -89,30 +88,53 @@ deploy_new_version() {
 
 start_service() {
   log "正在启动 ${APP_NAME}，配置环境为 ${SPRING_PROFILE}。"
-  BUILD_ID=dontKillMe nohup java ${JAVA_OPTS} -jar "${APP_JAR}" --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
-  local pid=$!
+
+  BUILD_ID=dontKillMe nohup java ${JAVA_OPTS} -jar "${APP_JAR}" \
+    --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
+
+  sleep 2
+
+  local pid
+  pid="$(pgrep -f "java .*${APP_JAR}" | tail -n 1 || true)"
+
+  if [[ -z "${pid}" ]]; then
+    log "未找到 ${APP_NAME} 的 Java 进程，启动失败，请查看日志：${APP_LOG}。"
+    exit 1
+  fi
+
   echo "${pid}" > "${PID_FILE}"
   log "服务启动命令已执行，PID=${pid}，日志=${APP_LOG}。"
 }
 
 health_check() {
   log "开始健康检查：${HEALTH_URL}。"
+
+  if [[ ! -f "${PID_FILE}" ]]; then
+    log "PID 文件不存在，无法执行健康检查。"
+    exit 1
+  fi
+
+  local pid
+  pid="$(cat "${PID_FILE}")"
+
   for _ in $(seq 1 "${HEALTH_RETRY}"); do
+    if ! is_running "${pid}"; then
+      log "检测到服务进程已退出，PID=${pid}。请查看日志：${APP_LOG}。"
+      exit 1
+    fi
+
     if curl -fsS "${HEALTH_URL}" >/dev/null 2>&1; then
       log "健康检查通过。"
       return 0
     fi
+
     sleep "${HEALTH_INTERVAL}"
   done
 
   log "健康检查失败，请查看日志：${APP_LOG}。"
-  if [[ -f "${PID_FILE}" ]]; then
-    local pid
-    pid="$(cat "${PID_FILE}")"
-    if is_running "${pid}"; then
-      log "部署失败，停止新启动的服务，PID=${pid}。"
-      kill "${pid}" || true
-    fi
+  if is_running "${pid}"; then
+    log "部署失败，停止新启动的服务，PID=${pid}。"
+    kill "${pid}" || true
   fi
   exit 1
 }
