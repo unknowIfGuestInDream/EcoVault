@@ -30,6 +30,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
  * <li>启用 CSRF 保护 (CookieCsrfTokenRepository)，仅登录公开接口除外</li>
  * <li>actuator 与管理后台仅 ADMIN 角色可访问</li>
  * <li>方法级权限控制 ({@code @EnableMethodSecurity})</li>
+ * <li>静态资源 (favicon、CSS、JS、图片) 通过 {@code permitAll} 公开，无需认证即可访问</li>
  * </ul>
  */
 @Configuration
@@ -77,9 +78,9 @@ public class SecurityConfig {
 			// 公开接口 (登录) 无需 CSRF 令牌
 			.ignoringRequestMatchers("/api/auth/login"))
 			.authorizeHttpRequests(auth -> auth
-				// 公开页面与静态资源
-				.requestMatchers("/", "/login", "/error", "/css/**", "/js/**", "/images/**", "/webjars/**",
-						"/favicon.ico")
+				// 公开页面与静态资源（favicon、CSS、JS、图片）无需认证
+				.requestMatchers("/", "/login", "/error", "/favicon.ico", "/css/**", "/js/**", "/images/**",
+						"/webjars/**")
 				.permitAll()
 				.requestMatchers("/api/auth/login")
 				.permitAll()

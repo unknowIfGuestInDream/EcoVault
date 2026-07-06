@@ -68,7 +68,8 @@ class EcoVaultApplicationTests {
 		mockMvc.perform(get("/"))
 			.andExpect(status().isOk())
 			.andExpect(header().string("Content-Type", containsString("text/html")))
-			.andExpect(content().string(containsString("<link rel=\"icon\" href=\"/favicon.ico\"")))
+			.andExpect(
+					content().string(containsString("<link rel=\"icon\" href=\"/favicon.ico\" type=\"image/x-icon\"")))
 			.andExpect(content().string(containsString("<meta name=\"renderer\" content=\"webkit\"/>")))
 			.andExpect(content().string(containsString("<meta name=\"google\" content=\"notranslate\"/>")));
 	}
