@@ -33,13 +33,25 @@ is_running() {
 }
 
 # 通过 ps -ef 查询 APP_JAR 对应的 Java 进程 PID（不依赖 PID 文件）。
+# 使用固定字符串匹配完整 JAR 路径，避免正则误匹配其他 Java 进程。
+# 若存在多个匹配进程，取最近启动的一个（即列表末尾），并输出警告。
 find_app_pid() {
-  ps -ef | grep "java .*${APP_JAR}" | grep -v grep | awk '{print $2}' | tail -n 1
+  local pids
+  pids="$(ps -ef | grep -F "${APP_JAR}" | grep -v grep | awk '{print $2}')"
+  local count
+  count="$(printf '%s\n' "${pids}" | grep -c '[0-9]' 2>/dev/null || echo 0)"
+  if [[ "${count}" -gt 1 ]]; then
+    printf '[%s] 警告：检测到 %d 个 %s Java 进程，将操作最近启动的进程。\n' \
+      "$(date '+%Y-%m-%d %H:%M:%S')" "${count}" "${APP_NAME}" >&2
+  fi
+  printf '%s\n' "${pids}" | grep '[0-9]' | tail -n 1 || true
 }
 
 stop_service() {
   local pid
   # 优先通过 ps -ef 查询进程，避免 PID 文件过期导致误判。
+  # stop_service 不做 PID 文件兜底：若进程未被 ps -ef 匹配到，说明服务确实未运行，
+  # 无需通过旧 PID 文件尝试停止（避免误杀无关进程）。
   pid="$(find_app_pid)"
 
   if [[ -z "${pid}" ]]; then
@@ -119,9 +131,9 @@ health_check() {
   # 通过 ps -ef 查询进程，不依赖 PID 文件是否存在。
   pid="$(find_app_pid)"
   if [[ -z "${pid}" ]] && [[ -f "${PID_FILE}" ]]; then
-    # 兜底：若 ps -ef 未匹配到，则尝试读取 PID 文件中的 PID。
+    # 兜底：若 ps -ef 未匹配到（例如进程刚启动尚未稳定），尝试读取 PID 文件中记录的 PID。
     local file_pid
-    file_pid="$(cat "${PID_FILE}")"
+    file_pid="$(cat "${PID_FILE}" 2>/dev/null || true)"
     is_running "${file_pid}" && pid="${file_pid}"
   fi
 
