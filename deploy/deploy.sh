@@ -89,7 +89,7 @@ deploy_new_version() {
 
 start_service() {
   log "正在启动 ${APP_NAME}，配置环境为 ${SPRING_PROFILE}。"
-  nohup java ${JAVA_OPTS} -jar "${APP_JAR}" --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
+  BUILD_ID=dontKillMe nohup java ${JAVA_OPTS} -jar "${APP_JAR}" --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
   local pid=$!
   echo "${pid}" > "${PID_FILE}"
   log "服务启动命令已执行，PID=${pid}，日志=${APP_LOG}。"
