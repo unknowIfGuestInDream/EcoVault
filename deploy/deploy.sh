@@ -32,17 +32,23 @@ is_running() {
   [[ "${pid}" =~ ^[0-9]+$ ]] && kill -0 "${pid}" 2>/dev/null
 }
 
-stop_service() {
-  if [[ ! -f "${PID_FILE}" ]]; then
-    log "未发现 PID 文件，跳过停止步骤。"
-    return 0
-  fi
+# 通过 ps -ef 查询 APP_JAR 对应的 Java 进程 PID（不依赖 PID 文件）。
+find_app_pid() {
+  ps -ef | grep "java .*${APP_JAR}" | grep -v grep | awk '{print $2}' | tail -n 1
+}
 
+stop_service() {
   local pid
-  pid="$(cat "${PID_FILE}")"
-  if ! is_running "${pid}"; then
-    log "PID ${pid} 未运行，清理过期 PID 文件。"
-    rm -f "${PID_FILE}"
+  # 优先通过 ps -ef 查询进程，避免 PID 文件过期导致误判。
+  pid="$(find_app_pid)"
+
+  if [[ -z "${pid}" ]]; then
+    log "未发现正在运行的 ${APP_NAME} 进程，跳过停止步骤。"
+    # 清理可能残留的过期 PID 文件。
+    if [[ -f "${PID_FILE}" ]]; then
+      log "清理过期 PID 文件：${PID_FILE}。"
+      rm -f "${PID_FILE}"
+    fi
     return 0
   fi
 
@@ -95,7 +101,7 @@ start_service() {
   sleep 2
 
   local pid
-  pid="$(pgrep -f "java .*${APP_JAR}" | tail -n 1 || true)"
+  pid="$(find_app_pid)"
 
   if [[ -z "${pid}" ]]; then
     log "未找到 ${APP_NAME} 的 Java 进程，启动失败，请查看日志：${APP_LOG}。"
@@ -109,13 +115,20 @@ start_service() {
 health_check() {
   log "开始健康检查：${HEALTH_URL}。"
 
-  if [[ ! -f "${PID_FILE}" ]]; then
-    log "PID 文件不存在，无法执行健康检查。"
-    exit 1
+  local pid
+  # 通过 ps -ef 查询进程，不依赖 PID 文件是否存在。
+  pid="$(find_app_pid)"
+  if [[ -z "${pid}" ]] && [[ -f "${PID_FILE}" ]]; then
+    # 兜底：若 ps -ef 未匹配到，则尝试读取 PID 文件中的 PID。
+    local file_pid
+    file_pid="$(cat "${PID_FILE}")"
+    is_running "${file_pid}" && pid="${file_pid}"
   fi
 
-  local pid
-  pid="$(cat "${PID_FILE}")"
+  if [[ -z "${pid}" ]]; then
+    log "未找到 ${APP_NAME} 的 Java 进程，无法执行健康检查。请查看日志：${APP_LOG}。"
+    exit 1
+  fi
 
   for _ in $(seq 1 "${HEALTH_RETRY}"); do
     if ! is_running "${pid}"; then
