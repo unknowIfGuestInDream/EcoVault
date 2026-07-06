@@ -9,7 +9,6 @@ TARGET_JAR="${BASE_DIR}/target/${APP_NAME}.jar"
 DEPLOY_DIR="${BASE_DIR}"
 BACKUP_DIR="${DEPLOY_DIR}/backup"
 LOG_DIR="${DEPLOY_DIR}/logs"
-PID_FILE="${DEPLOY_DIR}/${APP_NAME}.pid"
 APP_JAR="${DEPLOY_DIR}/${APP_NAME}.jar"
 APP_LOG="${LOG_DIR}/${APP_NAME}.log"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8100/actuator/health}"
@@ -29,38 +28,35 @@ ensure_dirs() {
 
 is_running() {
   local pid="$1"
-  [[ "${pid}" =~ ^[0-9]+$ ]] && kill -0 "${pid}" 2>/dev/null
+  [[ -n "${pid}" ]] && [[ "${pid}" =~ ^[0-9]+$ ]] && kill -0 "${pid}" 2>/dev/null
 }
 
 # 通过 ps -ef 查询 APP_JAR 对应的 Java 进程 PID（不依赖 PID 文件）。
 # 使用固定字符串匹配完整 JAR 路径，避免正则误匹配其他 Java 进程。
 # 若存在多个匹配进程，取最近启动的一个（即列表末尾），并输出警告。
 find_app_pid() {
-  local pids
-  pids="$(ps -ef | grep -F "${APP_JAR}" | grep -v grep | awk '{print $2}')"
-  local count
-  count="$(printf '%s\n' "${pids}" | grep -c '[0-9]' 2>/dev/null || echo 0)"
-  if [[ "${count}" -gt 1 ]]; then
+  local pids count
+  pids="$(ps -ef | grep -F -- "${APP_JAR}" | grep -v grep | awk '{print $2}' || true)"
+
+  if [[ -z "${pids}" ]]; then
+    return 0
+  fi
+
+  count="$(printf '%s\n' "${pids}" | awk 'NF { count++ } END { print count + 0 }')"
+  if (( count > 1 )); then
     printf '[%s] 警告：检测到 %d 个 %s Java 进程，将操作最近启动的进程。\n' \
       "$(date '+%Y-%m-%d %H:%M:%S')" "${count}" "${APP_NAME}" >&2
   fi
-  printf '%s\n' "${pids}" | grep '[0-9]' | tail -n 1 || true
+
+  printf '%s\n' "${pids}" | awk 'NF { pid = $1 } END { if (pid != "") print pid }'
 }
 
 stop_service() {
   local pid
-  # 优先通过 ps -ef 查询进程，避免 PID 文件过期导致误判。
-  # stop_service 不做 PID 文件兜底：若进程未被 ps -ef 匹配到，说明服务确实未运行，
-  # 无需通过旧 PID 文件尝试停止（避免误杀无关进程）。
   pid="$(find_app_pid)"
 
   if [[ -z "${pid}" ]]; then
     log "未发现正在运行的 ${APP_NAME} 进程，跳过停止步骤。"
-    # 清理可能残留的过期 PID 文件。
-    if [[ -f "${PID_FILE}" ]]; then
-      log "清理过期 PID 文件：${PID_FILE}。"
-      rm -f "${PID_FILE}"
-    fi
     return 0
   fi
 
@@ -69,7 +65,6 @@ stop_service() {
 
   for _ in $(seq 1 30); do
     if ! is_running "${pid}"; then
-      rm -f "${PID_FILE}"
       log "服务已正常停止。"
       return 0
     fi
@@ -78,7 +73,6 @@ stop_service() {
 
   log "服务未在限定时间内停止，执行强制终止。"
   kill -9 "${pid}" || true
-  rm -f "${PID_FILE}"
 }
 
 backup_old_version() {
@@ -120,7 +114,6 @@ start_service() {
     exit 1
   fi
 
-  echo "${pid}" > "${PID_FILE}"
   log "服务启动命令已执行，PID=${pid}，日志=${APP_LOG}。"
 }
 
@@ -128,14 +121,7 @@ health_check() {
   log "开始健康检查：${HEALTH_URL}。"
 
   local pid
-  # 通过 ps -ef 查询进程，不依赖 PID 文件是否存在。
   pid="$(find_app_pid)"
-  if [[ -z "${pid}" ]] && [[ -f "${PID_FILE}" ]]; then
-    # 兜底：若 ps -ef 未匹配到（例如进程刚启动尚未稳定），尝试读取 PID 文件中记录的 PID。
-    local file_pid
-    file_pid="$(cat "${PID_FILE}" 2>/dev/null || true)"
-    is_running "${file_pid}" && pid="${file_pid}"
-  fi
 
   if [[ -z "${pid}" ]]; then
     log "未找到 ${APP_NAME} 的 Java 进程，无法执行健康检查。请查看日志：${APP_LOG}。"
@@ -167,7 +153,7 @@ health_check() {
 main() {
   ensure_dirs
   stop_service
-  #backup_old_version
+  # backup_old_version
   deploy_new_version
   start_service
   health_check
