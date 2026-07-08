@@ -43,9 +43,9 @@ class AdminControllerBuildInfoTest {
 
 	private final Environment environment = mock(Environment.class);
 
-	private final WebEndpointsSupplier webEndpointsSupplier = mock(WebEndpointsSupplier.class);
+	private WebEndpointsSupplier webEndpointsSupplier;
 
-	private final WebEndpointProperties webEndpointProperties = mock(WebEndpointProperties.class);
+	private WebEndpointProperties webEndpointProperties;
 
 	@SuppressWarnings("unchecked")
 	private AdminController controllerWith(BuildProperties props) {
@@ -58,7 +58,8 @@ class AdminControllerBuildInfoTest {
 
 	@BeforeEach
 	void resetEndpointMocks() {
-		reset(webEndpointsSupplier, webEndpointProperties);
+		webEndpointsSupplier = mock(WebEndpointsSupplier.class);
+		webEndpointProperties = mock(WebEndpointProperties.class);
 	}
 
 	@Test
