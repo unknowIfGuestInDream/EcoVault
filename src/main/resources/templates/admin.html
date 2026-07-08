@@ -57,7 +57,7 @@
                 throw new Error("加载失败");
             }
             const body = await resp.json();
-            const links = Object.entries(body._links || {}).filter(([name]) => name !== "self");
+            const links = Object.entries(body._links || {}).filter(([name, link]) => name !== "self" && !link.templated);
             if (!links.length) {
                 document.getElementById("actuator-endpoints").innerHTML = '<tr><td class="muted">暂无可展示端点</td></tr>';
                 return;

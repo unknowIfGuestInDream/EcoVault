@@ -176,7 +176,10 @@ class AdminControllerTest extends AbstractWebMvcTest {
 		mockMvc.perform(get("/api/admin/build-info").with(authentication(admin())))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.code").value(0))
-			.andExpect(jsonPath("$.data.javaVersion").exists());
+			.andExpect(jsonPath("$.data.javaVersion").exists())
+			.andExpect(jsonPath("$.data.group").doesNotExist())
+			.andExpect(jsonPath("$.data.artifact").doesNotExist())
+			.andExpect(jsonPath("$.data.springBootVersion").doesNotExist());
 	}
 
 	@Test

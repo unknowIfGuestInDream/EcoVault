@@ -16,7 +16,6 @@ import com.tlcsdm.ecovault.service.AuthService;
 import com.tlcsdm.ecovault.service.RolePermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -162,8 +161,6 @@ public class AdminController {
 		Map<String, Object> info = new LinkedHashMap<>();
 		BuildProperties props = buildProperties.getIfAvailable();
 		if (props != null) {
-			info.put("group", props.getGroup());
-			info.put("artifact", props.getArtifact());
 			info.put("name", props.getName());
 			info.put("version", props.getVersion());
 			info.put("buildTime", props.getTime() == null ? null
@@ -172,7 +169,6 @@ public class AdminController {
 		else {
 			info.put("version", "开发环境 (未生成构建信息)");
 		}
-		info.put("springBootVersion", SpringBootVersion.getVersion());
 		info.put("javaVersion", System.getProperty("java.version"));
 		info.put("javaVendor", System.getProperty("java.vendor"));
 		info.put("fileEncoding", System.getProperty("file.encoding"));

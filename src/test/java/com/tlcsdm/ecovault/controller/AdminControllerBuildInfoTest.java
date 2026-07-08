@@ -48,8 +48,6 @@ class AdminControllerBuildInfoTest {
 	@DisplayName("构建信息可用时返回完整版本与构建时间")
 	void buildInfoAvailable() {
 		Properties properties = new Properties();
-		properties.setProperty("group", "com.tlcsdm");
-		properties.setProperty("artifact", "ecovault");
 		properties.setProperty("name", "EcoVault");
 		properties.setProperty("version", "1.2.3");
 		properties.setProperty("time", "1700000000000");
@@ -57,10 +55,9 @@ class AdminControllerBuildInfoTest {
 
 		ApiResponse<Map<String, Object>> response = controller.buildInfo();
 
-		assertThat(response.getData()).containsEntry("version", "1.2.3").containsEntry("artifact", "ecovault");
+		assertThat(response.getData()).containsEntry("name", "EcoVault").containsEntry("version", "1.2.3");
 		assertThat(response.getData().get("buildTime")).isNotNull();
-		assertThat(response.getData()).containsKey("springBootVersion");
-		assertThat(response.getData().get("springBootVersion")).isNotNull();
+		assertThat(response.getData()).doesNotContainKeys("group", "artifact", "springBootVersion");
 		assertThat(response.getData()).containsEntry("javaVersion", System.getProperty("java.version"));
 		assertThat(response.getData()).containsEntry("javaVendor", System.getProperty("java.vendor"));
 		assertThat(response.getData()).containsEntry("fileEncoding", System.getProperty("file.encoding"));

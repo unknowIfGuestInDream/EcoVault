@@ -184,13 +184,15 @@ target/site/jacoco/index.html
 bash deploy/deploy.sh
 ```
 
-脚本会停止旧服务、备份旧 Jar、部署 `target/ecovault.jar`，以 `prod` 配置启动，并默认附加 `--enable-native-access=ALL-UNNAMED` 与 UTF-8 JVM 参数，然后通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。
+脚本会停止旧服务、备份旧 Jar、部署 `target/ecovault.jar`，以 `prod` 配置启动，并默认附加 `-Xms128m -Xmx512m`、`--enable-native-access=ALL-UNNAMED` 与 UTF-8 JVM 参数，然后通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。若生产环境需要更高或更低的内存上限，可通过 `JAVA_OPTS` 覆盖。
 
 ## Actuator / 构建信息
 
 - `/actuator/health`：健康检查。
 - `/actuator/info`：构建版本、构建时间等信息。
-- 管理员可通过 Actuator 与后台页面查看构建信息。
+- 管理员可通过 Actuator 与后台页面查看构建信息；后台构建信息保留 `name`、`version`、`buildTime`、Java 与当前激活配置，隐藏 `group`、`artifact`、`springBootVersion`。
+- 管理后台的 Actuator 端点概览仅展示可直接访问的非模板端点，避免 `/actuator/env/{toMatch}`、`/actuator/loggers/{name}`、`/actuator/health/{*path}`、`/actuator/metrics/{requiredMetricName}` 这类模板路径被浏览器编码后产生 404。
+- favicon 固定放置在 `src/main/resources/static/favicon.ico`，页面统一通过 `/favicon.ico` 引用；打包后的 Jar 中路径为 `BOOT-INF/classes/static/favicon.ico`。
 - 除健康检查必要场景外，Actuator 信息必须限制为 `ADMIN`。
 
 ## 安全说明
