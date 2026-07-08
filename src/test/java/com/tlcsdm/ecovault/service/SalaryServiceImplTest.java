@@ -210,7 +210,8 @@ class SalaryServiceImplTest {
 	@DisplayName("保存不存在的年月记录时新建")
 	void saveNewRecord() {
 		SalaryRequest request = new SalaryRequest(2026, 6, new BigDecimal("8000"), null, null, null, null, null, null,
-				new BigDecimal("500"), null, null, null, null, null, null, null, null, null, null, null, "新记录");
+				new BigDecimal("500"), null, null, null, null, null, null, null, null, null, null,
+				/* netPay */ null, "新记录");
 		when(repository.findByUserIdAndYearAndMonth(1L, 2026, 6)).thenReturn(Optional.empty());
 		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
