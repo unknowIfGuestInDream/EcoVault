@@ -148,10 +148,11 @@ class AdminControllerBuildInfoTest {
 
 		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
 
+		assertThat(response.getCode()).isZero();
 		assertThat(response.getData()).containsExactly(Map.of("name", "health", "path", "/health"));
 	}
 
-	private ExposableWebEndpoint endpoint(String name) {
+	private static ExposableWebEndpoint endpoint(String name) {
 		ExposableWebEndpoint endpoint = mock(ExposableWebEndpoint.class);
 		when(endpoint.getEndpointId()).thenReturn(EndpointId.of(name));
 		when(endpoint.getRootPath()).thenReturn(name);
