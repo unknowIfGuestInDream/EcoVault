@@ -13,7 +13,6 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,12 +41,14 @@ class AdminControllerBuildInfoTest {
 
 	private final Environment environment = mock(Environment.class);
 
-	private final WebEndpointsSupplier webEndpointsSupplier = mock(WebEndpointsSupplier.class);
-
-	private final WebEndpointProperties webEndpointProperties = new WebEndpointProperties();
-
 	@SuppressWarnings("unchecked")
 	private AdminController controllerWith(BuildProperties props) {
+		return controllerWith(props, mock(WebEndpointsSupplier.class), new WebEndpointProperties());
+	}
+
+	@SuppressWarnings("unchecked")
+	private AdminController controllerWith(BuildProperties props, WebEndpointsSupplier webEndpointsSupplier,
+			WebEndpointProperties webEndpointProperties) {
 		ObjectProvider<BuildProperties> provider = mock(ObjectProvider.class);
 		when(provider.getIfAvailable()).thenReturn(props);
 		when(environment.getActiveProfiles()).thenReturn(new String[] { "prod" });
@@ -102,12 +103,14 @@ class AdminControllerBuildInfoTest {
 	@Test
 	@DisplayName("Actuator 端点概览仅返回基础端点路径")
 	void actuatorEndpoints() {
+		WebEndpointsSupplier webEndpointsSupplier = mock(WebEndpointsSupplier.class);
+		WebEndpointProperties webEndpointProperties = new WebEndpointProperties();
 		ExposableWebEndpoint env = endpoint("env");
 		ExposableWebEndpoint health = endpoint("health");
 		ExposableWebEndpoint metrics = endpoint("metrics");
 		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(metrics, health, env));
 		webEndpointProperties.setBasePath("/actuator");
-		AdminController controller = controllerWith(null);
+		AdminController controller = controllerWith(null, webEndpointsSupplier, webEndpointProperties);
 
 		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
 
@@ -117,27 +120,33 @@ class AdminControllerBuildInfoTest {
 	}
 
 	@Test
-	@DisplayName("normalizeBasePath 在基础路径为 null 时返回空字符串")
-	void normalizeBasePathWithNull() throws ReflectiveOperationException {
-		assertThat(normalizeBasePath(null)).isEmpty();
+	@DisplayName("Actuator 基础路径为 null 时端点路径不包含前缀")
+	void actuatorEndpointsWithNullBasePath() {
+		assertActuatorEndpointsWithNormalizedBasePath(null);
 	}
 
 	@Test
-	@DisplayName("normalizeBasePath 在基础路径为空白时返回空字符串")
-	void normalizeBasePathWithBlank() throws ReflectiveOperationException {
-		assertThat(normalizeBasePath("   ")).isEmpty();
+	@DisplayName("Actuator 基础路径为空白时端点路径不包含前缀")
+	void actuatorEndpointsWithBlankBasePath() {
+		assertActuatorEndpointsWithNormalizedBasePath("   ");
 	}
 
 	@Test
-	@DisplayName("normalizeBasePath 在基础路径为根路径时返回空字符串")
-	void normalizeBasePathWithRootPath() throws ReflectiveOperationException {
-		assertThat(normalizeBasePath("/")).isEmpty();
+	@DisplayName("Actuator 基础路径为根路径时端点路径不包含前缀")
+	void actuatorEndpointsWithRootBasePath() {
+		assertActuatorEndpointsWithNormalizedBasePath("/");
 	}
 
-	private static String normalizeBasePath(String basePath) throws ReflectiveOperationException {
-		Method method = AdminController.class.getDeclaredMethod("normalizeBasePath", String.class);
-		method.setAccessible(true);
-		return (String) method.invoke(null, basePath);
+	private void assertActuatorEndpointsWithNormalizedBasePath(String basePath) {
+		WebEndpointsSupplier webEndpointsSupplier = mock(WebEndpointsSupplier.class);
+		ExposableWebEndpoint health = endpoint("health");
+		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(health));
+		AdminController controller = controllerWith(null, webEndpointsSupplier, webEndpointProperties(basePath));
+
+		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
+
+		assertThat(response.getCode()).isZero();
+		assertThat(response.getData()).containsExactly(Map.of("name", "health", "path", "/health"));
 	}
 
 	private static ExposableWebEndpoint endpoint(String name) {
@@ -145,6 +154,15 @@ class AdminControllerBuildInfoTest {
 		when(endpoint.getEndpointId()).thenReturn(EndpointId.of(name));
 		when(endpoint.getRootPath()).thenReturn(name);
 		return endpoint;
+	}
+
+	private static WebEndpointProperties webEndpointProperties(String basePath) {
+		return new WebEndpointProperties() {
+			@Override
+			public String getBasePath() {
+				return basePath;
+			}
+		};
 	}
 
 }
