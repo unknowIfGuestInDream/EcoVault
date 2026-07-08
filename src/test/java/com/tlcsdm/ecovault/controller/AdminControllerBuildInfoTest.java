@@ -124,19 +124,19 @@ class AdminControllerBuildInfoTest {
 	}
 
 	@Test
-	@DisplayName("Actuator 基础路径为 null 时归一化为空前缀")
+	@DisplayName("Actuator 基础路径为 null 时端点路径不包含前缀")
 	void actuatorEndpointsWithNullBasePath() {
 		assertActuatorEndpointsWithoutBasePath(null);
 	}
 
 	@Test
-	@DisplayName("Actuator 基础路径为空白时归一化为空前缀")
+	@DisplayName("Actuator 基础路径为空白时端点路径不包含前缀")
 	void actuatorEndpointsWithBlankBasePath() {
 		assertActuatorEndpointsWithoutBasePath("   ");
 	}
 
 	@Test
-	@DisplayName("Actuator 基础路径为根路径时归一化为空前缀")
+	@DisplayName("Actuator 基础路径为根路径时端点路径不包含前缀")
 	void actuatorEndpointsWithRootBasePath() {
 		assertActuatorEndpointsWithoutBasePath("/");
 	}
@@ -153,6 +153,7 @@ class AdminControllerBuildInfoTest {
 
 		assertThat(response.getData()).containsExactly(Map.of("name", "health", "path", "/health"));
 		reset(webEndpointsSupplier);
+		reset(webEndpointProperties);
 	}
 
 }
