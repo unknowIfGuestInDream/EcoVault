@@ -67,7 +67,9 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 		// 列表 (按年份)
 		mockMvc.perform(get("/api/finance/salaries").param("year", "2030").with(authentication(auth())))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.length()").value(2));
+			.andExpect(jsonPath("$.data.length()").value(2))
+			.andExpect(jsonPath("$.data[0].netPay").value(10666.66))
+			.andExpect(jsonPath("$.data[1].netPay").value(11777.77));
 
 		// 全部列表 (无年份)
 		mockMvc.perform(get("/api/finance/salaries").with(authentication(auth()))).andExpect(status().isOk());
