@@ -12,6 +12,7 @@ LOG_DIR="${DEPLOY_DIR}/logs"
 APP_JAR="${DEPLOY_DIR}/${APP_NAME}.jar"
 APP_LOG="${LOG_DIR}/${APP_NAME}.log"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8100/actuator/health}"
+# 默认堆内存限制，生产环境可通过 JAVA_OPTS 环境变量覆盖
 DEFAULT_JAVA_OPTS="-Xms128m -Xmx512m --enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
 JAVA_OPTS="${JAVA_OPTS:-${DEFAULT_JAVA_OPTS}}"
 SPRING_PROFILE="${SPRING_PROFILE:-prod}"
