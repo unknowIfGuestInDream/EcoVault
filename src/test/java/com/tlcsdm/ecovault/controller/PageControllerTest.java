@@ -1,13 +1,22 @@
 package com.tlcsdm.ecovault.controller;
 
 import com.tlcsdm.ecovault.entity.Role;
+import com.tlcsdm.ecovault.service.RolePermissionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -156,6 +165,41 @@ class PageControllerTest extends AbstractWebMvcTest {
 			.andExpect(content().string(containsString("event.key === \"Escape\"")))
 			.andExpect(content().string(containsString("event.key === \"Enter\"")))
 			.andExpect(content().string(containsString("event.key !== \"Tab\"")));
+	}
+
+	@Test
+	@DisplayName("favicon 资源存在时返回图标与缓存头")
+	void faviconReturnsIconWhenResourceExists() {
+		PageController controller = new PageController(mock(RolePermissionService.class),
+				resourceLoader(new ClassPathResource("static/favicon.ico")));
+
+		var response = controller.favicon();
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getHeaders().getContentType()).hasToString("image/x-icon");
+		assertThat(response.getHeaders().getCacheControl()).contains("max-age=" + Duration.ofDays(30).toSeconds(),
+				"public");
+		assertThat(response.getBody()).isInstanceOf(ClassPathResource.class);
+	}
+
+	@Test
+	@DisplayName("favicon 资源缺失时返回 404")
+	void faviconReturnsNotFoundWhenResourceMissing() {
+		Resource missingResource = mock(Resource.class);
+		when(missingResource.exists()).thenReturn(false);
+		PageController controller = new PageController(mock(RolePermissionService.class),
+				resourceLoader(missingResource));
+
+		var response = controller.favicon();
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(response.getBody()).isNull();
+	}
+
+	private ResourceLoader resourceLoader(Resource resource) {
+		ResourceLoader resourceLoader = mock(ResourceLoader.class);
+		when(resourceLoader.getResource("classpath:static/favicon.ico")).thenReturn(resource);
+		return resourceLoader;
 	}
 
 }

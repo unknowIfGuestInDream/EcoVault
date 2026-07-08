@@ -17,6 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -80,6 +81,8 @@ class EcoVaultApplicationTests {
 		byte[] content = mockMvc.perform(get("/favicon.ico"))
 			.andExpect(status().isOk())
 			.andExpect(header().string("Content-Type", containsString("image")))
+			.andExpect(header().string("Cache-Control", containsString("max-age=" + Duration.ofDays(30).toSeconds())))
+			.andExpect(header().string("Cache-Control", containsString("public")))
 			.andReturn()
 			.getResponse()
 			.getContentAsByteArray();
