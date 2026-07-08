@@ -3,7 +3,6 @@ package com.tlcsdm.ecovault.controller;
 import com.tlcsdm.ecovault.common.ApiResponse;
 import com.tlcsdm.ecovault.service.AdminService;
 import com.tlcsdm.ecovault.service.AuthService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.endpoint.EndpointId;
@@ -14,13 +13,13 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 /**
@@ -43,9 +42,9 @@ class AdminControllerBuildInfoTest {
 
 	private final Environment environment = mock(Environment.class);
 
-	private WebEndpointsSupplier webEndpointsSupplier;
+	private final WebEndpointsSupplier webEndpointsSupplier = mock(WebEndpointsSupplier.class);
 
-	private WebEndpointProperties webEndpointProperties;
+	private final WebEndpointProperties webEndpointProperties = new WebEndpointProperties();
 
 	@SuppressWarnings("unchecked")
 	private AdminController controllerWith(BuildProperties props) {
@@ -54,12 +53,6 @@ class AdminControllerBuildInfoTest {
 		when(environment.getActiveProfiles()).thenReturn(new String[] { "prod" });
 		return new AdminController(adminService, authService, rolePermissionService, provider, environment,
 				webEndpointsSupplier, webEndpointProperties);
-	}
-
-	@BeforeEach
-	void resetEndpointMocks() {
-		webEndpointsSupplier = mock(WebEndpointsSupplier.class);
-		webEndpointProperties = mock(WebEndpointProperties.class);
 	}
 
 	@Test
@@ -113,7 +106,7 @@ class AdminControllerBuildInfoTest {
 		ExposableWebEndpoint health = endpoint("health");
 		ExposableWebEndpoint metrics = endpoint("metrics");
 		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(metrics, health, env));
-		when(webEndpointProperties.getBasePath()).thenReturn("/actuator");
+		webEndpointProperties.setBasePath("/actuator");
 		AdminController controller = controllerWith(null);
 
 		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
@@ -124,33 +117,27 @@ class AdminControllerBuildInfoTest {
 	}
 
 	@Test
-	@DisplayName("Actuator 基础路径为 null 时端点路径不包含前缀")
-	void actuatorEndpointsWithNullBasePath() {
-		assertActuatorEndpointsWithoutBasePath(null);
+	@DisplayName("normalizeBasePath 在基础路径为 null 时返回空字符串")
+	void normalizeBasePathWithNull() throws ReflectiveOperationException {
+		assertThat(normalizeBasePath(null)).isEmpty();
 	}
 
 	@Test
-	@DisplayName("Actuator 基础路径为空白时端点路径不包含前缀")
-	void actuatorEndpointsWithBlankBasePath() {
-		assertActuatorEndpointsWithoutBasePath("   ");
+	@DisplayName("normalizeBasePath 在基础路径为空白时返回空字符串")
+	void normalizeBasePathWithBlank() throws ReflectiveOperationException {
+		assertThat(normalizeBasePath("   ")).isEmpty();
 	}
 
 	@Test
-	@DisplayName("Actuator 基础路径为根路径时端点路径不包含前缀")
-	void actuatorEndpointsWithRootBasePath() {
-		assertActuatorEndpointsWithoutBasePath("/");
+	@DisplayName("normalizeBasePath 在基础路径为根路径时返回空字符串")
+	void normalizeBasePathWithRootPath() throws ReflectiveOperationException {
+		assertThat(normalizeBasePath("/")).isEmpty();
 	}
 
-	private void assertActuatorEndpointsWithoutBasePath(String basePath) {
-		ExposableWebEndpoint health = endpoint("health");
-		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(health));
-		when(webEndpointProperties.getBasePath()).thenReturn(basePath);
-		AdminController controller = controllerWith(null);
-
-		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
-
-		assertThat(response.getCode()).isZero();
-		assertThat(response.getData()).containsExactly(Map.of("name", "health", "path", "/health"));
+	private static String normalizeBasePath(String basePath) throws ReflectiveOperationException {
+		Method method = AdminController.class.getDeclaredMethod("normalizeBasePath", String.class);
+		method.setAccessible(true);
+		return (String) method.invoke(null, basePath);
 	}
 
 	private static ExposableWebEndpoint endpoint(String name) {
