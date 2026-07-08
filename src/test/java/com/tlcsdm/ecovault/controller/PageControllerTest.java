@@ -71,6 +71,7 @@ class PageControllerTest extends AbstractWebMvcTest {
 		int previousIndex = -1;
 		for (String fragment : fragments) {
 			int currentIndex = value.indexOf(fragment);
+			assertThat(currentIndex).as("未找到片段: %s", fragment).isGreaterThanOrEqualTo(0);
 			assertThat(currentIndex).isGreaterThan(previousIndex);
 			previousIndex = currentIndex;
 		}

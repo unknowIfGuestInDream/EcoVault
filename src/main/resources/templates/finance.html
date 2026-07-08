@@ -142,12 +142,16 @@
     }
 
     function fieldCents(field) {
-        const value = Number(document.getElementById("f-" + field).value);
-        return Number.isFinite(value) ? Math.round(value * 100) : 0;
+        const raw = document.getElementById("f-" + field).value.trim();
+        if (!raw) {
+            return 0;
+        }
+        const value = Number(raw);
+        return Number.isFinite(value) ? Number.parseInt(value.toFixed(2).replace(".", ""), 10) : 0;
     }
 
     function formatAmount(cents) {
-        return (cents / 100).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+        return (cents / 100).toFixed(2);
     }
 
     function refreshDerivedAmounts() {
