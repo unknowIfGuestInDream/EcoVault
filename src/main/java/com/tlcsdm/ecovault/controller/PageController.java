@@ -3,9 +3,16 @@ package com.tlcsdm.ecovault.controller;
 import com.tlcsdm.ecovault.security.SecurityUtils;
 import com.tlcsdm.ecovault.service.RolePermissionService;
 import com.tlcsdm.ecovault.service.impl.PasswordServiceImpl;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.time.Duration;
 
 /**
  * 页面路由控制器 (Thymeleaf 服务端渲染)。
@@ -17,6 +24,8 @@ import org.springframework.web.bind.annotation.GetMapping;
  */
 @Controller
 public class PageController {
+
+	private static final MediaType IMAGE_X_ICON = MediaType.parseMediaType("image/x-icon");
 
 	private final RolePermissionService rolePermissionService;
 
@@ -40,6 +49,19 @@ public class PageController {
 	@GetMapping("/login")
 	public String login() {
 		return "login";
+	}
+
+	/**
+	 * favicon 图标。
+	 * @return 图标资源
+	 */
+	@GetMapping(value = "/favicon.ico", produces = "image/x-icon")
+	public ResponseEntity<Resource> favicon() {
+		Resource favicon = new ClassPathResource("static/favicon.ico");
+		return ResponseEntity.ok()
+			.contentType(IMAGE_X_ICON)
+			.cacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic())
+			.body(favicon);
 	}
 
 	/**

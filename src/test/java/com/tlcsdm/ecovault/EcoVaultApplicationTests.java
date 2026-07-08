@@ -80,6 +80,8 @@ class EcoVaultApplicationTests {
 		byte[] content = mockMvc.perform(get("/favicon.ico"))
 			.andExpect(status().isOk())
 			.andExpect(header().string("Content-Type", containsString("image")))
+			.andExpect(header().string("Cache-Control", containsString("max-age=2592000")))
+			.andExpect(header().string("Cache-Control", containsString("public")))
 			.andReturn()
 			.getResponse()
 			.getContentAsByteArray();
