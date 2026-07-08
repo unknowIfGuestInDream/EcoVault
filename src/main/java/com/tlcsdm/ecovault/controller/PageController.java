@@ -27,6 +27,8 @@ public class PageController {
 
 	private static final MediaType IMAGE_X_ICON = MediaType.parseMediaType("image/x-icon");
 
+	private static final CacheControl FAVICON_CACHE_CONTROL = CacheControl.maxAge(Duration.ofDays(30)).cachePublic();
+
 	private final RolePermissionService rolePermissionService;
 
 	public PageController(RolePermissionService rolePermissionService) {
@@ -57,11 +59,15 @@ public class PageController {
 	 */
 	@GetMapping(value = "/favicon.ico", produces = "image/x-icon")
 	public ResponseEntity<Resource> favicon() {
-		Resource favicon = new ClassPathResource("static/favicon.ico");
-		return ResponseEntity.ok()
-			.contentType(IMAGE_X_ICON)
-			.cacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic())
-			.body(favicon);
+		Resource favicon = loadFavicon();
+		if (!favicon.exists()) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok().contentType(IMAGE_X_ICON).cacheControl(FAVICON_CACHE_CONTROL).body(favicon);
+	}
+
+	Resource loadFavicon() {
+		return new ClassPathResource("static/favicon.ico");
 	}
 
 	/**
