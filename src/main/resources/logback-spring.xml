@@ -32,5 +32,6 @@
         <appender-ref ref="FILE"/>
     </root>
 
-    <logger name="com.tlcsdm.ecovault" level="DEBUG"/>
+    <!-- 应用日志级别，可通过 ECOVAULT_APP_LOG_LEVEL 环境变量覆盖，默认 INFO -->
+    <logger name="com.tlcsdm.ecovault" level="${ECOVAULT_APP_LOG_LEVEL:-INFO}"/>
 </configuration>

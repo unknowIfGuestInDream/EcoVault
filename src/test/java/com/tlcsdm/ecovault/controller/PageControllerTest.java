@@ -80,6 +80,7 @@ class PageControllerTest extends AbstractWebMvcTest {
 			.andExpect(content().string(containsString("构建信息")))
 			.andExpect(content().string(containsString("系统状态")))
 			.andExpect(content().string(containsString("Actuator 端点概览")))
+			.andExpect(content().string(containsString("/api/admin/actuator-endpoints")))
 			.andExpect(content().string(not(containsString("后台首页"))))
 			.andExpect(content().string(not(containsString("创建用户"))))
 			.andExpect(content().string(not(containsString("用户列表"))));

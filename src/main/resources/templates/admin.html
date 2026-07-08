@@ -52,19 +52,13 @@
 
     async function loadActuatorEndpoints() {
         try {
-            const resp = await fetch("/actuator", { credentials: "same-origin" });
-            if (!resp.ok) {
-                throw new Error("加载失败");
-            }
-            const body = await resp.json();
-            const links = Object.entries(body._links || {}).filter(([name]) => name !== "self");
-            if (!links.length) {
+            const endpoints = await api("/api/admin/actuator-endpoints");
+            if (!endpoints.length) {
                 document.getElementById("actuator-endpoints").innerHTML = '<tr><td class="muted">暂无可展示端点</td></tr>';
                 return;
             }
-            document.getElementById("actuator-endpoints").innerHTML = links
-                .map(([name, link]) => {
-                    const path = new URL(link.href, window.location.origin).pathname;
+            document.getElementById("actuator-endpoints").innerHTML = endpoints
+                .map(({ name, path }) => {
                     return `<tr><th>${escapeHtml(name)}</th><td><a href="${escapeHtml(path)}" target="_blank" rel="noreferrer noopener">${escapeHtml(path)}</a></td></tr>`;
                 })
                 .join("");

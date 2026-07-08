@@ -1,0 +1,4 @@
+# EcoVault 生产环境配置
+spring:
+  thymeleaf:
+    cache: true
