@@ -37,8 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 class EcoVaultApplicationTests {
 
-	private static final String FAVICON_CACHE_MAX_AGE = "max-age=" + Duration.ofDays(30).toSeconds();
-
 	@Autowired
 	private WebApplicationContext webApplicationContext;
 
@@ -83,7 +81,7 @@ class EcoVaultApplicationTests {
 		byte[] content = mockMvc.perform(get("/favicon.ico"))
 			.andExpect(status().isOk())
 			.andExpect(header().string("Content-Type", containsString("image")))
-			.andExpect(header().string("Cache-Control", containsString(FAVICON_CACHE_MAX_AGE)))
+			.andExpect(header().string("Cache-Control", containsString("max-age=" + Duration.ofDays(30).toSeconds())))
 			.andExpect(header().string("Cache-Control", containsString("public")))
 			.andReturn()
 			.getResponse()

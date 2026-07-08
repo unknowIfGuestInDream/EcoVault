@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
@@ -30,8 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author unknowIfGuestInDream
  */
 class PageControllerTest extends AbstractWebMvcTest {
-
-	private static final String FAVICON_CACHE_MAX_AGE = "max-age=" + Duration.ofDays(30).toSeconds();
 
 	@Test
 	@DisplayName("公开页面：首页与登录页可匿名访问")
@@ -171,13 +170,15 @@ class PageControllerTest extends AbstractWebMvcTest {
 	@Test
 	@DisplayName("favicon 资源存在时返回图标与缓存头")
 	void faviconReturnsIconWhenResourceExists() {
-		PageController controller = new PageController(mock(RolePermissionService.class));
+		PageController controller = new PageController(mock(RolePermissionService.class),
+				resourceLoader(new ClassPathResource("static/favicon.ico")));
 
 		var response = controller.favicon();
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getHeaders().getContentType()).hasToString("image/x-icon");
-		assertThat(response.getHeaders().getCacheControl()).contains(FAVICON_CACHE_MAX_AGE, "public");
+		assertThat(response.getHeaders().getCacheControl()).contains("max-age=" + Duration.ofDays(30).toSeconds(),
+				"public");
 		assertThat(response.getBody()).isInstanceOf(ClassPathResource.class);
 	}
 
@@ -186,17 +187,19 @@ class PageControllerTest extends AbstractWebMvcTest {
 	void faviconReturnsNotFoundWhenResourceMissing() {
 		Resource missingResource = mock(Resource.class);
 		when(missingResource.exists()).thenReturn(false);
-		PageController controller = new PageController(mock(RolePermissionService.class)) {
-			@Override
-			Resource loadFavicon() {
-				return missingResource;
-			}
-		};
+		PageController controller = new PageController(mock(RolePermissionService.class),
+				resourceLoader(missingResource));
 
 		var response = controller.favicon();
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(response.getBody()).isNull();
+	}
+
+	private ResourceLoader resourceLoader(Resource resource) {
+		ResourceLoader resourceLoader = mock(ResourceLoader.class);
+		when(resourceLoader.getResource("classpath:static/favicon.ico")).thenReturn(resource);
+		return resourceLoader;
 	}
 
 }

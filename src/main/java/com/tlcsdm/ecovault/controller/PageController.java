@@ -3,8 +3,8 @@ package com.tlcsdm.ecovault.controller;
 import com.tlcsdm.ecovault.security.SecurityUtils;
 import com.tlcsdm.ecovault.service.RolePermissionService;
 import com.tlcsdm.ecovault.service.impl.PasswordServiceImpl;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +31,11 @@ public class PageController {
 
 	private final RolePermissionService rolePermissionService;
 
-	public PageController(RolePermissionService rolePermissionService) {
+	private final ResourceLoader resourceLoader;
+
+	public PageController(RolePermissionService rolePermissionService, ResourceLoader resourceLoader) {
 		this.rolePermissionService = rolePermissionService;
+		this.resourceLoader = resourceLoader;
 	}
 
 	/**
@@ -59,15 +62,11 @@ public class PageController {
 	 */
 	@GetMapping(value = "/favicon.ico", produces = "image/x-icon")
 	public ResponseEntity<Resource> favicon() {
-		Resource favicon = loadFavicon();
+		Resource favicon = resourceLoader.getResource("classpath:static/favicon.ico");
 		if (!favicon.exists()) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok().contentType(IMAGE_X_ICON).cacheControl(FAVICON_CACHE_CONTROL).body(favicon);
-	}
-
-	Resource loadFavicon() {
-		return new ClassPathResource("static/favicon.ico");
 	}
 
 	/**
