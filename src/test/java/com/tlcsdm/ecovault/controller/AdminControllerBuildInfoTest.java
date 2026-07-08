@@ -121,7 +121,6 @@ class AdminControllerBuildInfoTest {
 		assertThat(response.getData()).containsExactly(Map.of("name", "env", "path", "/actuator/env"),
 				Map.of("name", "health", "path", "/actuator/health"),
 				Map.of("name", "metrics", "path", "/actuator/metrics"));
-		reset(webEndpointsSupplier);
 	}
 
 	@Test
@@ -154,8 +153,6 @@ class AdminControllerBuildInfoTest {
 		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
 
 		assertThat(response.getData()).containsExactly(Map.of("name", "health", "path", "/health"));
-		reset(webEndpointsSupplier);
-		reset(webEndpointProperties);
 	}
 
 }
