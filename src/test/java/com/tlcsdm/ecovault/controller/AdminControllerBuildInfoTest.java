@@ -108,15 +108,9 @@ class AdminControllerBuildInfoTest {
 	@Test
 	@DisplayName("Actuator 端点概览仅返回基础端点路径")
 	void actuatorEndpoints() {
-		ExposableWebEndpoint env = mock(ExposableWebEndpoint.class);
-		when(env.getEndpointId()).thenReturn(EndpointId.of("env"));
-		when(env.getRootPath()).thenReturn("env");
-		ExposableWebEndpoint health = mock(ExposableWebEndpoint.class);
-		when(health.getEndpointId()).thenReturn(EndpointId.of("health"));
-		when(health.getRootPath()).thenReturn("health");
-		ExposableWebEndpoint metrics = mock(ExposableWebEndpoint.class);
-		when(metrics.getEndpointId()).thenReturn(EndpointId.of("metrics"));
-		when(metrics.getRootPath()).thenReturn("metrics");
+		ExposableWebEndpoint env = endpoint("env");
+		ExposableWebEndpoint health = endpoint("health");
+		ExposableWebEndpoint metrics = endpoint("metrics");
 		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(metrics, health, env));
 		when(webEndpointProperties.getBasePath()).thenReturn("/actuator");
 		AdminController controller = controllerWith(null);
@@ -147,9 +141,7 @@ class AdminControllerBuildInfoTest {
 	}
 
 	private void assertActuatorEndpointsWithoutBasePath(String basePath) {
-		ExposableWebEndpoint health = mock(ExposableWebEndpoint.class);
-		when(health.getEndpointId()).thenReturn(EndpointId.of("health"));
-		when(health.getRootPath()).thenReturn("health");
+		ExposableWebEndpoint health = endpoint("health");
 		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(health));
 		when(webEndpointProperties.getBasePath()).thenReturn(basePath);
 		AdminController controller = controllerWith(null);
@@ -157,6 +149,13 @@ class AdminControllerBuildInfoTest {
 		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
 
 		assertThat(response.getData()).containsExactly(Map.of("name", "health", "path", "/health"));
+	}
+
+	private ExposableWebEndpoint endpoint(String name) {
+		ExposableWebEndpoint endpoint = mock(ExposableWebEndpoint.class);
+		when(endpoint.getEndpointId()).thenReturn(EndpointId.of(name));
+		when(endpoint.getRootPath()).thenReturn(name);
+		return endpoint;
 	}
 
 }
