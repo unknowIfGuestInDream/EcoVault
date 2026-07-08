@@ -5,15 +5,21 @@ import com.tlcsdm.ecovault.service.AdminService;
 import com.tlcsdm.ecovault.service.AuthService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.actuate.endpoint.EndpointId;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
+import org.springframework.boot.actuate.endpoint.web.ExposableWebEndpoint;
+import org.springframework.boot.actuate.endpoint.web.WebEndpointsSupplier;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 /**
@@ -36,12 +42,17 @@ class AdminControllerBuildInfoTest {
 
 	private final Environment environment = mock(Environment.class);
 
+	private final WebEndpointsSupplier webEndpointsSupplier = mock(WebEndpointsSupplier.class);
+
+	private final WebEndpointProperties webEndpointProperties = new WebEndpointProperties();
+
 	@SuppressWarnings("unchecked")
 	private AdminController controllerWith(BuildProperties props) {
 		ObjectProvider<BuildProperties> provider = mock(ObjectProvider.class);
 		when(provider.getIfAvailable()).thenReturn(props);
 		when(environment.getActiveProfiles()).thenReturn(new String[] { "prod" });
-		return new AdminController(adminService, authService, rolePermissionService, provider, environment);
+		return new AdminController(adminService, authService, rolePermissionService, provider, environment,
+				webEndpointsSupplier, webEndpointProperties);
 	}
 
 	@Test
@@ -86,6 +97,30 @@ class AdminControllerBuildInfoTest {
 
 		assertThat(response.getData()).containsEntry("version", "开发环境 (未生成构建信息)");
 		assertThat(response.getData()).containsKey("javaVersion");
+	}
+
+	@Test
+	@DisplayName("Actuator 端点概览仅返回基础端点路径")
+	void actuatorEndpoints() {
+		ExposableWebEndpoint env = mock(ExposableWebEndpoint.class);
+		when(env.getEndpointId()).thenReturn(EndpointId.of("env"));
+		when(env.getRootPath()).thenReturn("env");
+		ExposableWebEndpoint health = mock(ExposableWebEndpoint.class);
+		when(health.getEndpointId()).thenReturn(EndpointId.of("health"));
+		when(health.getRootPath()).thenReturn("health");
+		ExposableWebEndpoint metrics = mock(ExposableWebEndpoint.class);
+		when(metrics.getEndpointId()).thenReturn(EndpointId.of("metrics"));
+		when(metrics.getRootPath()).thenReturn("metrics");
+		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(metrics, health, env));
+		webEndpointProperties.setBasePath("/actuator");
+		AdminController controller = controllerWith(null);
+
+		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
+
+		assertThat(response.getData()).containsExactly(Map.of("name", "env", "path", "/actuator/env"),
+				Map.of("name", "health", "path", "/actuator/health"),
+				Map.of("name", "metrics", "path", "/actuator/metrics"));
+		reset(webEndpointsSupplier);
 	}
 
 }

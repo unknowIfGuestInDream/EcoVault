@@ -7,8 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -180,6 +183,19 @@ class AdminControllerTest extends AbstractWebMvcTest {
 			.andExpect(jsonPath("$.data.group").doesNotExist())
 			.andExpect(jsonPath("$.data.artifact").doesNotExist())
 			.andExpect(jsonPath("$.data.springBootVersion").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("获取 Actuator 端点概览仅返回可直接访问的基础路径")
+	void actuatorEndpoints() throws Exception {
+		mockMvc.perform(get("/api/admin/actuator-endpoints").with(authentication(admin())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value(0))
+			.andExpect(content().string(containsString("/actuator/health")))
+			.andExpect(content().string(not(containsString("/actuator/env/{toMatch}"))))
+			.andExpect(content().string(not(containsString("/actuator/loggers/{name}"))))
+			.andExpect(content().string(not(containsString("/actuator/health/{*path}"))))
+			.andExpect(content().string(not(containsString("/actuator/metrics/{requiredMetricName}"))));
 	}
 
 	@Test

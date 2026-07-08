@@ -16,8 +16,11 @@ import com.tlcsdm.ecovault.service.AuthService;
 import com.tlcsdm.ecovault.service.RolePermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
+import org.springframework.boot.actuate.endpoint.web.ExposableWebEndpoint;
+import org.springframework.boot.actuate.endpoint.web.WebEndpointsSupplier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,14 +57,21 @@ public class AdminController {
 
 	private final Environment environment;
 
+	private final WebEndpointsSupplier webEndpointsSupplier;
+
+	private final WebEndpointProperties webEndpointProperties;
+
 	public AdminController(AdminService adminService, AuthService authService,
 			RolePermissionService rolePermissionService, ObjectProvider<BuildProperties> buildProperties,
-			Environment environment) {
+			Environment environment, WebEndpointsSupplier webEndpointsSupplier,
+			WebEndpointProperties webEndpointProperties) {
 		this.adminService = adminService;
 		this.authService = authService;
 		this.rolePermissionService = rolePermissionService;
 		this.buildProperties = buildProperties;
 		this.environment = environment;
+		this.webEndpointsSupplier = webEndpointsSupplier;
+		this.webEndpointProperties = webEndpointProperties;
 	}
 
 	/**
@@ -174,6 +185,33 @@ public class AdminController {
 		info.put("fileEncoding", System.getProperty("file.encoding"));
 		info.put("activeProfiles", String.join(", ", environment.getActiveProfiles()));
 		return ApiResponse.success(info);
+	}
+
+	/**
+	 * 获取可直接访问的 Actuator 根端点列表。
+	 * @return 端点名称与访问路径
+	 */
+	@GetMapping("/actuator-endpoints")
+	public ApiResponse<List<Map<String, String>>> actuatorEndpoints() {
+		String basePath = normalizeBasePath(webEndpointProperties.getBasePath());
+		List<Map<String, String>> endpoints = webEndpointsSupplier.getEndpoints()
+			.stream()
+			.sorted(Comparator.comparing(ExposableWebEndpoint::getRootPath))
+			.map(endpoint -> Map.of("name", endpoint.getEndpointId().toString(), "path",
+					buildEndpointPath(basePath, endpoint.getRootPath())))
+			.toList();
+		return ApiResponse.success(endpoints);
+	}
+
+	private static String normalizeBasePath(String basePath) {
+		if (basePath == null || basePath.isBlank() || "/".equals(basePath)) {
+			return "";
+		}
+		return basePath.startsWith("/") ? basePath : "/" + basePath;
+	}
+
+	private static String buildEndpointPath(String basePath, String rootPath) {
+		return basePath + (rootPath.startsWith("/") ? rootPath : "/" + rootPath);
 	}
 
 }

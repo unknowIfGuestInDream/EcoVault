@@ -191,9 +191,10 @@ bash deploy/deploy.sh
 - `/actuator/health`：健康检查。
 - `/actuator/info`：构建版本、构建时间等信息。
 - 管理员可通过 Actuator 与后台页面查看构建信息；后台构建信息保留 `name`、`version`、`buildTime`、Java 与当前激活配置，隐藏 `group`、`artifact`、`springBootVersion`。
-- 管理后台的 Actuator 端点概览仅展示可直接访问的非模板端点，避免 `/actuator/env/{toMatch}`、`/actuator/loggers/{name}`、`/actuator/health/{*path}`、`/actuator/metrics/{requiredMetricName}` 这类模板路径被浏览器编码后产生 404。
+- 管理后台通过 `/api/admin/actuator-endpoints` 提供 Actuator 基础入口，仅展示可直接访问的非模板端点，避免 `/actuator/env/{toMatch}`、`/actuator/loggers/{name}`、`/actuator/health/{*path}`、`/actuator/metrics/{requiredMetricName}` 这类模板路径被浏览器编码后产生 404。
 - favicon 固定放置在 `src/main/resources/static/favicon.ico`，页面统一通过 `/favicon.ico` 引用；打包后的 Jar 中路径为 `BOOT-INF/classes/static/favicon.ico`。
 - 除健康检查必要场景外，Actuator 信息必须限制为 `ADMIN`。
+- `ECOVAULT_APP_LOG_LEVEL` 可按需覆盖应用日志级别（如 `DEBUG`、`INFO`、`WARN`、`ERROR`）；未配置时默认使用 `INFO`，降低生产环境空闲日志开销。
 
 ## 安全说明
 
