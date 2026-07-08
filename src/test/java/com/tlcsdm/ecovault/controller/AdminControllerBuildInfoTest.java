@@ -102,6 +102,7 @@ class AdminControllerBuildInfoTest {
 	@Test
 	@DisplayName("Actuator 端点概览仅返回基础端点路径")
 	void actuatorEndpoints() {
+		reset(webEndpointsSupplier, webEndpointProperties);
 		ExposableWebEndpoint env = mock(ExposableWebEndpoint.class);
 		when(env.getEndpointId()).thenReturn(EndpointId.of("env"));
 		when(env.getRootPath()).thenReturn("env");
@@ -142,6 +143,7 @@ class AdminControllerBuildInfoTest {
 	}
 
 	private void assertActuatorEndpointsWithoutBasePath(String basePath) {
+		reset(webEndpointsSupplier, webEndpointProperties);
 		ExposableWebEndpoint health = mock(ExposableWebEndpoint.class);
 		when(health.getEndpointId()).thenReturn(EndpointId.of("health"));
 		when(health.getRootPath()).thenReturn("health");
