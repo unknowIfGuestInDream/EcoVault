@@ -19,8 +19,8 @@ import java.time.LocalDateTime;
  *
  * <p>
  * 按工资条分类记录用户每月的工资构成：发放项 (基本工资、绩效、各类补助、加班、奖金)、 社保/公积金缴费基数、扣除项
- * (医疗、养老、失业、公积金)、所得税，以及大病医疗、采暖补贴等。 由发放项派生「应发工资」，由扣除项派生「扣除项合计」，进一步派生税前工资、税后工资与实发金额，
- * 用于统计分析与趋势图表。
+ * (医疗、养老、失业、公积金)、所得税，以及大病医疗、采暖补贴与实发金额等。 由发放项派生「应发工资」，由扣除项派生「扣除项合计」，进一步派生税前工资与税后工资；
+ * 「实发金额」单独记录本人银行卡实际到账金额，用于统计分析与趋势图表。
  * </p>
  *
  * <p>
@@ -127,7 +127,7 @@ public class SalaryRecord {
 	@Column(name = "income_tax", nullable = false, precision = 12, scale = 2)
 	private BigDecimal incomeTax = BigDecimal.ZERO;
 
-	// ===== 税后附加项 =====
+	// ===== 到账相关项 =====
 
 	/** 大病医疗 */
 	@Column(name = "serious_illness_medical", nullable = false, precision = 12, scale = 2)
@@ -136,6 +136,10 @@ public class SalaryRecord {
 	/** 采暖补贴 */
 	@Column(name = "heating_allowance", nullable = false, precision = 12, scale = 2)
 	private BigDecimal heatingAllowance = BigDecimal.ZERO;
+
+	/** 实发金额（本人银行卡实际到账） */
+	@Column(name = "net_pay", nullable = false, precision = 12, scale = 2)
+	private BigDecimal netPay = BigDecimal.ZERO;
 
 	/** 备注 */
 	@Column(length = 256)
@@ -210,11 +214,11 @@ public class SalaryRecord {
 	}
 
 	/**
-	 * 计算实发金额 = 税后工资 + 大病医疗 + 采暖补贴。
+	 * 获取实发金额（本人银行卡实际到账）。
 	 * @return 实发金额
 	 */
 	public BigDecimal getNetPay() {
-		return getAfterTaxSalary().add(nullToZero(seriousIllnessMedical)).add(nullToZero(heatingAllowance));
+		return nullToZero(netPay);
 	}
 
 	private BigDecimal nullToZero(BigDecimal value) {
@@ -395,6 +399,10 @@ public class SalaryRecord {
 
 	public void setHeatingAllowance(BigDecimal heatingAllowance) {
 		this.heatingAllowance = heatingAllowance;
+	}
+
+	public void setNetPay(BigDecimal netPay) {
+		this.netPay = netPay;
 	}
 
 	public String getRemark() {

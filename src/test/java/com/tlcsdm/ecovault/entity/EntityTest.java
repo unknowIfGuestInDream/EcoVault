@@ -194,6 +194,7 @@ class EntityTest {
 		// 税后附加项
 		record.setSeriousIllnessMedical(new BigDecimal("150"));
 		record.setHeatingAllowance(new BigDecimal("100"));
+		record.setNetPay(new BigDecimal("12345.67"));
 		record.setRemark("6 月工资");
 		LocalDateTime t = LocalDateTime.now();
 		record.setCreatedAt(t);
@@ -222,6 +223,7 @@ class EntityTest {
 		assertThat(record.getIncomeTax()).isEqualByComparingTo("500");
 		assertThat(record.getSeriousIllnessMedical()).isEqualByComparingTo("150");
 		assertThat(record.getHeatingAllowance()).isEqualByComparingTo("100");
+		assertThat(record.getNetPay()).isEqualByComparingTo("12345.67");
 		assertThat(record.getRemark()).isEqualTo("6 月工资");
 		assertThat(record.getCreatedAt()).isEqualTo(t);
 		assertThat(record.getUpdatedAt()).isEqualTo(t);
@@ -234,8 +236,6 @@ class EntityTest {
 		assertThat(record.getPreTaxSalary()).isEqualByComparingTo("12550");
 		// 税后 = 12550 - 500 = 12050
 		assertThat(record.getAfterTaxSalary()).isEqualByComparingTo("12050");
-		// 实发 = 12050 + 150 + 100 = 12300
-		assertThat(record.getNetPay()).isEqualByComparingTo("12300");
 
 		SalaryRecord fresh = new SalaryRecord();
 		fresh.prePersist();
@@ -264,6 +264,7 @@ class EntityTest {
 		record.setIncomeTax(null);
 		record.setSeriousIllnessMedical(null);
 		record.setHeatingAllowance(null);
+		record.setNetPay(null);
 
 		assertThat(record.getGrossPay()).isEqualByComparingTo("0");
 		assertThat(record.getTotalDeduction()).isEqualByComparingTo("0");
