@@ -3,6 +3,7 @@ package com.tlcsdm.ecovault.controller;
 import com.tlcsdm.ecovault.common.ApiResponse;
 import com.tlcsdm.ecovault.service.AdminService;
 import com.tlcsdm.ecovault.service.AuthService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.endpoint.EndpointId;
@@ -55,6 +56,11 @@ class AdminControllerBuildInfoTest {
 				webEndpointsSupplier, webEndpointProperties);
 	}
 
+	@BeforeEach
+	void resetEndpointMocks() {
+		reset(webEndpointsSupplier, webEndpointProperties);
+	}
+
 	@Test
 	@DisplayName("构建信息可用时返回完整版本与构建时间")
 	void buildInfoAvailable() {
@@ -102,7 +108,6 @@ class AdminControllerBuildInfoTest {
 	@Test
 	@DisplayName("Actuator 端点概览仅返回基础端点路径")
 	void actuatorEndpoints() {
-		reset(webEndpointsSupplier, webEndpointProperties);
 		ExposableWebEndpoint env = mock(ExposableWebEndpoint.class);
 		when(env.getEndpointId()).thenReturn(EndpointId.of("env"));
 		when(env.getRootPath()).thenReturn("env");
@@ -142,7 +147,6 @@ class AdminControllerBuildInfoTest {
 	}
 
 	private void assertActuatorEndpointsWithoutBasePath(String basePath) {
-		reset(webEndpointsSupplier, webEndpointProperties);
 		ExposableWebEndpoint health = mock(ExposableWebEndpoint.class);
 		when(health.getEndpointId()).thenReturn(EndpointId.of("health"));
 		when(health.getRootPath()).thenReturn("health");
