@@ -243,6 +243,9 @@ public class SalaryServiceImpl implements SalaryService {
 		record.setIncomeTax(nz(request.incomeTax()));
 		record.setSeriousIllnessMedical(nz(request.seriousIllnessMedical()));
 		record.setHeatingAllowance(nz(request.heatingAllowance()));
+		record.setNetPay(request.netPay() == null
+				? record.getAfterTaxSalary().add(record.getSeriousIllnessMedical()).add(record.getHeatingAllowance())
+				: nz(request.netPay()));
 		record.setRemark(request.remark());
 	}
 

@@ -44,13 +44,12 @@ class SalaryServiceImplTest {
 
 	@BeforeEach
 	void setUp() {
-		// 应发 = 基本工资 + 奖金 + 租房补助；扣除项合计 = 医疗；无税/无附加 -> 实发 = 应发 - 扣除
-		jan = record(1L, 2025, 1, "10000", "2000", "500", "1000");
-		feb = record(2L, 2025, 2, "10000", "0", "500", "1000");
+		jan = record(1L, 2025, 1, "10000", "2000", "500", "1000", "11500");
+		feb = record(2L, 2025, 2, "10000", "0", "500", "1000", "9500");
 	}
 
 	private SalaryRecord record(Long id, int year, int month, String base, String bonus, String housing,
-			String medicalDeduction) {
+			String medicalDeduction, String netPay) {
 		SalaryRecord r = new SalaryRecord();
 		r.setId(id);
 		r.setUserId(1L);
@@ -60,12 +59,14 @@ class SalaryServiceImplTest {
 		r.setBonus(new BigDecimal(bonus));
 		r.setHousingAllowance(new BigDecimal(housing));
 		r.setMedicalDeduction(new BigDecimal(medicalDeduction));
+		r.setNetPay(new BigDecimal(netPay));
 		return r;
 	}
 
-	private SalaryRequest request(int year, int month, String base, String bonus) {
+	private SalaryRequest request(int year, int month, String base, String bonus, String netPay) {
 		return new SalaryRequest(year, month, new BigDecimal(base), null, null, null, null, null, null,
-				new BigDecimal(bonus), null, null, null, null, null, null, null, null, null, null, "备注");
+				new BigDecimal(bonus), null, null, null, null, null, null, null, null, null, null,
+				new BigDecimal(netPay), "备注");
 	}
 
 	@Test
@@ -102,7 +103,7 @@ class SalaryServiceImplTest {
 	@Test
 	@DisplayName("年终奖记录单独汇总且不计入月度趋势")
 	void statisticsSeparatesAnnualBonus() {
-		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "50000", "0", "0");
+		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "50000", "0", "0", "50000");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(annual, jan, feb));
 
 		SalaryStatistics stats = service.statistics(1L, 2025);
@@ -131,7 +132,7 @@ class SalaryServiceImplTest {
 	@Test
 	@DisplayName("仅有年终奖时月度指标为零但年终奖合计正确")
 	void statisticsOnlyAnnualBonus() {
-		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "30000", "0", "0");
+		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "30000", "0", "0", "30000");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(annual));
 
 		SalaryStatistics stats = service.statistics(1L, 2025);
@@ -157,7 +158,7 @@ class SalaryServiceImplTest {
 	@Test
 	@DisplayName("导出 CSV 年终奖行月份列显示为年终奖")
 	void exportCsvAnnualBonus() {
-		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "50000", "0", "0");
+		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "50000", "0", "0", "50000");
 		when(repository.findByUserIdOrderByYearAscMonthAsc(1L)).thenReturn(List.of(annual));
 
 		String csv = service.exportCsv(1L, null);
@@ -168,21 +169,21 @@ class SalaryServiceImplTest {
 	@Test
 	@DisplayName("保存时若已存在同年月记录则更新")
 	void saveUpsert() {
-		SalaryRequest request = request(2025, 1, "12000", "1000");
+		SalaryRequest request = request(2025, 1, "12000", "1000", "12345.67");
 		when(repository.findByUserIdAndYearAndMonth(1L, 2025, 1)).thenReturn(Optional.of(jan));
 		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		SalaryResponse response = service.save(1L, request);
 
 		assertThat(response.baseSalary()).isEqualByComparingTo("12000");
-		assertThat(response.netPay()).isEqualByComparingTo("13000"); // 12000+1000
+		assertThat(response.netPay()).isEqualByComparingTo("12345.67");
 		assertThat(response.annualBonus()).isFalse();
 	}
 
 	@Test
 	@DisplayName("保存年终奖记录 (月份为 0)")
 	void saveAnnualBonus() {
-		SalaryRequest request = request(2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "60000");
+		SalaryRequest request = request(2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "60000", "60000");
 		when(repository.findByUserIdAndYearAndMonth(1L, 2025, 0)).thenReturn(Optional.empty());
 		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -195,7 +196,7 @@ class SalaryServiceImplTest {
 	@Test
 	@DisplayName("统计中出现递增净收入时刷新最高值")
 	void statisticsUpdatesMaxWhenIncreasing() {
-		SalaryRecord mar = record(3L, 2025, 3, "20000", "5000", "1000", "1000");
+		SalaryRecord mar = record(3L, 2025, 3, "20000", "5000", "1000", "1000", "25000");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(jan, feb, mar));
 
 		SalaryStatistics stats = service.statistics(1L, 2025);
@@ -209,7 +210,7 @@ class SalaryServiceImplTest {
 	@DisplayName("保存不存在的年月记录时新建")
 	void saveNewRecord() {
 		SalaryRequest request = new SalaryRequest(2026, 6, new BigDecimal("8000"), null, null, null, null, null, null,
-				new BigDecimal("500"), null, null, null, null, null, null, null, null, null, null, "新记录");
+				new BigDecimal("500"), null, null, null, null, null, null, null, null, null, null, null, "新记录");
 		when(repository.findByUserIdAndYearAndMonth(1L, 2026, 6)).thenReturn(Optional.empty());
 		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -225,11 +226,12 @@ class SalaryServiceImplTest {
 	void updateSuccess() {
 		when(repository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(jan));
 		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> inv.getArgument(0));
-		SalaryRequest request = request(2025, 1, "15000", "0");
+		SalaryRequest request = request(2025, 1, "15000", "0", "14999.99");
 
 		SalaryResponse response = service.update(1L, 1L, request);
 
 		assertThat(response.baseSalary()).isEqualByComparingTo("15000");
+		assertThat(response.netPay()).isEqualByComparingTo("14999.99");
 	}
 
 	@Test
@@ -237,7 +239,7 @@ class SalaryServiceImplTest {
 	void updateMissingThrows() {
 		when(repository.findByIdAndUserId(50L, 1L)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> service.update(1L, 50L, request(2025, 1, "0", "0")))
+		assertThatThrownBy(() -> service.update(1L, 50L, request(2025, 1, "0", "0", "0")))
 			.isInstanceOf(BusinessException.class);
 	}
 
@@ -282,7 +284,7 @@ class SalaryServiceImplTest {
 	@Test
 	@DisplayName("按年份导出并对含逗号的备注进行 CSV 转义")
 	void exportCsvByYearWithEscaping() {
-		SalaryRecord withComma = record(9L, 2025, 4, "10000", "0", "0", "0");
+		SalaryRecord withComma = record(9L, 2025, 4, "10000", "0", "0", "0", "10000");
 		withComma.setRemark("含,逗号\"引号");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(withComma));
 
@@ -294,13 +296,13 @@ class SalaryServiceImplTest {
 	@Test
 	@DisplayName("导出时对空串、换行、引号与普通备注分别正确处理")
 	void exportCsvEscapesVariousRemarks() {
-		SalaryRecord empty = record(10L, 2025, 5, "10000", "0", "0", "0");
+		SalaryRecord empty = record(10L, 2025, 5, "10000", "0", "0", "0", "10000");
 		empty.setRemark("");
-		SalaryRecord plain = record(11L, 2025, 6, "10000", "0", "0", "0");
+		SalaryRecord plain = record(11L, 2025, 6, "10000", "0", "0", "0", "10000");
 		plain.setRemark("普通备注");
-		SalaryRecord newline = record(12L, 2025, 7, "10000", "0", "0", "0");
+		SalaryRecord newline = record(12L, 2025, 7, "10000", "0", "0", "0", "10000");
 		newline.setRemark("第一行\n第二行");
-		SalaryRecord quote = record(13L, 2025, 8, "10000", "0", "0", "0");
+		SalaryRecord quote = record(13L, 2025, 8, "10000", "0", "0", "0", "10000");
 		quote.setRemark("仅含\"引号");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(empty, plain, newline, quote));
 

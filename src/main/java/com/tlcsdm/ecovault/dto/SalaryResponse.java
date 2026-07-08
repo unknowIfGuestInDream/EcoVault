@@ -6,7 +6,7 @@ import java.math.BigDecimal;
  * 工资数据响应。
  *
  * <p>
- * 除录入的分类明细外，附带服务端派生的应发工资、扣除项合计、税前/税后工资与实发金额， 以及是否为年终奖记录的标识。
+ * 除录入的分类明细外，附带服务端派生的应发工资、扣除项合计、税前/税后工资，以及单独记录的实发金额与年终奖标识。
  * </p>
  *
  * @param id 记录 ID
@@ -35,7 +35,7 @@ import java.math.BigDecimal;
  * @param totalDeduction 扣除项合计
  * @param preTaxSalary 税前工资
  * @param afterTaxSalary 税后工资
- * @param netPay 实发金额
+ * @param netPay 实发金额（本人银行卡实际到账）
  * @param remark 备注
  * @author unknowIfGuestInDream
  */

@@ -10,8 +10,8 @@ import java.math.BigDecimal;
  * 工资数据录入/编辑请求。
  *
  * <p>
- * 按工资条分类录入发放项、缴费基数、扣除项、所得税与税后附加项。 月份取值 1-12 表示当月工资；取值 0 表示该年度的年终奖记录。
- * 应发工资、扣除项合计、税前/税后工资与实发金额由服务端派生计算。
+ * 按工资条分类录入发放项、缴费基数、扣除项、所得税、税后附加项与实发金额。 月份取值 1-12 表示当月工资；取值 0 表示该年度的年终奖记录。
+ * 应发工资、扣除项合计、税前/税后工资由服务端派生计算，实发金额表示本人银行卡实际到账金额。
  * </p>
  *
  * @param year 年份
@@ -34,6 +34,7 @@ import java.math.BigDecimal;
  * @param incomeTax 所得税
  * @param seriousIllnessMedical 大病医疗
  * @param heatingAllowance 采暖补贴
+ * @param netPay 实发金额（本人银行卡实际到账）
  * @param remark 备注
  * @author unknowIfGuestInDream
  */
@@ -49,5 +50,5 @@ public record SalaryRequest(
 		BigDecimal medicalBase, BigDecimal pensionUnemploymentBase, BigDecimal housingFundBase,
 		BigDecimal medicalDeduction, BigDecimal pensionDeduction, BigDecimal unemploymentDeduction,
 		BigDecimal housingFundDeduction, BigDecimal incomeTax, BigDecimal seriousIllnessMedical,
-		BigDecimal heatingAllowance, String remark) {
+		BigDecimal heatingAllowance, BigDecimal netPay, String remark) {
 }
