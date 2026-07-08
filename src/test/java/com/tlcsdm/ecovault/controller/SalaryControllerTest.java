@@ -68,6 +68,11 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 		mockMvc.perform(get("/api/finance/salaries").param("year", "2030").with(authentication(auth())))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.length()").value(2))
+			.andExpect(jsonPath("$.data[0].preTaxSalary").value(10700))
+			.andExpect(jsonPath("$.data[0].incomeTax").value(0))
+			.andExpect(jsonPath("$.data[0].afterTaxSalary").value(10700))
+			.andExpect(jsonPath("$.data[0].seriousIllnessMedical").value(0))
+			.andExpect(jsonPath("$.data[0].heatingAllowance").value(0))
 			.andExpect(jsonPath("$.data[0].netPay").value(10666.66))
 			.andExpect(jsonPath("$.data[1].netPay").value(11777.77));
 
@@ -139,6 +144,7 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 			.andExpect(header().string("Content-Disposition", containsString("salary.csv")))
 			.andExpect(content().string(containsString("年份,月份,基本工资,绩效工资")))
 			.andExpect(content().string(containsString("医疗,养老,失业,公积金")))
+			.andExpect(content().string(containsString("税前工资,所得税,税后工资,大病医疗,采暖补贴,实发金额")))
 			.andExpect(content().string(containsString("税后工资")))
 			.andExpect(content().string(containsString("9123.45")))
 			.andExpect(content().string(containsString("年终奖")));
@@ -166,6 +172,23 @@ class SalaryControllerTest extends AbstractWebMvcTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(requestOf(2030, 13, "0", "0"))))
 			.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("未传实发金额时不再兼容旧回填结构")
+	void missingNetPayNoLongerBackfills() throws Exception {
+		SalaryRequest request = new SalaryRequest(2033, 3, new BigDecimal("10000"), null, null, null, null, null, null,
+				null, null, null, null, null, null, null, null, new BigDecimal("300"), new BigDecimal("200"),
+				new BigDecimal("100"), null, "未传实发");
+		mockMvc
+			.perform(post("/api/finance/salaries").with(authentication(auth()))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.preTaxSalary").value(10000))
+			.andExpect(jsonPath("$.data.afterTaxSalary").value(9700))
+			.andExpect(jsonPath("$.data.netPay").value(0));
 	}
 
 }

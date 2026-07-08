@@ -38,7 +38,7 @@
         <div style="overflow-x:auto">
             <table class="table">
                 <thead>
-                <tr><th>年月</th><th>应发工资</th><th>扣除合计</th><th>税前工资</th><th>所得税</th><th>实发金额</th><th>操作</th></tr>
+                <tr><th>年月</th><th>应发工资</th><th>扣除合计</th><th>税前工资</th><th>所得税</th><th>税后工资</th><th>大病医疗</th><th>采暖补贴</th><th>实发金额</th><th>操作</th></tr>
                 </thead>
                 <tbody id="salary-body"></tbody>
             </table>
@@ -87,14 +87,16 @@
             <div><label>养老</label><input id="f-pensionDeduction" type="number" step="0.01"/></div>
             <div><label>失业</label><input id="f-unemploymentDeduction" type="number" step="0.01"/></div>
             <div><label>公积金</label><input id="f-housingFundDeduction" type="number" step="0.01"/></div>
-            <div><label>所得税</label><input id="f-incomeTax" type="number" step="0.01"/></div>
         </div>
 
-        <h4 style="margin:16px 0 4px">税后附加</h4>
+        <h4 style="margin:16px 0 4px">到账信息</h4>
         <div class="grid two">
+            <div><label>税前工资</label><input id="f-preTaxSalary" type="number" step="0.01" readonly/></div>
+            <div><label>所得税</label><input id="f-incomeTax" type="number" step="0.01"/></div>
+            <div><label>税后工资</label><input id="f-afterTaxSalary" type="number" step="0.01" readonly/></div>
             <div><label>大病医疗</label><input id="f-seriousIllnessMedical" type="number" step="0.01"/></div>
             <div><label>采暖补贴</label><input id="f-heatingAllowance" type="number" step="0.01"/></div>
-            <div><label>实发金额（银行卡到账）</label><input id="f-netPay" type="number" step="0.01"/></div>
+            <div><label>实发金额</label><input id="f-netPay" type="number" step="0.01"/></div>
         </div>
 
         <label style="margin-top:12px">备注</label><input id="f-remark"/>
@@ -110,12 +112,20 @@
     let trendChart, compChart, deductionChart;
 
     // 金额录入字段 (与后端 SalaryRequest 字段同名)
-    const AMOUNT_FIELDS = [
+    const GROSS_FIELDS = [
         "baseSalary", "performanceSalary", "housingAllowance", "mealAllowance",
-        "transportAllowance", "overtimePay", "overtimeAllowance", "bonus",
+        "transportAllowance", "overtimePay", "overtimeAllowance", "bonus"
+    ];
+
+    const DEDUCTION_FIELDS = [
+        "medicalDeduction", "pensionDeduction", "unemploymentDeduction", "housingFundDeduction"
+    ];
+
+    const AMOUNT_FIELDS = [
+        ...GROSS_FIELDS,
         "medicalBase", "pensionUnemploymentBase", "housingFundBase",
-        "medicalDeduction", "pensionDeduction", "unemploymentDeduction",
-        "housingFundDeduction", "incomeTax", "seriousIllnessMedical", "heatingAllowance", "netPay"
+        ...DEDUCTION_FIELDS,
+        "incomeTax", "seriousIllnessMedical", "heatingAllowance", "netPay"
     ];
 
     function yearParam() {
@@ -131,18 +141,37 @@
         return r.annualBonus ? "年终奖" : `${r.year}-${String(r.month).padStart(2, "0")}`;
     }
 
+    function fieldCents(field) {
+        const value = Number(document.getElementById("f-" + field).value);
+        return Number.isFinite(value) ? Math.round(value * 100) : 0;
+    }
+
+    function formatAmount(cents) {
+        return (cents / 100).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+    }
+
+    function refreshDerivedAmounts() {
+        const gross = GROSS_FIELDS.reduce((sum, field) => sum + fieldCents(field), 0);
+        const deduction = DEDUCTION_FIELDS.reduce((sum, field) => sum + fieldCents(field), 0);
+        const preTax = gross - deduction;
+        const afterTax = preTax - fieldCents("incomeTax");
+        document.getElementById("f-preTaxSalary").value = formatAmount(preTax);
+        document.getElementById("f-afterTaxSalary").value = formatAmount(afterTax);
+    }
+
     async function loadList() {
         const data = await api("/api/finance/salaries" + yearParam());
         const body = document.getElementById("salary-body");
         if (!data.length) {
-            body.innerHTML = '<tr><td colspan="7" class="muted">暂无数据</td></tr>';
+            body.innerHTML = '<tr><td colspan="10" class="muted">暂无数据</td></tr>';
             return;
         }
         body.innerHTML = data.map(r => `
             <tr>
                 <td>${monthText(r)}</td>
                 <td>${r.grossPay}</td><td>${r.totalDeduction}</td>
-                <td>${r.preTaxSalary}</td><td>${r.incomeTax}</td><td>${r.netPay}</td>
+                <td>${r.preTaxSalary}</td><td>${r.incomeTax}</td><td>${r.afterTaxSalary}</td>
+                <td>${r.seriousIllnessMedical}</td><td>${r.heatingAllowance}</td><td>${r.netPay}</td>
                 <td>
                     <button class="btn btn-sm secondary" onclick='editRecord(${JSON.stringify(r)})'>编辑</button>
                     <button class="btn btn-sm danger" onclick="delRecord(${r.id})">删除</button>
@@ -226,6 +255,7 @@
         document.getElementById("f-annual").checked = false;
         document.getElementById("f-remark").value = "";
         AMOUNT_FIELDS.forEach(f => document.getElementById("f-" + f).value = "");
+        refreshDerivedAmounts();
         toggleAnnual();
     }
 
@@ -243,6 +273,7 @@
         document.getElementById("f-annual").checked = r.annualBonus;
         document.getElementById("f-month").value = r.annualBonus ? "" : r.month;
         AMOUNT_FIELDS.forEach(f => document.getElementById("f-" + f).value = r[f]);
+        refreshDerivedAmounts();
         document.getElementById("f-remark").value = r.remark || "";
         toggleAnnual();
         document.getElementById("modal").classList.add("show");
@@ -302,6 +333,10 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+        [...GROSS_FIELDS, ...DEDUCTION_FIELDS, "incomeTax"].forEach(field => {
+            document.getElementById("f-" + field).addEventListener("input", refreshDerivedAmounts);
+        });
+        refreshDerivedAmounts();
         reload();
     });
 </script>

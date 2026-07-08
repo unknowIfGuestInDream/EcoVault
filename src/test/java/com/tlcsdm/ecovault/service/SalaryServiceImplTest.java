@@ -152,6 +152,7 @@ class SalaryServiceImplTest {
 
 		assertThat(csv).startsWith("\uFEFF");
 		assertThat(csv).contains("年份,月份,基本工资,绩效工资");
+		assertThat(csv).contains("税前工资,所得税,税后工资,大病医疗,采暖补贴,实发金额");
 		assertThat(csv).contains("2025,1,10000");
 	}
 
@@ -207,18 +208,34 @@ class SalaryServiceImplTest {
 	}
 
 	@Test
-	@DisplayName("保存不存在的年月记录时新建")
+	@DisplayName("保存不存在的年月记录时新建并使用显式实发金额")
 	void saveNewRecord() {
 		SalaryRequest request = new SalaryRequest(2026, 6, new BigDecimal("8000"), null, null, null, null, null, null,
-				new BigDecimal("500"), null, null, null, null, null, null, null, null, null, null, null, "新记录");
+				new BigDecimal("500"), null, null, null, null, null, null, null, null, null, null,
+				new BigDecimal("8200"), "新记录");
 		when(repository.findByUserIdAndYearAndMonth(1L, 2026, 6)).thenReturn(Optional.empty());
 		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		SalaryResponse response = service.save(1L, request);
 
-		// null 各项按 0 处理
 		assertThat(response.grossPay()).isEqualByComparingTo("8500");
-		assertThat(response.netPay()).isEqualByComparingTo("8500");
+		assertThat(response.netPay()).isEqualByComparingTo("8200");
+	}
+
+	@Test
+	@DisplayName("未提供实发金额时不再按税后工资与补贴回填")
+	void saveWithoutNetPayNoLongerFallsBack() {
+		SalaryRequest request = new SalaryRequest(2026, 7, new BigDecimal("10000"), null, null, null, null, null, null,
+				null, null, null, null, null, null, null, null, new BigDecimal("300"), new BigDecimal("200"),
+				new BigDecimal("100"), null, "缺少实发");
+		when(repository.findByUserIdAndYearAndMonth(1L, 2026, 7)).thenReturn(Optional.empty());
+		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		SalaryResponse response = service.save(1L, request);
+
+		assertThat(response.preTaxSalary()).isEqualByComparingTo("10000");
+		assertThat(response.afterTaxSalary()).isEqualByComparingTo("9700");
+		assertThat(response.netPay()).isEqualByComparingTo("0");
 	}
 
 	@Test

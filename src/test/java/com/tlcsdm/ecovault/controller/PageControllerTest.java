@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -50,14 +51,29 @@ class PageControllerTest extends AbstractWebMvcTest {
 	}
 
 	@Test
-	@DisplayName("工资页明确提示年终奖可不填写月份")
-	void financePageShowsAnnualBonusMonthHint() throws Exception {
+	@DisplayName("工资页展示到账信息顺序并提示年终奖可不填写月份")
+	void financePageShowsPaymentSection() throws Exception {
 		var user = authFor(securityUser(1001L, "financeuser", Role.USER));
-		mockMvc.perform(get("/finance").with(authentication(user)))
+		String html = mockMvc.perform(get("/finance").with(authentication(user)))
 			.andExpect(status().isOk())
 			.andExpect(content().string(containsString("月份（年终奖可留空）")))
 			.andExpect(content().string(containsString("aria-label=\"关闭\"")))
-			.andExpect(content().string(containsString("const month = annual ? 0")));
+			.andExpect(content().string(containsString("const month = annual ? 0")))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+		assertThat(html).contains("到账信息", "<label>实发金额</label>").doesNotContain("税后附加", "实发金额（银行卡到账）");
+		assertOrdered(html, "id=\"f-preTaxSalary\"", "id=\"f-incomeTax\"", "id=\"f-afterTaxSalary\"",
+				"id=\"f-seriousIllnessMedical\"", "id=\"f-heatingAllowance\"", "id=\"f-netPay\"");
+	}
+
+	private void assertOrdered(String value, String... fragments) {
+		int previousIndex = -1;
+		for (String fragment : fragments) {
+			int currentIndex = value.indexOf(fragment);
+			assertThat(currentIndex).isGreaterThan(previousIndex);
+			previousIndex = currentIndex;
+		}
 	}
 
 	@Test

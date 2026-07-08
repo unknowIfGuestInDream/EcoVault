@@ -127,7 +127,7 @@ public class SalaryRecord {
 	@Column(name = "income_tax", nullable = false, precision = 12, scale = 2)
 	private BigDecimal incomeTax = BigDecimal.ZERO;
 
-	// ===== 税后附加项 =====
+	// ===== 到账相关项 =====
 
 	/** 大病医疗 */
 	@Column(name = "serious_illness_medical", nullable = false, precision = 12, scale = 2)
