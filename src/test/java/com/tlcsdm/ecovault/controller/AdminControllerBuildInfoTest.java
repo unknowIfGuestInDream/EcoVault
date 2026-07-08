@@ -44,7 +44,7 @@ class AdminControllerBuildInfoTest {
 
 	private final WebEndpointsSupplier webEndpointsSupplier = mock(WebEndpointsSupplier.class);
 
-	private final WebEndpointProperties webEndpointProperties = new WebEndpointProperties();
+	private final WebEndpointProperties webEndpointProperties = mock(WebEndpointProperties.class);
 
 	@SuppressWarnings("unchecked")
 	private AdminController controllerWith(BuildProperties props) {
@@ -112,7 +112,7 @@ class AdminControllerBuildInfoTest {
 		when(metrics.getEndpointId()).thenReturn(EndpointId.of("metrics"));
 		when(metrics.getRootPath()).thenReturn("metrics");
 		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(metrics, health, env));
-		webEndpointProperties.setBasePath("/actuator");
+		when(webEndpointProperties.getBasePath()).thenReturn("/actuator");
 		AdminController controller = controllerWith(null);
 
 		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
@@ -120,6 +120,38 @@ class AdminControllerBuildInfoTest {
 		assertThat(response.getData()).containsExactly(Map.of("name", "env", "path", "/actuator/env"),
 				Map.of("name", "health", "path", "/actuator/health"),
 				Map.of("name", "metrics", "path", "/actuator/metrics"));
+		reset(webEndpointsSupplier);
+	}
+
+	@Test
+	@DisplayName("Actuator 基础路径为 null 时归一化为空前缀")
+	void actuatorEndpointsWithNullBasePath() {
+		assertActuatorEndpointsWithoutBasePath(null);
+	}
+
+	@Test
+	@DisplayName("Actuator 基础路径为空白时归一化为空前缀")
+	void actuatorEndpointsWithBlankBasePath() {
+		assertActuatorEndpointsWithoutBasePath("   ");
+	}
+
+	@Test
+	@DisplayName("Actuator 基础路径为根路径时归一化为空前缀")
+	void actuatorEndpointsWithRootBasePath() {
+		assertActuatorEndpointsWithoutBasePath("/");
+	}
+
+	private void assertActuatorEndpointsWithoutBasePath(String basePath) {
+		ExposableWebEndpoint health = mock(ExposableWebEndpoint.class);
+		when(health.getEndpointId()).thenReturn(EndpointId.of("health"));
+		when(health.getRootPath()).thenReturn("health");
+		when(webEndpointsSupplier.getEndpoints()).thenReturn(List.of(health));
+		when(webEndpointProperties.getBasePath()).thenReturn(basePath);
+		AdminController controller = controllerWith(null);
+
+		ApiResponse<List<Map<String, String>>> response = controller.actuatorEndpoints();
+
+		assertThat(response.getData()).containsExactly(Map.of("name", "health", "path", "/health"));
 		reset(webEndpointsSupplier);
 	}
 
