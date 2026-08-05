@@ -349,9 +349,10 @@
         showPrivacyOverlay();
     };
 
-    // 页面加载 (defer 已保证 DOM 解析完成) 时，若处于隐私模式则立即锁定，避免内容闪现泄露
+    // 页面加载 (defer 已保证 DOM 解析完成) 时，若处于隐私模式则立即渲染解锁遮罩并锁定，
+    // 直接构建遮罩而非仅置标记，避免后续脚本异常导致内容被模糊却无解锁入口
     if (hasNavbar() && isPrivacyOn()) {
-        document.documentElement.setAttribute("data-privacy", "on");
+        showPrivacyOverlay();
     }
 
     /** HTML 转义，防止 XSS */
@@ -407,10 +408,6 @@
         }
         if (document.getElementById("main-nav")) {
             window.initNav();
-        }
-        // 若刷新前已开启隐私模式，则重新展示解锁遮罩
-        if (hasNavbar() && isPrivacyOn()) {
-            showPrivacyOverlay();
         }
     });
 })();
