@@ -14,7 +14,7 @@
 
     <groupId>com.tlcsdm</groupId>
     <artifactId>ecovault</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>EcoVault</name>
     <description>EcoVault 生态保险箱 - 个人数据安全存储与智能管理平台</description>
     <url>https://github.com/unknowIfGuestInDream/EcoVault</url>

@@ -6,6 +6,7 @@ import com.tlcsdm.ecovault.dto.ChangePasswordRequest;
 import com.tlcsdm.ecovault.dto.LoginRequest;
 import com.tlcsdm.ecovault.dto.LoginResponse;
 import com.tlcsdm.ecovault.dto.UpdateProfileRequest;
+import com.tlcsdm.ecovault.dto.VerifyPasswordRequest;
 import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.security.JwtAuthenticationFilter;
 import com.tlcsdm.ecovault.security.JwtTokenProvider;
@@ -122,6 +123,22 @@ public class AuthController {
 	@OperationLogRecord(module = "用户管理", operation = "修改密码")
 	public ApiResponse<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
 		authService.changePassword(SecurityUtils.getCurrentUserId(), request);
+		return ApiResponse.success();
+	}
+
+	/**
+	 * 隐私模式解锁：校验当前登录用户的密码是否正确。
+	 *
+	 * <p>
+	 * 仅比对密码，不重新签发 JWT，也不刷新会话或延长令牌有效期，与令牌过期刷新逻辑相互独立； 密码错误时返回业务失败。
+	 * </p>
+	 * @param request 校验密码请求
+	 * @return 校验结果
+	 */
+	@PostMapping("/verify-password")
+	@OperationLogRecord(module = "用户管理", operation = "隐私模式解锁")
+	public ApiResponse<Void> verifyPassword(@Valid @RequestBody VerifyPasswordRequest request) {
+		authService.verifyPassword(SecurityUtils.getCurrentUserId(), request.password());
 		return ApiResponse.success();
 	}
 

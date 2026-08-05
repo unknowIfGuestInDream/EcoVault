@@ -221,6 +221,139 @@
         window.location.href = "/login";
     };
 
+    // ===== 隐私模式：一键隐藏页面内容，需输入当前账户登录密码才能继续访问 =====
+    // 说明：仅调用 /api/auth/verify-password 校验密码，不会重新签发 JWT，也不刷新会话，
+    // 与令牌 2 小时过期后的刷新逻辑相互独立。
+    const PRIVACY_KEY = "ecovault-privacy";
+
+    /**
+     * 当前是否处于隐私模式。
+     * @returns {boolean} 是否开启
+     */
+    function isPrivacyOn() {
+        return localStorage.getItem(PRIVACY_KEY) === "on";
+    }
+
+    /**
+     * 判断当前页面是否为登录后带导航栏的页面 (仅这些页面启用隐私模式)。
+     * @returns {boolean} 是否存在导航栏
+     */
+    function hasNavbar() {
+        return !!document.getElementById("main-nav");
+    }
+
+    /**
+     * 惰性构建隐私模式遮罩层。
+     * @returns {HTMLElement} 遮罩元素
+     */
+    function buildPrivacyOverlay() {
+        let overlay = document.getElementById("privacy-overlay");
+        if (overlay) {
+            return overlay;
+        }
+        overlay = document.createElement("div");
+        overlay.id = "privacy-overlay";
+        overlay.className = "privacy-overlay";
+        overlay.innerHTML = `
+            <div class="glass privacy-card">
+                <div class="privacy-emoji">🕶️</div>
+                <h2>隐私模式已开启</h2>
+                <p class="muted">页面内容已隐藏，请输入当前账户登录密码以继续访问。</p>
+                <form id="privacy-form" autocomplete="off">
+                    <input type="password" id="privacy-password" placeholder="登录密码"
+                        autocomplete="current-password" aria-label="登录密码"/>
+                    <button class="btn" type="submit" id="privacy-unlock">解锁</button>
+                </form>
+                <p class="privacy-error" id="privacy-error" role="alert"></p>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector("#privacy-form").addEventListener("submit", (event) => {
+            event.preventDefault();
+            unlockPrivacy();
+        });
+        return overlay;
+    }
+
+    /** 显示隐私遮罩并锁定页面。 */
+    function showPrivacyOverlay() {
+        const overlay = buildPrivacyOverlay();
+        document.documentElement.setAttribute("data-privacy", "on");
+        overlay.classList.add("show");
+        const errorEl = document.getElementById("privacy-error");
+        if (errorEl) {
+            errorEl.textContent = "";
+        }
+        const input = document.getElementById("privacy-password");
+        if (input) {
+            input.value = "";
+            requestAnimationFrame(() => input.focus());
+        }
+    }
+
+    /** 隐藏隐私遮罩并解除锁定。 */
+    function hidePrivacyOverlay() {
+        const overlay = document.getElementById("privacy-overlay");
+        if (overlay) {
+            overlay.classList.remove("show");
+        }
+        document.documentElement.removeAttribute("data-privacy");
+    }
+
+    /** 校验当前账户密码以退出隐私模式。 */
+    async function unlockPrivacy() {
+        const input = document.getElementById("privacy-password");
+        const errorEl = document.getElementById("privacy-error");
+        const button = document.getElementById("privacy-unlock");
+        const password = input ? input.value : "";
+        if (!password) {
+            if (errorEl) {
+                errorEl.textContent = "请输入登录密码";
+            }
+            return;
+        }
+        if (button) {
+            button.disabled = true;
+        }
+        try {
+            await window.api("/api/auth/verify-password", {
+                method: "POST",
+                body: JSON.stringify({ password })
+            });
+            localStorage.removeItem(PRIVACY_KEY);
+            if (input) {
+                input.value = "";
+            }
+            hidePrivacyOverlay();
+            window.toast("已退出隐私模式");
+        } catch (e) {
+            if (errorEl) {
+                errorEl.textContent = e.message || "密码错误";
+            }
+            if (input) {
+                input.value = "";
+                input.focus();
+            }
+        } finally {
+            if (button) {
+                button.disabled = false;
+            }
+        }
+    }
+
+    /** 开启隐私模式 (一键切换)。 */
+    window.togglePrivacy = function () {
+        if (!hasNavbar()) {
+            return;
+        }
+        localStorage.setItem(PRIVACY_KEY, "on");
+        showPrivacyOverlay();
+    };
+
+    // 页面加载 (defer 已保证 DOM 解析完成) 时，若处于隐私模式则立即锁定，避免内容闪现泄露
+    if (hasNavbar() && isPrivacyOn()) {
+        document.documentElement.setAttribute("data-privacy", "on");
+    }
+
     /** HTML 转义，防止 XSS */
     window.escapeHtml = function (value) {
         if (value === null || value === undefined) {
@@ -274,6 +407,10 @@
         }
         if (document.getElementById("main-nav")) {
             window.initNav();
+        }
+        // 若刷新前已开启隐私模式，则重新展示解锁遮罩
+        if (hasNavbar() && isPrivacyOn()) {
+            showPrivacyOverlay();
         }
     });
 })();

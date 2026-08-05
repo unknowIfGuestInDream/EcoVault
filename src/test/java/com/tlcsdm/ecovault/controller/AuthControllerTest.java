@@ -4,6 +4,7 @@ import com.tlcsdm.ecovault.dto.ChangePasswordRequest;
 import com.tlcsdm.ecovault.dto.LoginRequest;
 import com.tlcsdm.ecovault.dto.RegisterRequest;
 import com.tlcsdm.ecovault.dto.UpdateProfileRequest;
+import com.tlcsdm.ecovault.dto.VerifyPasswordRequest;
 import com.tlcsdm.ecovault.entity.Role;
 import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.security.JwtAuthenticationFilter;
@@ -201,6 +202,59 @@ class AuthControllerTest extends AbstractWebMvcTest {
 				.with(csrf()))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.code").value(0));
+	}
+
+	@Test
+	@DisplayName("隐私模式解锁：密码正确返回成功且不重新下发令牌 Cookie")
+	void verifyPasswordSuccess() throws Exception {
+		createUser("privacyok");
+		Cookie cookie = login("privacyok", "Passw0rd!");
+
+		VerifyPasswordRequest request = new VerifyPasswordRequest("Passw0rd!");
+		Cookie tokenCookie = mockMvc
+			.perform(post("/api/auth/verify-password").cookie(cookie)
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value(0))
+			.andReturn()
+			.getResponse()
+			.getCookie(JwtAuthenticationFilter.TOKEN_COOKIE);
+		// 与 token 刷新区分：解锁不应重新签发令牌 Cookie
+		assertThat(tokenCookie).isNull();
+	}
+
+	@Test
+	@DisplayName("隐私模式解锁：密码错误返回 400")
+	void verifyPasswordWrong() throws Exception {
+		createUser("privacybad");
+		Cookie cookie = login("privacybad", "Passw0rd!");
+
+		VerifyPasswordRequest request = new VerifyPasswordRequest("wrong-password");
+		mockMvc
+			.perform(post("/api/auth/verify-password").cookie(cookie)
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value(400))
+			.andExpect(jsonPath("$.message").value("密码错误"));
+	}
+
+	@Test
+	@DisplayName("隐私模式解锁：密码为空时触发参数校验失败")
+	void verifyPasswordBlank() throws Exception {
+		createUser("privacyblank");
+		Cookie cookie = login("privacyblank", "Passw0rd!");
+
+		VerifyPasswordRequest request = new VerifyPasswordRequest("");
+		mockMvc
+			.perform(post("/api/auth/verify-password").cookie(cookie)
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isBadRequest());
 	}
 
 }

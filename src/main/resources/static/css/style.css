@@ -538,6 +538,64 @@ th {
     margin-top: 20px;
 }
 
+/* 隐私模式：遮罩铺满视口并模糊底层内容，需输入登录密码解锁 */
+html[data-privacy="on"] body {
+    overflow: hidden;
+}
+
+html[data-privacy="on"] body > *:not(#privacy-overlay) {
+    filter: blur(18px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.privacy-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    z-index: 10000;
+}
+
+.privacy-overlay.show {
+    display: flex;
+}
+
+.privacy-card {
+    max-width: 420px;
+    width: 100%;
+    padding: 36px 32px;
+    text-align: center;
+}
+
+.privacy-emoji {
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.privacy-card h2 {
+    margin-bottom: 8px;
+}
+
+.privacy-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.privacy-error {
+    min-height: 1.2em;
+    margin-top: 12px;
+    color: var(--danger);
+    font-size: 0.9rem;
+}
+
 @media (max-width: 640px) {
     .navbar {
         flex-direction: column;
