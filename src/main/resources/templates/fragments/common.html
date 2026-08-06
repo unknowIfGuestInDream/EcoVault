@@ -8,7 +8,9 @@
     <title th:text="${title}">EcoVault</title>
     <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon"/>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/privacy.css}"/>
     <script defer th:src="@{/js/app.js}"></script>
+    <script defer th:src="@{/js/privacy.js}"></script>
 </head>
 <body>
 <!-- 顶部导航栏 (登录后页面使用) -->
@@ -36,7 +38,7 @@
     </nav>
     <div style="display:flex; gap:10px; align-items:center">
         <button class="icon-btn privacy-toggle" type="button" onclick="togglePrivacy()" title="隐私模式" aria-label="隐私模式">🕶️</button>
-        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        <button class="icon-btn theme-toggle" onclick="toggleTheme()" type="button" aria-label="切换主题">🌙</button>
         <button class="btn btn-sm secondary" onclick="logout()">退出</button>
     </div>
 </header>

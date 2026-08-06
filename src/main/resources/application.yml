@@ -39,6 +39,9 @@ spring:
       hibernate:
         dialect: com.tlcsdm.ecovault.config.EcoVaultSQLiteDialect
         format_sql: false
+        transaction:
+          jta:
+            platform: org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform
     open-in-view: false
   thymeleaf:
     cache: false
@@ -78,7 +81,7 @@ info:
   app:
     name: EcoVault
     description: 生态保险箱 - 个人数据安全存储与智能管理平台
-    version: 1.0.0
+    version: 1.0.1
 
 logging:
   level:

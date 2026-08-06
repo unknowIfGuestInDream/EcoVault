@@ -59,8 +59,8 @@ public interface AuthService {
 	 * 校验指定用户的登录密码是否正确。
 	 *
 	 * <p>
-	 * 供隐私模式解锁使用：仅比对密码，不重新签发 JWT、不刷新会话，与令牌过期刷新逻辑相互独立。 密码错误时抛出 {@link
-	 * com.tlcsdm.ecovault.common.BusinessException}。
+	 * 供隐私模式解锁使用：仅比对密码，不重新签发 JWT、不刷新会话，与令牌过期刷新逻辑相互独立。 密码错误时抛出
+	 * {@link com.tlcsdm.ecovault.common.BusinessException}。
 	 * </p>
 	 * @param userId 用户 ID
 	 * @param rawPassword 待校验的明文密码
