@@ -64,6 +64,16 @@ class EcoVaultApplicationTests {
 	}
 
 	@Test
+	@DisplayName("favicon 兼容性回退资源已打包")
+	void fallbackFaviconResourceExists() throws Exception {
+		ClassPathResource staticFavicon = new ClassPathResource("static/favicon.ico");
+		ClassPathResource fallbackFavicon = new ClassPathResource("META-INF/resources/favicon.ico");
+		assertTrue(staticFavicon.exists());
+		assertTrue(fallbackFavicon.exists());
+		assertArrayEquals(staticFavicon.getContentAsByteArray(), fallbackFavicon.getContentAsByteArray());
+	}
+
+	@Test
 	@DisplayName("首页包含 favicon 引用")
 	void indexContainsFaviconLink() throws Exception {
 		mockMvc.perform(get("/"))

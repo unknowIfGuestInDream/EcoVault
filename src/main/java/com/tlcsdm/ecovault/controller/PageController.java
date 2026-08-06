@@ -29,6 +29,10 @@ public class PageController {
 
 	private static final CacheControl FAVICON_CACHE_CONTROL = CacheControl.maxAge(Duration.ofDays(30)).cachePublic();
 
+	private static final String[] FAVICON_RESOURCE_LOCATIONS = { "classpath:/favicon.ico",
+			"classpath:/META-INF/resources/favicon.ico", "classpath:/resources/favicon.ico",
+			"classpath:/static/favicon.ico", "classpath:/public/favicon.ico" };
+
 	private final RolePermissionService rolePermissionService;
 
 	private final ResourceLoader resourceLoader;
@@ -62,11 +66,21 @@ public class PageController {
 	 */
 	@GetMapping(value = "/favicon.ico", produces = "image/x-icon")
 	public ResponseEntity<Resource> favicon() {
-		Resource favicon = resourceLoader.getResource("classpath:static/favicon.ico");
-		if (!favicon.exists()) {
+		Resource favicon = resolveFavicon();
+		if (favicon == null) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok().contentType(IMAGE_X_ICON).cacheControl(FAVICON_CACHE_CONTROL).body(favicon);
+	}
+
+	private Resource resolveFavicon() {
+		for (String location : FAVICON_RESOURCE_LOCATIONS) {
+			Resource favicon = resourceLoader.getResource(location);
+			if (favicon.exists()) {
+				return favicon;
+			}
+		}
+		return null;
 	}
 
 	/**

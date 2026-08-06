@@ -11,11 +11,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.time.Duration;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -171,7 +174,7 @@ class PageControllerTest extends AbstractWebMvcTest {
 	@DisplayName("favicon 资源存在时返回图标与缓存头")
 	void faviconReturnsIconWhenResourceExists() {
 		PageController controller = new PageController(mock(RolePermissionService.class),
-				resourceLoader(new ClassPathResource("static/favicon.ico")));
+				resourceLoader(Map.of("classpath:/static/favicon.ico", new ClassPathResource("static/favicon.ico"))));
 
 		var response = controller.favicon();
 
@@ -185,10 +188,7 @@ class PageControllerTest extends AbstractWebMvcTest {
 	@Test
 	@DisplayName("favicon 资源缺失时返回 404")
 	void faviconReturnsNotFoundWhenResourceMissing() {
-		Resource missingResource = mock(Resource.class);
-		when(missingResource.exists()).thenReturn(false);
-		PageController controller = new PageController(mock(RolePermissionService.class),
-				resourceLoader(missingResource));
+		PageController controller = new PageController(mock(RolePermissionService.class), resourceLoader(Map.of()));
 
 		var response = controller.favicon();
 
@@ -196,9 +196,27 @@ class PageControllerTest extends AbstractWebMvcTest {
 		assertThat(response.getBody()).isNull();
 	}
 
-	private ResourceLoader resourceLoader(Resource resource) {
+	@Test
+	@DisplayName("favicon 会回退到其他标准静态目录")
+	void faviconFallsBackToAlternativeStaticLocation() {
+		ClassPathResource favicon = new ClassPathResource("static/favicon.ico");
+		PageController controller = new PageController(mock(RolePermissionService.class),
+				resourceLoader(Map.of("classpath:/META-INF/resources/favicon.ico", favicon)));
+
+		var response = controller.favicon();
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isSameAs(favicon);
+	}
+
+	private ResourceLoader resourceLoader(Map<String, Resource> resources) {
+		Resource missingResource = mock(Resource.class);
+		lenient().when(missingResource.exists()).thenReturn(false);
 		ResourceLoader resourceLoader = mock(ResourceLoader.class);
-		when(resourceLoader.getResource("classpath:static/favicon.ico")).thenReturn(resource);
+		when(resourceLoader.getResource(anyString())).thenAnswer(invocation -> {
+			String location = invocation.getArgument(0, String.class);
+			return resources.getOrDefault(location, missingResource);
+		});
 		return resourceLoader;
 	}
 
