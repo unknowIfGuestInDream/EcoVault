@@ -23,6 +23,13 @@ spring:
     hiddenmethod:
       filter:
         enabled: true
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          # 静态资源（含 favicon.ico）缓存 30 天
+          max-age: 30d
+          cache-public: true
   lifecycle:
     timeout-per-shutdown-phase: 30s
   # SQLite 嵌入式数据库
