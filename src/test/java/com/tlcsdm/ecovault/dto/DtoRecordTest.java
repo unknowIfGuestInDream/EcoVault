@@ -40,4 +40,11 @@ class DtoRecordTest {
 		assertThat(response.role()).isEqualTo("USER");
 	}
 
+	@Test
+	@DisplayName("VerifyPasswordRequest 保存待校验密码")
+	void verifyPasswordRequest() {
+		VerifyPasswordRequest request = new VerifyPasswordRequest("Passw0rd!");
+		assertThat(request.password()).isEqualTo("Passw0rd!");
+	}
+
 }

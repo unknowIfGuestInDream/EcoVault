@@ -167,6 +167,16 @@ public class AuthServiceImpl implements AuthService {
 		});
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public void verifyPassword(Long userId, String rawPassword) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException("用户不存在"));
+		// 仅校验密码，不签发新令牌、不刷新会话，隐私模式解锁专用
+		if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+			throw new BusinessException("密码错误");
+		}
+	}
+
 	private String truncate(String value, int maxLength) {
 		if (value == null) {
 			return null;

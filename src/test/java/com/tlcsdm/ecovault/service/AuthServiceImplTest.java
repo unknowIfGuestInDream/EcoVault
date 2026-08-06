@@ -337,4 +337,33 @@ class AuthServiceImplTest {
 			.hasMessage("原密码不正确");
 	}
 
+	@Test
+	@DisplayName("隐私模式解锁：密码正确时校验通过且不签发令牌或刷新会话")
+	void verifyPasswordSuccess() {
+		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser()));
+
+		service.verifyPassword(1L, "Passw0rd!");
+
+		// 仅校验密码，不应触碰会话仓储 (不刷新会话/不签发令牌)
+		org.mockito.Mockito.verifyNoInteractions(sessionRepository);
+	}
+
+	@Test
+	@DisplayName("隐私模式解锁：密码错误时抛出业务异常")
+	void verifyPasswordWrong() {
+		when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser()));
+
+		assertThatThrownBy(() -> service.verifyPassword(1L, "wrong-password")).isInstanceOf(BusinessException.class)
+			.hasMessage("密码错误");
+	}
+
+	@Test
+	@DisplayName("隐私模式解锁：用户不存在时抛出业务异常")
+	void verifyPasswordUserNotFound() {
+		when(userRepository.findById(9L)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> service.verifyPassword(9L, "Passw0rd!")).isInstanceOf(BusinessException.class)
+			.hasMessage("用户不存在");
+	}
+
 }

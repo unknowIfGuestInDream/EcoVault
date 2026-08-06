@@ -408,16 +408,6 @@ th {
     color: #dc2626;
 }
 
-.theme-toggle {
-    cursor: pointer;
-    background: transparent;
-    border: 1px solid var(--glass-border);
-    border-radius: 10px;
-    padding: 8px 12px;
-    color: var(--text-primary);
-    font-size: 1rem;
-}
-
 .toast {
     position: fixed;
     bottom: 24px;
