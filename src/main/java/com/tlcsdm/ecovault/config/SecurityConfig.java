@@ -91,9 +91,12 @@ public class SecurityConfig {
 				.authenticated())
 			// 无状态：不使用 HttpSession
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			// 安全响应头：防御点击劫持、内容嗅探等
-			.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()).contentTypeOptions(cto -> {
-			}))
+			// 安全响应头：防御点击劫持、内容嗅探等；禁用 Spring Security 默认的 Cache-Control 覆盖，
+			// 允许静态资源缓存策略（由 spring.web.resources.cache 配置）生效
+			.headers(headers -> headers.cacheControl(cache -> cache.disable())
+				.frameOptions(frame -> frame.sameOrigin())
+				.contentTypeOptions(cto -> {
+				}))
 			.exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
 				String uri = request.getRequestURI();
 				if (uri.startsWith("/api/")) {
