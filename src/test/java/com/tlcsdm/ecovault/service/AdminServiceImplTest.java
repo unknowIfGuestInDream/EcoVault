@@ -7,13 +7,17 @@ import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.entity.UserSession;
 import com.tlcsdm.ecovault.repository.UserRepository;
 import com.tlcsdm.ecovault.repository.UserSessionRepository;
+import com.tlcsdm.ecovault.security.SecurityUser;
 import com.tlcsdm.ecovault.service.impl.AdminServiceImpl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,6 +51,21 @@ class AdminServiceImplTest {
 
 	@InjectMocks
 	private AdminServiceImpl service;
+
+	/** 每个测试结束后清空安全上下文，避免污染其他用例 */
+	@AfterEach
+	void clearSecurityContext() {
+		SecurityContextHolder.clearContext();
+	}
+
+	/** 在 SecurityContextHolder 中设置当前登录用户 */
+	private void loginAs(Long id, String username, Role role) {
+		User u = user(id, username, role);
+		SecurityUser principal = new SecurityUser(u);
+		UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principal, null,
+				principal.getAuthorities());
+		SecurityContextHolder.getContext().setAuthentication(auth);
+	}
 
 	private User user(Long id, String username, Role role) {
 		User user = new User();
@@ -91,6 +110,7 @@ class AdminServiceImplTest {
 	@Test
 	@DisplayName("禁用用户时强制其所有活跃会话下线")
 	void disableUserRevokesSessions() {
+		loginAs(99L, "admin", Role.ADMIN);
 		User target = user(1L, "alice", Role.USER);
 		when(userRepository.findById(1L)).thenReturn(Optional.of(target));
 		UserSession s1 = new UserSession();
@@ -153,6 +173,7 @@ class AdminServiceImplTest {
 	@Test
 	@DisplayName("更新用户遇到空白可选字段时忽略对应修改，但禁用时仍下线会话")
 	void updateUserIgnoresBlankFieldsAndDisablesUser() {
+		loginAs(99L, "admin", Role.ADMIN);
 		User target = user(1L, "alice", Role.USER);
 		target.setPassword("origin-password");
 		UserSession session = new UserSession();
@@ -170,6 +191,42 @@ class AdminServiceImplTest {
 		assertThat(target.isEnabled()).isFalse();
 		assertThat(session.isActive()).isFalse();
 		verify(sessionRepository).save(session);
+	}
+
+	@Test
+	@DisplayName("管理员禁用自身账号时抛出业务异常（防止自我锁定）")
+	void disableSelfThrows() {
+		loginAs(5L, "admin", Role.ADMIN);
+		when(userRepository.findById(5L)).thenReturn(Optional.of(user(5L, "admin", Role.ADMIN)));
+
+		assertThatThrownBy(() -> service.setUserEnabled(5L, false)).isInstanceOf(BusinessException.class)
+			.hasMessageContaining("不能禁用当前登录的账号");
+	}
+
+	@Test
+	@DisplayName("管理员通过编辑接口禁用自身账号时抛出业务异常")
+	void updateUserDisableSelfThrows() {
+		loginAs(5L, "admin", Role.ADMIN);
+		when(userRepository.findById(5L)).thenReturn(Optional.of(user(5L, "admin", Role.ADMIN)));
+
+		assertThatThrownBy(() -> service.updateUser(5L,
+				new com.tlcsdm.ecovault.dto.UpdateUserRequest(null, null, null, false, null)))
+			.isInstanceOf(BusinessException.class)
+			.hasMessageContaining("不能禁用当前登录的账号");
+	}
+
+	@Test
+	@DisplayName("管理员可以禁用其他管理员账号（非自身）")
+	void disableOtherAdminSucceeds() {
+		loginAs(2L, "adminB", Role.ADMIN);
+		User target = user(5L, "adminA", Role.ADMIN);
+		when(userRepository.findById(5L)).thenReturn(Optional.of(target));
+		when(sessionRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(5L)).thenReturn(new ArrayList<>());
+
+		service.setUserEnabled(5L, false);
+
+		assertThat(target.isEnabled()).isFalse();
+		verify(userRepository).save(target);
 	}
 
 	@Test
