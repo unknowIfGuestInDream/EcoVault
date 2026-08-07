@@ -27,7 +27,7 @@
                 <p class="muted">页面内容已隐藏，请输入当前账户登录密码以继续访问。</p>
                 <form id="privacy-form" autocomplete="off">
                     <input type="password" id="privacy-password" placeholder="登录密码"
-                        autocomplete="current-password" aria-label="登录密码"/>
+                        autocomplete="off" aria-label="登录密码"/>
                     <button class="btn" type="submit" id="privacy-unlock">解锁</button>
                 </form>
                 <p class="privacy-error" id="privacy-error" role="alert"></p>
@@ -116,4 +116,11 @@
     if (hasNavbar() && isPrivacyOn()) {
         showPrivacyOverlay();
     }
+
+    // F12 快捷键：在已登录页面快速进入隐私模式（仅当隐私模式未激活时触发）
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "F12" && hasNavbar() && !isPrivacyOn()) {
+            window.togglePrivacy();
+        }
+    });
 })();

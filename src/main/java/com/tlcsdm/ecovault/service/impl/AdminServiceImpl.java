@@ -8,6 +8,7 @@ import com.tlcsdm.ecovault.entity.User;
 import com.tlcsdm.ecovault.entity.UserSession;
 import com.tlcsdm.ecovault.repository.UserRepository;
 import com.tlcsdm.ecovault.repository.UserSessionRepository;
+import com.tlcsdm.ecovault.security.SecurityUtils;
 import com.tlcsdm.ecovault.service.AdminService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,13 @@ public class AdminServiceImpl implements AdminService {
 	@Transactional
 	public void setUserEnabled(Long userId, boolean enabled) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException("用户不存在"));
+		// 禁止管理员禁用自身账号，防止自我锁定
+		if (!enabled) {
+			Long currentUserId = SecurityUtils.getCurrentUserId();
+			if (userId.equals(currentUserId)) {
+				throw new BusinessException("不能禁用当前登录的账号");
+			}
+		}
 		user.setEnabled(enabled);
 		userRepository.save(user);
 		// 禁用用户时，强制其所有会话下线
@@ -82,6 +90,13 @@ public class AdminServiceImpl implements AdminService {
 			revokeSessions(userId);
 		}
 		if (request.enabled() != null) {
+			if (!request.enabled()) {
+				// 禁止管理员禁用自身账号，防止自我锁定
+				Long currentUserId = SecurityUtils.getCurrentUserId();
+				if (userId.equals(currentUserId)) {
+					throw new BusinessException("不能禁用当前登录的账号");
+				}
+			}
 			user.setEnabled(request.enabled());
 			if (!request.enabled()) {
 				revokeSessions(userId);
