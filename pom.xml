@@ -54,7 +54,7 @@
         <jjwt.version>0.13.0</jjwt.version>
         <sqlite.version>3.53.2.1</sqlite.version>
         <jacoco.version>0.8.15</jacoco.version>
-        <spring-javaformat.version>0.0.47</spring-javaformat.version>
+        <spring-javaformat.version>0.0.48</spring-javaformat.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
         <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
