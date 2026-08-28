@@ -3,6 +3,7 @@ package com.tlcsdm.ecovault.controller;
 import com.tlcsdm.ecovault.entity.OperationLog;
 import com.tlcsdm.ecovault.entity.Role;
 import com.tlcsdm.ecovault.repository.OperationLogRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,12 @@ class LogControllerTest extends AbstractWebMvcTest {
 
 	@Autowired
 	private OperationLogRepository operationLogRepository;
+
+	@BeforeEach
+	void cleanupLogs() {
+		// 清空所有操作日志，避免跨测试类数据污染
+		operationLogRepository.deleteAll();
+	}
 
 	private OperationLog saveLog(String module, String operation, String params, LocalDateTime createdAt) {
 		OperationLog log = new OperationLog();
