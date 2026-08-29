@@ -248,8 +248,8 @@ public class SalaryServiceImpl implements SalaryService {
 			int month = "年终奖".equals(cols[1].trim()) ? SalaryRecord.ANNUAL_BONUS_MONTH
 					: parseIntCell(cols[1], i + 1, "月份");
 
-			// CSV 列映射（跳过派生列：cols[10]=应发工资, cols[18]=扣除项合计,
-			// cols[19]=税前工资, cols[21]=税后工资）
+			// CSV 全量列映射（含派生列：cols[10]=应发工资, cols[18]=扣除项合计,
+			// cols[19]=税前工资, cols[21]=税后工资，从 CSV 直接存入 DB）
 			SalaryRequest req = new SalaryRequest(year, month, parseBd(cols[2]), // baseSalary
 					parseBd(cols[3]), // performanceSalary
 					parseBd(cols[4]), // housingAllowance
@@ -258,7 +258,6 @@ public class SalaryServiceImpl implements SalaryService {
 					parseBd(cols[7]), // overtimePay
 					parseBd(cols[8]), // overtimeAllowance
 					parseBd(cols[9]), // bonus
-					// cols[10] = 应发工资（派生，跳过）
 					parseBd(cols[11]), // medicalBase
 					parseBd(cols[12]), // pensionUnemploymentBase
 					parseBd(cols[13]), // housingFundBase
@@ -266,15 +265,21 @@ public class SalaryServiceImpl implements SalaryService {
 					parseBd(cols[15]), // pensionDeduction
 					parseBd(cols[16]), // unemploymentDeduction
 					parseBd(cols[17]), // housingFundDeduction
-					// cols[18] = 扣除项合计（派生，跳过）
-					// cols[19] = 税前工资（派生，跳过）
 					parseBd(cols[20]), // incomeTax
-					// cols[21] = 税后工资（派生，跳过）
 					parseBd(cols[22]), // seriousIllnessMedical
 					parseBd(cols[23]), // heatingAllowance
 					parseBd(cols[24]), // netPay
 					cols.length > 25 ? unescapeCsv(cols[25]) : "");
-			save(userId, req);
+			SalaryRecord record = repository.findByUserIdAndYearAndMonth(userId, year, month)
+				.orElseGet(SalaryRecord::new);
+			record.setUserId(userId);
+			applyRequest(record, req);
+			// 直接使用 CSV 中派生列数据，保留导入数据原值
+			record.setStoredGrossPay(parseBd(cols[10]));
+			record.setStoredTotalDeduction(parseBd(cols[18]));
+			record.setStoredPreTaxSalary(parseBd(cols[19]));
+			record.setStoredAfterTaxSalary(parseBd(cols[21]));
+			repository.save(record);
 			count++;
 		}
 		return count;
@@ -340,6 +345,11 @@ public class SalaryServiceImpl implements SalaryService {
 		record.setHeatingAllowance(nz(request.heatingAllowance()));
 		record.setNetPay(nz(request.netPay()));
 		record.setRemark(request.remark() == null ? "" : request.remark());
+		// 手动录入/编辑时清除存储的派生值，让 getter 重新实时计算
+		record.setStoredGrossPay(null);
+		record.setStoredTotalDeduction(null);
+		record.setStoredPreTaxSalary(null);
+		record.setStoredAfterTaxSalary(null);
 	}
 
 	private BigDecimal nz(BigDecimal value) {

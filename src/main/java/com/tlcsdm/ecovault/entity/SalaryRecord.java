@@ -141,6 +141,46 @@ public class SalaryRecord {
 	@Column(name = "net_pay", nullable = false, precision = 12, scale = 2)
 	private BigDecimal netPay = BigDecimal.ZERO;
 
+	/**
+	 * 应发工资（可由基础发放项加总派生，或从外部数据（如 CSV 导入）直接存储）。
+	 *
+	 * <p>
+	 * 若为 null，则由 {@link #getGrossPay()} 实时计算。
+	 * </p>
+	 */
+	@Column(name = "gross_pay", precision = 12, scale = 2)
+	private BigDecimal grossPay;
+
+	/**
+	 * 扣除项合计（可由各项扣除加总派生，或从外部数据直接存储）。
+	 *
+	 * <p>
+	 * 若为 null，则由 {@link #getTotalDeduction()} 实时计算。
+	 * </p>
+	 */
+	@Column(name = "total_deduction", precision = 12, scale = 2)
+	private BigDecimal totalDeduction;
+
+	/**
+	 * 税前工资（可派生，或从外部数据直接存储）。
+	 *
+	 * <p>
+	 * 若为 null，则由 {@link #getPreTaxSalary()} 实时计算。
+	 * </p>
+	 */
+	@Column(name = "pre_tax_salary", precision = 12, scale = 2)
+	private BigDecimal preTaxSalary;
+
+	/**
+	 * 税后工资（可派生，或从外部数据直接存储）。
+	 *
+	 * <p>
+	 * 若为 null，则由 {@link #getAfterTaxSalary()} 实时计算。
+	 * </p>
+	 */
+	@Column(name = "after_tax_salary", precision = 12, scale = 2)
+	private BigDecimal afterTaxSalary;
+
 	/** 备注 */
 	@Column(length = 256)
 	private String remark;
@@ -175,9 +215,16 @@ public class SalaryRecord {
 
 	/**
 	 * 计算应发工资 = 各发放项之和 (基本工资、绩效、租房/伙食补助、交通补贴、加班费、加班补助、奖金)。
+	 *
+	 * <p>
+	 * 若字段已存储（如 CSV 导入），直接返回存储值；否则实时计算。
+	 * </p>
 	 * @return 应发工资
 	 */
 	public BigDecimal getGrossPay() {
+		if (grossPay != null) {
+			return grossPay;
+		}
 		return nullToZero(baseSalary).add(nullToZero(performanceSalary))
 			.add(nullToZero(housingAllowance))
 			.add(nullToZero(mealAllowance))
@@ -189,9 +236,16 @@ public class SalaryRecord {
 
 	/**
 	 * 计算扣除项合计 = 医疗 + 养老 + 失业 + 公积金。
+	 *
+	 * <p>
+	 * 若字段已存储（如 CSV 导入），直接返回存储值；否则实时计算。
+	 * </p>
 	 * @return 扣除项合计
 	 */
 	public BigDecimal getTotalDeduction() {
+		if (totalDeduction != null) {
+			return totalDeduction;
+		}
 		return nullToZero(medicalDeduction).add(nullToZero(pensionDeduction))
 			.add(nullToZero(unemploymentDeduction))
 			.add(nullToZero(housingFundDeduction));
@@ -199,17 +253,31 @@ public class SalaryRecord {
 
 	/**
 	 * 计算税前工资 = 应发工资 - 扣除项合计。
+	 *
+	 * <p>
+	 * 若字段已存储（如 CSV 导入），直接返回存储值；否则实时计算。
+	 * </p>
 	 * @return 税前工资
 	 */
 	public BigDecimal getPreTaxSalary() {
+		if (preTaxSalary != null) {
+			return preTaxSalary;
+		}
 		return getGrossPay().subtract(getTotalDeduction());
 	}
 
 	/**
 	 * 计算税后工资 = 税前工资 - 所得税。
+	 *
+	 * <p>
+	 * 若字段已存储（如 CSV 导入），直接返回存储值；否则实时计算。
+	 * </p>
 	 * @return 税后工资
 	 */
 	public BigDecimal getAfterTaxSalary() {
+		if (afterTaxSalary != null) {
+			return afterTaxSalary;
+		}
 		return getPreTaxSalary().subtract(nullToZero(incomeTax));
 	}
 
@@ -403,6 +471,38 @@ public class SalaryRecord {
 
 	public void setNetPay(BigDecimal netPay) {
 		this.netPay = netPay;
+	}
+
+	public BigDecimal getStoredGrossPay() {
+		return grossPay;
+	}
+
+	public void setStoredGrossPay(BigDecimal grossPay) {
+		this.grossPay = grossPay;
+	}
+
+	public BigDecimal getStoredTotalDeduction() {
+		return totalDeduction;
+	}
+
+	public void setStoredTotalDeduction(BigDecimal totalDeduction) {
+		this.totalDeduction = totalDeduction;
+	}
+
+	public BigDecimal getStoredPreTaxSalary() {
+		return preTaxSalary;
+	}
+
+	public void setStoredPreTaxSalary(BigDecimal preTaxSalary) {
+		this.preTaxSalary = preTaxSalary;
+	}
+
+	public BigDecimal getStoredAfterTaxSalary() {
+		return afterTaxSalary;
+	}
+
+	public void setStoredAfterTaxSalary(BigDecimal afterTaxSalary) {
+		this.afterTaxSalary = afterTaxSalary;
 	}
 
 	public String getRemark() {
