@@ -574,3 +574,13 @@ th {
     gap: 14px;
     margin-top: 18px;
 }
+
+/* 隐藏数字输入框的上下步进箭头（防鼠标滚轮误触） */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}

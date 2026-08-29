@@ -20,9 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 财务 - 工资数据管理接口。
@@ -44,23 +47,27 @@ public class SalaryController {
 	}
 
 	/**
-	 * 查询工资记录列表。
-	 * @param year 年份 (可空)
+	 * 查询工资记录列表，支持年份区间筛选。
+	 * @param startYear 起始年份（含，可空）
+	 * @param endYear 结束年份（含，可空）
 	 * @return 工资记录列表
 	 */
 	@GetMapping
-	public ApiResponse<List<SalaryResponse>> list(@RequestParam(required = false) Integer year) {
-		return ApiResponse.success(salaryService.list(SecurityUtils.getCurrentUserId(), year));
+	public ApiResponse<List<SalaryResponse>> list(@RequestParam(required = false) Integer startYear,
+			@RequestParam(required = false) Integer endYear) {
+		return ApiResponse.success(salaryService.list(SecurityUtils.getCurrentUserId(), startYear, endYear));
 	}
 
 	/**
-	 * 统计分析。
-	 * @param year 年份 (可空)
+	 * 统计分析，支持年份区间筛选。
+	 * @param startYear 起始年份（含，可空）
+	 * @param endYear 结束年份（含，可空）
 	 * @return 统计结果
 	 */
 	@GetMapping("/statistics")
-	public ApiResponse<SalaryStatistics> statistics(@RequestParam(required = false) Integer year) {
-		return ApiResponse.success(salaryService.statistics(SecurityUtils.getCurrentUserId(), year));
+	public ApiResponse<SalaryStatistics> statistics(@RequestParam(required = false) Integer startYear,
+			@RequestParam(required = false) Integer endYear) {
+		return ApiResponse.success(salaryService.statistics(SecurityUtils.getCurrentUserId(), startYear, endYear));
 	}
 
 	/**
@@ -99,19 +106,38 @@ public class SalaryController {
 	}
 
 	/**
-	 * 导出工资数据为 CSV 文件。
-	 * @param year 年份 (可空)
+	 * 导出工资数据为 CSV 文件，支持年份区间筛选，文件名包含年份信息。
+	 * @param startYear 起始年份（含，可空）
+	 * @param endYear 结束年份（含，可空）
 	 * @return CSV 文件
 	 */
 	@GetMapping("/export")
 	@OperationLogRecord(module = "财务管理", operation = "导出工资数据")
-	public ResponseEntity<byte[]> export(@RequestParam(required = false) Integer year) {
-		String csv = salaryService.exportCsv(SecurityUtils.getCurrentUserId(), year);
-		byte[] body = csv.getBytes(StandardCharsets.UTF_8);
+	public ResponseEntity<byte[]> export(@RequestParam(required = false) Integer startYear,
+			@RequestParam(required = false) Integer endYear) {
+		Map<String, String> result = salaryService.exportCsv(SecurityUtils.getCurrentUserId(), startYear, endYear);
+		byte[] body = result.get("csv").getBytes(StandardCharsets.UTF_8);
+		String filename = result.get("filename");
 		return ResponseEntity.ok()
-			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"salary.csv\"")
+			.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
 			.contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
 			.body(body);
+	}
+
+	/**
+	 * 批量导入工资数据（CSV 格式，与导出格式一致）。
+	 * @param file 上传的 CSV 文件
+	 * @return 成功导入条数
+	 */
+	@PostMapping("/import")
+	@OperationLogRecord(module = "财务管理", operation = "批量导入工资数据")
+	public ApiResponse<Integer> importCsv(@RequestParam("file") MultipartFile file) throws IOException {
+		if (file.isEmpty()) {
+			return ApiResponse.error(400, "上传文件为空");
+		}
+		String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+		int count = salaryService.importCsv(SecurityUtils.getCurrentUserId(), content);
+		return ApiResponse.success(count);
 	}
 
 }

@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,7 +75,7 @@ class SalaryServiceImplTest {
 	void statisticsComputed() {
 		when(repository.findByUserIdOrderByYearAscMonthAsc(1L)).thenReturn(List.of(jan, feb));
 
-		SalaryStatistics stats = service.statistics(1L, null);
+		SalaryStatistics stats = service.statistics(1L, null, null);
 
 		// jan net = 10000+2000+500-1000 = 11500; feb net = 10000+0+500-1000 = 9500
 		assertThat(stats.totalNet()).isEqualByComparingTo("21000");
@@ -106,7 +107,7 @@ class SalaryServiceImplTest {
 		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "50000", "0", "0", "50000");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(annual, jan, feb));
 
-		SalaryStatistics stats = service.statistics(1L, 2025);
+		SalaryStatistics stats = service.statistics(1L, 2025, 2025);
 
 		// 年终奖 net = 50000；不进入 totalNet 与 monthlyTrend
 		assertThat(stats.totalAnnualBonus()).isEqualByComparingTo("50000");
@@ -119,7 +120,7 @@ class SalaryServiceImplTest {
 	void statisticsEmpty() {
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2099)).thenReturn(List.of());
 
-		SalaryStatistics stats = service.statistics(1L, 2099);
+		SalaryStatistics stats = service.statistics(1L, 2099, 2099);
 
 		assertThat(stats.totalNet()).isEqualByComparingTo("0");
 		assertThat(stats.averageNet()).isEqualByComparingTo("0");
@@ -135,7 +136,7 @@ class SalaryServiceImplTest {
 		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "30000", "0", "0", "30000");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(annual));
 
-		SalaryStatistics stats = service.statistics(1L, 2025);
+		SalaryStatistics stats = service.statistics(1L, 2025, 2025);
 
 		assertThat(stats.totalNet()).isEqualByComparingTo("0");
 		assertThat(stats.averageNet()).isEqualByComparingTo("0");
@@ -148,7 +149,7 @@ class SalaryServiceImplTest {
 	void exportCsv() {
 		when(repository.findByUserIdOrderByYearAscMonthAsc(1L)).thenReturn(List.of(jan));
 
-		String csv = service.exportCsv(1L, null);
+		String csv = service.exportCsv(1L, null, null).get("csv");
 
 		assertThat(csv).startsWith("\uFEFF");
 		assertThat(csv).contains("年份,月份,基本工资,绩效工资");
@@ -162,7 +163,7 @@ class SalaryServiceImplTest {
 		SalaryRecord annual = record(3L, 2025, SalaryRecord.ANNUAL_BONUS_MONTH, "0", "50000", "0", "0", "50000");
 		when(repository.findByUserIdOrderByYearAscMonthAsc(1L)).thenReturn(List.of(annual));
 
-		String csv = service.exportCsv(1L, null);
+		String csv = service.exportCsv(1L, null, null).get("csv");
 
 		assertThat(csv).contains("2025,年终奖,0");
 	}
@@ -200,7 +201,7 @@ class SalaryServiceImplTest {
 		SalaryRecord mar = record(3L, 2025, 3, "20000", "5000", "1000", "1000", "25000");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(jan, feb, mar));
 
-		SalaryStatistics stats = service.statistics(1L, 2025);
+		SalaryStatistics stats = service.statistics(1L, 2025, 2025);
 
 		// mar net = 20000+5000+1000-1000 = 25000 为最高
 		assertThat(stats.maxNet()).isEqualByComparingTo("25000");
@@ -283,7 +284,7 @@ class SalaryServiceImplTest {
 	void listByYear() {
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(jan, feb));
 
-		List<SalaryResponse> result = service.list(1L, 2025);
+		List<SalaryResponse> result = service.list(1L, 2025, 2025);
 
 		assertThat(result).hasSize(2);
 	}
@@ -293,7 +294,7 @@ class SalaryServiceImplTest {
 	void listAll() {
 		when(repository.findByUserIdOrderByYearAscMonthAsc(1L)).thenReturn(List.of(jan));
 
-		List<SalaryResponse> result = service.list(1L, null);
+		List<SalaryResponse> result = service.list(1L, null, null);
 
 		assertThat(result).hasSize(1);
 	}
@@ -305,7 +306,7 @@ class SalaryServiceImplTest {
 		withComma.setRemark("含,逗号\"引号");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(withComma));
 
-		String csv = service.exportCsv(1L, 2025);
+		String csv = service.exportCsv(1L, 2025, 2025).get("csv");
 
 		assertThat(csv).contains("\"含,逗号\"\"引号\"");
 	}
@@ -323,13 +324,139 @@ class SalaryServiceImplTest {
 		quote.setRemark("仅含\"引号");
 		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(empty, plain, newline, quote));
 
-		String csv = service.exportCsv(1L, 2025);
+		String csv = service.exportCsv(1L, 2025, 2025).get("csv");
 
 		// 普通备注不加引号 (备注为行末字段)
 		assertThat(csv).contains(",普通备注\n");
 		// 含换行或引号的备注被引号包裹
 		assertThat(csv).contains("\"第一行\n第二行\"");
 		assertThat(csv).contains("\"仅含\"\"引号\"");
+	}
+
+	@Test
+	@DisplayName("跨年区间查询调用范围仓储方法并返回全部数据")
+	void listByYearRange() {
+		SalaryRecord r2022 = record(20L, 2022, 1, "9000", "0", "0", "0", "9000");
+		SalaryRecord r2023 = record(21L, 2023, 1, "9500", "0", "0", "0", "9500");
+		when(repository.findByUserIdAndYearBetweenOrderByYearAscMonthAsc(1L, 2022, 2023))
+			.thenReturn(List.of(r2022, r2023));
+
+		List<SalaryResponse> result = service.list(1L, 2022, 2023);
+
+		assertThat(result).hasSize(2);
+		assertThat(result.get(0).year()).isEqualTo(2022);
+		assertThat(result.get(1).year()).isEqualTo(2023);
+	}
+
+	@Test
+	@DisplayName("仅提供 startYear 时等同于单年查询")
+	void listByStartYearOnly() {
+		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2024)).thenReturn(List.of(jan));
+
+		List<SalaryResponse> result = service.list(1L, 2024, null);
+
+		assertThat(result).hasSize(1);
+	}
+
+	@Test
+	@DisplayName("导出文件名：全量导出为 salary_all.csv")
+	void exportFilenameAll() {
+		when(repository.findByUserIdOrderByYearAscMonthAsc(1L)).thenReturn(List.of(jan));
+
+		Map<String, String> result = service.exportCsv(1L, null, null);
+
+		assertThat(result.get("filename")).isEqualTo("salary_all.csv");
+	}
+
+	@Test
+	@DisplayName("导出文件名：单年导出含年份")
+	void exportFilenameSingleYear() {
+		when(repository.findByUserIdAndYearOrderByMonthAsc(1L, 2025)).thenReturn(List.of(jan));
+
+		Map<String, String> result = service.exportCsv(1L, 2025, 2025);
+
+		assertThat(result.get("filename")).isEqualTo("salary_2025.csv");
+	}
+
+	@Test
+	@DisplayName("导出文件名：跨年导出含年份范围")
+	void exportFilenameYearRange() {
+		SalaryRecord r2022 = record(20L, 2022, 1, "9000", "0", "0", "0", "9000");
+		when(repository.findByUserIdAndYearBetweenOrderByYearAscMonthAsc(1L, 2022, 2024)).thenReturn(List.of(r2022));
+
+		Map<String, String> result = service.exportCsv(1L, 2022, 2024);
+
+		assertThat(result.get("filename")).isEqualTo("salary_2022-2024.csv");
+	}
+
+	@Test
+	@DisplayName("CSV 导入：正常数据导入成功并返回条数")
+	void importCsvSuccess() {
+		when(repository.findByUserIdAndYearAndMonth(1L, 2060, 1)).thenReturn(java.util.Optional.empty());
+		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> {
+			SalaryRecord r = inv.getArgument(0);
+			r.setId(99L);
+			return r;
+		});
+		String importCsv = "年份,月份,基本工资,绩效工资,租房补助,伙食补助,交通补贴,加班费,加班补助,奖金,应发工资,"
+				+ "医疗保险缴费基数,养老失业缴费基数,公积金缴费基数,医疗,养老,失业,公积金,扣除项合计,税前工资,所得税,税后工资,大病医疗,采暖补贴,实发金额,备注\n"
+				+ "2060,1,10000,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,10000,0,10000,0,0,10000,导入测试\n";
+
+		int count = service.importCsv(1L, importCsv);
+
+		assertThat(count).isEqualTo(1);
+	}
+
+	@Test
+	@DisplayName("CSV 导入：年终奖行月份为年终奖文本")
+	void importCsvAnnualBonus() {
+		when(repository.findByUserIdAndYearAndMonth(1L, 2061, 0)).thenReturn(java.util.Optional.empty());
+		when(repository.save(any(SalaryRecord.class))).thenAnswer(inv -> {
+			SalaryRecord r = inv.getArgument(0);
+			r.setId(100L);
+			return r;
+		});
+		String importCsv = "年份,月份,基本工资,绩效工资,租房补助,伙食补助,交通补贴,加班费,加班补助,奖金,应发工资,"
+				+ "医疗保险缴费基数,养老失业缴费基数,公积金缴费基数,医疗,养老,失业,公积金,扣除项合计,税前工资,所得税,税后工资,大病医疗,采暖补贴,实发金额,备注\n"
+				+ "2061,年终奖,0,0,0,0,0,0,0,50000,50000,0,0,0,0,0,0,0,0,0,0,0,0,0,50000,年终奖\n";
+
+		int count = service.importCsv(1L, importCsv);
+
+		assertThat(count).isEqualTo(1);
+	}
+
+	@Test
+	@DisplayName("CSV 导入：空内容抛出业务异常")
+	void importCsvEmptyThrows() {
+		assertThatThrownBy(() -> service.importCsv(1L, ""))
+			.isInstanceOf(com.tlcsdm.ecovault.common.BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("CSV 导入：仅有表头无数据行抛出业务异常")
+	void importCsvHeaderOnlyThrows() {
+		String headerOnly = "年份,月份,基本工资,备注";
+		assertThatThrownBy(() -> service.importCsv(1L, headerOnly))
+			.isInstanceOf(com.tlcsdm.ecovault.common.BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("CSV 导入：数据行列数不足抛出业务异常")
+	void importCsvTooFewColumnsThrows() {
+		String bad = "年份,月份,基本工资\n2025,1,10000";
+		assertThatThrownBy(() -> service.importCsv(1L, bad))
+			.isInstanceOf(com.tlcsdm.ecovault.common.BusinessException.class);
+	}
+
+	@Test
+	@DisplayName("CSV 导入：数值格式错误时抛出业务异常")
+	void importCsvMalformedNumberThrows() {
+		String bad = "年份,月份,基本工资,绩效工资,租房补助,伙食补助,交通补贴,加班费,加班补助,奖金,应发工资,"
+				+ "医疗保险缴费基数,养老失业缴费基数,公积金缴费基数,医疗,养老,失业,公积金,扣除项合计,税前工资,所得税,税后工资,大病医疗,采暖补贴,实发金额,备注\n"
+				+ "2025,1,abc,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,10000,0,10000,0,0,10000,格式错误\n";
+
+		assertThatThrownBy(() -> service.importCsv(1L, bad))
+			.isInstanceOf(com.tlcsdm.ecovault.common.BusinessException.class);
 	}
 
 }

@@ -29,6 +29,15 @@ public interface SalaryRecordRepository extends JpaRepository<SalaryRecord, Long
 	List<SalaryRecord> findByUserIdAndYearOrderByMonthAsc(Long userId, int year);
 
 	/**
+	 * 查询用户指定年份区间的工资记录，按年月升序。
+	 * @param userId 用户 ID
+	 * @param startYear 起始年份（含）
+	 * @param endYear 结束年份（含）
+	 * @return 工资记录列表
+	 */
+	List<SalaryRecord> findByUserIdAndYearBetweenOrderByYearAscMonthAsc(Long userId, int startYear, int endYear);
+
+	/**
 	 * 按归属查询单条记录。
 	 * @param id 记录 ID
 	 * @param userId 用户 ID
