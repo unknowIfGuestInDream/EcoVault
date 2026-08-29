@@ -248,13 +248,31 @@ public class SalaryServiceImpl implements SalaryService {
 			int month = "年终奖".equals(cols[1].trim()) ? SalaryRecord.ANNUAL_BONUS_MONTH
 					: parseIntCell(cols[1], i + 1, "月份");
 
-			SalaryRequest req = new SalaryRequest(year, month, parseBd(cols[2]), parseBd(cols[3]), parseBd(cols[4]),
-					parseBd(cols[5]), parseBd(cols[6]), parseBd(cols[7]), parseBd(cols[8]), parseBd(cols[9]),
-					parseBd(cols[10]),
-					parseBd(cols[11]), parseBd(cols[12]), parseBd(cols[13]), parseBd(cols[14]), parseBd(cols[15]),
-					parseBd(cols[16]), parseBd(cols[17]), parseBd(cols[18]), parseBd(cols[19]),
-					parseBd(cols[20]), parseBd(cols[21]),
-					parseBd(cols[22]), parseBd(cols[23]), parseBd(cols[24]),
+			// CSV 列映射（跳过派生列：cols[10]=应发工资, cols[18]=扣除项合计,
+			// cols[19]=税前工资, cols[21]=税后工资）
+			SalaryRequest req = new SalaryRequest(year, month, parseBd(cols[2]), // baseSalary
+					parseBd(cols[3]), // performanceSalary
+					parseBd(cols[4]), // housingAllowance
+					parseBd(cols[5]), // mealAllowance
+					parseBd(cols[6]), // transportAllowance
+					parseBd(cols[7]), // overtimePay
+					parseBd(cols[8]), // overtimeAllowance
+					parseBd(cols[9]), // bonus
+					// cols[10] = 应发工资（派生，跳过）
+					parseBd(cols[11]), // medicalBase
+					parseBd(cols[12]), // pensionUnemploymentBase
+					parseBd(cols[13]), // housingFundBase
+					parseBd(cols[14]), // medicalDeduction
+					parseBd(cols[15]), // pensionDeduction
+					parseBd(cols[16]), // unemploymentDeduction
+					parseBd(cols[17]), // housingFundDeduction
+					// cols[18] = 扣除项合计（派生，跳过）
+					// cols[19] = 税前工资（派生，跳过）
+					parseBd(cols[20]), // incomeTax
+					// cols[21] = 税后工资（派生，跳过）
+					parseBd(cols[22]), // seriousIllnessMedical
+					parseBd(cols[23]), // heatingAllowance
+					parseBd(cols[24]), // netPay
 					cols.length > 25 ? unescapeCsv(cols[25]) : "");
 			save(userId, req);
 			count++;
