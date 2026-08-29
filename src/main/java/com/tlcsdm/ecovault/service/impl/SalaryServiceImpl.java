@@ -410,7 +410,7 @@ public class SalaryServiceImpl implements SalaryService {
 			return new BigDecimal(cell.trim());
 		}
 		catch (NumberFormatException e) {
-			return BigDecimal.ZERO;
+			throw new BusinessException("数值格式错误: \"" + cell.trim() + "\"，请确认 CSV 内容正确");
 		}
 	}
 

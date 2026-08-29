@@ -448,4 +448,15 @@ class SalaryServiceImplTest {
 			.isInstanceOf(com.tlcsdm.ecovault.common.BusinessException.class);
 	}
 
+	@Test
+	@DisplayName("CSV 导入：数值格式错误时抛出业务异常")
+	void importCsvMalformedNumberThrows() {
+		String bad = "年份,月份,基本工资,绩效工资,租房补助,伙食补助,交通补贴,加班费,加班补助,奖金,应发工资,"
+				+ "医疗保险缴费基数,养老失业缴费基数,公积金缴费基数,医疗,养老,失业,公积金,扣除项合计,税前工资,所得税,税后工资,大病医疗,采暖补贴,实发金额,备注\n"
+				+ "2025,1,abc,0,0,0,0,0,0,0,10000,0,0,0,0,0,0,0,0,10000,0,10000,0,0,10000,格式错误\n";
+
+		assertThatThrownBy(() -> service.importCsv(1L, bad))
+			.isInstanceOf(com.tlcsdm.ecovault.common.BusinessException.class);
+	}
+
 }
