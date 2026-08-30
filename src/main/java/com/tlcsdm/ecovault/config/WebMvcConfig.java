@@ -20,13 +20,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @see WebMvcConfigurer
  */
 @Configuration
-/**
- * Web MVC 配置类，负责页面跳转与静态资源相关配置。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see WebMvcConfigurer
- */
+
 public class WebMvcConfig implements WebMvcConfigurer {
 
 	/**

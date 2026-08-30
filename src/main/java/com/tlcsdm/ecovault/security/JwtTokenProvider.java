@@ -38,7 +38,6 @@ public class JwtTokenProvider {
 	 * </p>
 	 * @param secret 签名密钥
 	 * @param expirationMs 令牌有效期 (毫秒)
-	 * @return 方法返回结果。
 	 */
 	public JwtTokenProvider(@Value("${ecovault.security.jwt-secret}") String secret,
 			@Value("${ecovault.security.jwt-expiration-ms}") long expirationMs) {

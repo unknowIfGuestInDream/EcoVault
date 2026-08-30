@@ -25,13 +25,7 @@ import java.util.stream.Collectors;
  * @see AdminService
  */
 @Service
-/**
- * 管理员后台服务实现类，负责执行用户管理相关业务逻辑。 实现用户状态控制、资料维护和账户删除等操作。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see AdminService
- */
+
 public class AdminServiceImpl implements AdminService {
 
 	private final UserRepository userRepository;

@@ -31,13 +31,7 @@ import java.util.stream.Collectors;
  * @see LedgerService
  */
 @Service
-/**
- * 收支管理服务实现类，负责处理收支记录维护、统计和导出逻辑。 面向个人财务流水场景提供完整业务支撑。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see LedgerService
- */
+
 public class LedgerServiceImpl implements LedgerService {
 
 	private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");

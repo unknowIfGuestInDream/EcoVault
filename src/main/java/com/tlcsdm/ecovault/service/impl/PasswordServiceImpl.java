@@ -28,13 +28,7 @@ import java.util.stream.Collectors;
  * @see PasswordService
  */
 @Service
-/**
- * 密码保险箱服务实现类，负责敏感密码数据的加密存储与管理。 结合 AES 工具完成条目安全处理。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see PasswordService
- */
+
 public class PasswordServiceImpl implements PasswordService {
 
 	/** MASKED_SECRET字段说明。 */

@@ -18,13 +18,7 @@ import java.time.LocalDateTime;
  * @see OperationLogService
  */
 @Service
-/**
- * 操作日志服务实现类，负责日志记录查询、更新与审计支持。 用于保障关键操作的可追溯性。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see OperationLogService
- */
+
 public class OperationLogServiceImpl implements OperationLogService {
 
 	private final OperationLogRepository repository;

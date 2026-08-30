@@ -23,13 +23,7 @@ import org.springframework.stereotype.Component;
  * @see CommandLineRunner
  */
 @Component
-/**
- * 数据初始化配置类，负责在应用启动时补齐基础角色权限等默认数据。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see CommandLineRunner
- */
+
 public class DataInitializer implements CommandLineRunner {
 
 	private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);

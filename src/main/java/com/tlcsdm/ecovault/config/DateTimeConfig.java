@@ -24,13 +24,7 @@ import java.util.TimeZone;
  * @see WebMvcConfigurer
  */
 @Configuration
-/**
- * 日期时间配置类，提供统一的日期与时间格式化能力。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see WebMvcConfigurer
- */
+
 public class DateTimeConfig implements WebMvcConfigurer {
 
 	/** 统一日期格式模式。 */

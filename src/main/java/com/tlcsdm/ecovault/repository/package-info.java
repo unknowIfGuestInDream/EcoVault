@@ -8,10 +8,10 @@
  * <h2>主要 Repository 接口</h2>
  * <ul>
  * <li>{@link com.tlcsdm.ecovault.repository.UserRepository} - 用户数据访问</li>
- * <li>{@link com.tlcsdm.ecovault.repository.SessionRepository} - 会话数据访问</li>
- * <li>{@link com.tlcsdm.ecovault.repository.PasswordRepository} - 密码条目数据访问</li>
- * <li>{@link com.tlcsdm.ecovault.repository.SalaryRepository} - 工资数据访问</li>
- * <li>{@link com.tlcsdm.ecovault.repository.LedgerRepository} - 账本数据访问</li>
+ * <li>{@link com.tlcsdm.ecovault.repository.UserSessionRepository} - 会话数据访问</li>
+ * <li>{@link com.tlcsdm.ecovault.repository.PasswordEntryRepository} - 密码条目数据访问</li>
+ * <li>{@link com.tlcsdm.ecovault.repository.SalaryRecordRepository} - 工资数据访问</li>
+ * <li>{@link com.tlcsdm.ecovault.repository.LedgerEntryRepository} - 账本数据访问</li>
  * <li>{@link com.tlcsdm.ecovault.repository.OperationLogRepository} - 操作日志数据访问</li>
  * </ul>
  *

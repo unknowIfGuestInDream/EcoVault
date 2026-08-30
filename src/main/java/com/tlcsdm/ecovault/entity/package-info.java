@@ -8,10 +8,10 @@
  * <h2>主要实体类</h2>
  * <ul>
  * <li>{@link com.tlcsdm.ecovault.entity.User} - 用户实体</li>
- * <li>{@link com.tlcsdm.ecovault.entity.Session} - 会话实体</li>
- * <li>{@link com.tlcsdm.ecovault.entity.Password} - 密码条目实体</li>
- * <li>{@link com.tlcsdm.ecovault.entity.Salary} - 工资数据实体</li>
- * <li>{@link com.tlcsdm.ecovault.entity.Ledger} - 账本实体</li>
+ * <li>{@link com.tlcsdm.ecovault.entity.UserSession} - 会话实体</li>
+ * <li>{@link com.tlcsdm.ecovault.entity.PasswordEntry} - 密码条目实体</li>
+ * <li>{@link com.tlcsdm.ecovault.entity.SalaryRecord} - 工资数据实体</li>
+ * <li>{@link com.tlcsdm.ecovault.entity.LedgerEntry} - 账本实体</li>
  * <li>{@link com.tlcsdm.ecovault.entity.OperationLog} - 操作日志实体</li>
  * </ul>
  *

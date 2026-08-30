@@ -15,13 +15,7 @@ import org.springframework.stereotype.Service;
  * @see UserDetailsService
  */
 @Service
-/**
- * 自定义用户详情服务，用于向 Spring Security 提供认证所需的用户信息。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see UserDetailsService
- */
+
 public class CustomUserDetailsService implements UserDetailsService {
 
 	private final UserRepository userRepository;

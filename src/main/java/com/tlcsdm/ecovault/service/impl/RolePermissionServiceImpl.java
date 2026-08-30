@@ -25,13 +25,7 @@ import java.util.stream.Collectors;
  * @see RolePermissionService
  */
 @Service
-/**
- * 角色权限服务实现类，负责维护角色与页面之间的授权关系。 支持后台权限矩阵查询和更新。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see RolePermissionService
- */
+
 public class RolePermissionServiceImpl implements RolePermissionService {
 
 	private final RolePermissionRepository repository;
