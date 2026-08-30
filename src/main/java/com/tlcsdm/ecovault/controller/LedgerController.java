@@ -34,13 +34,24 @@ import java.util.List;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/finance/ledger")
+/**
+ * 收支管理控制器，提供收支记录的查询、维护、统计与导出接口。 面向当前登录用户处理个人财务流水相关请求。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class LedgerController {
 
 	private final LedgerService ledgerService;
 
+	/**
+	 * 构造LedgerController实例并注入所需依赖。
+	 * @param ledgerService ledgerService参数。
+	 */
 	public LedgerController(LedgerService ledgerService) {
 		this.ledgerService = ledgerService;
 	}

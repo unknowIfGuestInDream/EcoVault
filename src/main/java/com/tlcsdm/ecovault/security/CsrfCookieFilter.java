@@ -19,6 +19,7 @@ import java.io.IOException;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public class CsrfCookieFilter extends OncePerRequestFilter {
 

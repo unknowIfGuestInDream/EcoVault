@@ -22,9 +22,16 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Entity
 @Table(name = "users", indexes = { @Index(name = "idx_users_username", columnList = "username", unique = true) })
+/**
+ * 用户实体，表示系统登录账户及其基础资料。 保存用户名、BCrypt 密码、角色与启用状态等核心信息。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class User {
 
 	/** 主键 */
@@ -79,74 +86,146 @@ public class User {
 		this.updatedAt = LocalDateTime.now();
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 主键编号。
+	 */
 	public Long getId() {
 		return id;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param id 主键或记录编号。
+	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 用户名。
+	 */
 	public String getUsername() {
 		return username;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param username 用户名。
+	 */
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 密码字段内容。
+	 */
 	public String getPassword() {
 		return password;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param password 密码。
+	 */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 昵称。
+	 */
 	public String getNickname() {
 		return nickname;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param nickname nickname参数。
+	 */
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 邮箱地址。
+	 */
 	public String getEmail() {
 		return email;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param email email参数。
+	 */
 	public void setEmail(String email) {
 		this.email = email;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 角色信息。
+	 */
 	public Role getRole() {
 		return role;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param role 角色标识。
+	 */
 	public void setRole(Role role) {
 		this.role = role;
 	}
 
+	/**
+	 * 判断相关状态。
+	 * @return 是否启用。
+	 */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param enabled 是否启用。
+	 */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 创建时间。
+	 */
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param createdAt createdAt参数。
+	 */
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 更新时间。
+	 */
 	public LocalDateTime getUpdatedAt() {
 		return updatedAt;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param updatedAt updatedAt参数。
+	 */
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}

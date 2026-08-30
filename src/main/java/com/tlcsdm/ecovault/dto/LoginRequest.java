@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
  * @param username 用户名
  * @param password 明文密码
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record LoginRequest(@NotBlank(message = "用户名不能为空") String username,
 

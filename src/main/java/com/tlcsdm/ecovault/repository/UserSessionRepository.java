@@ -10,6 +10,7 @@ import java.util.Optional;
  * 用户会话数据访问接口。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface UserSessionRepository extends JpaRepository<UserSession, Long> {
 

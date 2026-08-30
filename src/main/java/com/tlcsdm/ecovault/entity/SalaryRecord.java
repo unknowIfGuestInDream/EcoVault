@@ -35,6 +35,12 @@ import java.time.LocalDateTime;
 		uniqueConstraints = @UniqueConstraint(name = "uk_salary_user_ym", columnNames = { "user_id", "year", "month" }),
 		indexes = { @Index(name = "idx_salary_user", columnList = "user_id"),
 				@Index(name = "idx_salary_ym", columnList = "year,month") })
+/**
+ * 工资记录实体，表示用户某年某月或年终奖的工资明细。 保存工资组成项、扣除项及统计所需的派生金额。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class SalaryRecord {
 
 	/** 表示年终奖记录的特殊月份值 */
@@ -193,6 +199,9 @@ public class SalaryRecord {
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 
+	/**
+	 * 在实体首次持久化前初始化时间等字段。
+	 */
 	@PrePersist
 	public void prePersist() {
 		LocalDateTime now = LocalDateTime.now();
@@ -200,6 +209,9 @@ public class SalaryRecord {
 		this.updatedAt = now;
 	}
 
+	/**
+	 * 在实体更新前刷新时间等字段。
+	 */
 	@PreUpdate
 	public void preUpdate() {
 		this.updatedAt = LocalDateTime.now();
@@ -293,238 +305,474 @@ public class SalaryRecord {
 		return value == null ? BigDecimal.ZERO : value;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 主键编号。
+	 */
 	public Long getId() {
 		return id;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param id 主键或记录编号。
+	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public Long getUserId() {
 		return userId;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param userId 用户编号。
+	 */
 	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public int getYear() {
 		return year;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param year year参数。
+	 */
 	public void setYear(int year) {
 		this.year = year;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public int getMonth() {
 		return month;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param month month参数。
+	 */
 	public void setMonth(int month) {
 		this.month = month;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getBaseSalary() {
 		return baseSalary;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param baseSalary baseSalary参数。
+	 */
 	public void setBaseSalary(BigDecimal baseSalary) {
 		this.baseSalary = baseSalary;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getPerformanceSalary() {
 		return performanceSalary;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param performanceSalary performanceSalary参数。
+	 */
 	public void setPerformanceSalary(BigDecimal performanceSalary) {
 		this.performanceSalary = performanceSalary;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getHousingAllowance() {
 		return housingAllowance;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param housingAllowance housingAllowance参数。
+	 */
 	public void setHousingAllowance(BigDecimal housingAllowance) {
 		this.housingAllowance = housingAllowance;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getMealAllowance() {
 		return mealAllowance;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param mealAllowance mealAllowance参数。
+	 */
 	public void setMealAllowance(BigDecimal mealAllowance) {
 		this.mealAllowance = mealAllowance;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getTransportAllowance() {
 		return transportAllowance;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param transportAllowance transportAllowance参数。
+	 */
 	public void setTransportAllowance(BigDecimal transportAllowance) {
 		this.transportAllowance = transportAllowance;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getOvertimePay() {
 		return overtimePay;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param overtimePay overtimePay参数。
+	 */
 	public void setOvertimePay(BigDecimal overtimePay) {
 		this.overtimePay = overtimePay;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getOvertimeAllowance() {
 		return overtimeAllowance;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param overtimeAllowance overtimeAllowance参数。
+	 */
 	public void setOvertimeAllowance(BigDecimal overtimeAllowance) {
 		this.overtimeAllowance = overtimeAllowance;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getBonus() {
 		return bonus;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param bonus bonus参数。
+	 */
 	public void setBonus(BigDecimal bonus) {
 		this.bonus = bonus;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getMedicalBase() {
 		return medicalBase;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param medicalBase medicalBase参数。
+	 */
 	public void setMedicalBase(BigDecimal medicalBase) {
 		this.medicalBase = medicalBase;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getPensionUnemploymentBase() {
 		return pensionUnemploymentBase;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param pensionUnemploymentBase pensionUnemploymentBase参数。
+	 */
 	public void setPensionUnemploymentBase(BigDecimal pensionUnemploymentBase) {
 		this.pensionUnemploymentBase = pensionUnemploymentBase;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getHousingFundBase() {
 		return housingFundBase;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param housingFundBase housingFundBase参数。
+	 */
 	public void setHousingFundBase(BigDecimal housingFundBase) {
 		this.housingFundBase = housingFundBase;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getMedicalDeduction() {
 		return medicalDeduction;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param medicalDeduction medicalDeduction参数。
+	 */
 	public void setMedicalDeduction(BigDecimal medicalDeduction) {
 		this.medicalDeduction = medicalDeduction;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getPensionDeduction() {
 		return pensionDeduction;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param pensionDeduction pensionDeduction参数。
+	 */
 	public void setPensionDeduction(BigDecimal pensionDeduction) {
 		this.pensionDeduction = pensionDeduction;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getUnemploymentDeduction() {
 		return unemploymentDeduction;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param unemploymentDeduction unemploymentDeduction参数。
+	 */
 	public void setUnemploymentDeduction(BigDecimal unemploymentDeduction) {
 		this.unemploymentDeduction = unemploymentDeduction;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getHousingFundDeduction() {
 		return housingFundDeduction;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param housingFundDeduction housingFundDeduction参数。
+	 */
 	public void setHousingFundDeduction(BigDecimal housingFundDeduction) {
 		this.housingFundDeduction = housingFundDeduction;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getIncomeTax() {
 		return incomeTax;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param incomeTax incomeTax参数。
+	 */
 	public void setIncomeTax(BigDecimal incomeTax) {
 		this.incomeTax = incomeTax;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getSeriousIllnessMedical() {
 		return seriousIllnessMedical;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param seriousIllnessMedical seriousIllnessMedical参数。
+	 */
 	public void setSeriousIllnessMedical(BigDecimal seriousIllnessMedical) {
 		this.seriousIllnessMedical = seriousIllnessMedical;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getHeatingAllowance() {
 		return heatingAllowance;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param heatingAllowance heatingAllowance参数。
+	 */
 	public void setHeatingAllowance(BigDecimal heatingAllowance) {
 		this.heatingAllowance = heatingAllowance;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param netPay netPay参数。
+	 */
 	public void setNetPay(BigDecimal netPay) {
 		this.netPay = netPay;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getStoredGrossPay() {
 		return grossPay;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param grossPay grossPay参数。
+	 */
 	public void setStoredGrossPay(BigDecimal grossPay) {
 		this.grossPay = grossPay;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getStoredTotalDeduction() {
 		return totalDeduction;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param totalDeduction totalDeduction参数。
+	 */
 	public void setStoredTotalDeduction(BigDecimal totalDeduction) {
 		this.totalDeduction = totalDeduction;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getStoredPreTaxSalary() {
 		return preTaxSalary;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param preTaxSalary preTaxSalary参数。
+	 */
 	public void setStoredPreTaxSalary(BigDecimal preTaxSalary) {
 		this.preTaxSalary = preTaxSalary;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getStoredAfterTaxSalary() {
 		return afterTaxSalary;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param afterTaxSalary afterTaxSalary参数。
+	 */
 	public void setStoredAfterTaxSalary(BigDecimal afterTaxSalary) {
 		this.afterTaxSalary = afterTaxSalary;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getRemark() {
 		return remark;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param remark remark参数。
+	 */
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 创建时间。
+	 */
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param createdAt createdAt参数。
+	 */
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 更新时间。
+	 */
 	public LocalDateTime getUpdatedAt() {
 		return updatedAt;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param updatedAt updatedAt参数。
+	 */
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}

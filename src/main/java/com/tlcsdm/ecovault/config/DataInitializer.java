@@ -19,8 +19,11 @@ import org.springframework.stereotype.Component;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see CommandLineRunner
  */
 @Component
+
 public class DataInitializer implements CommandLineRunner {
 
 	private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
@@ -46,6 +49,10 @@ public class DataInitializer implements CommandLineRunner {
 		this.adminPassword = adminPassword;
 	}
 
+	/**
+	 * 处理run相关业务。
+	 * @param args args参数。
+	 */
 	@Override
 	public void run(String... args) {
 		// 初始化角色默认页面权限

@@ -14,12 +14,25 @@ import org.springframework.web.bind.annotation.GetMapping;
  * 仅负责返回视图名称，具体数据通过前端 JS 调用 REST 接口获取。受保护页面的访问控制由 Spring Security
  * 统一处理；对于「可配置页面」，进一步依据角色页面权限进行校验，无权限时重定向到控制台。
  * </p>
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Controller
+/**
+ * 页面路由控制器，负责返回各功能页面对应的视图模板。 用于衔接前后端页面访问流程。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class PageController {
 
 	private final RolePermissionService rolePermissionService;
 
+	/**
+	 * 构造PageController实例并注入所需依赖。
+	 * @param rolePermissionService rolePermissionService参数。
+	 */
 	public PageController(RolePermissionService rolePermissionService) {
 		this.rolePermissionService = rolePermissionService;
 	}

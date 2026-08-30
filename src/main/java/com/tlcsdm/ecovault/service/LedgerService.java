@@ -11,6 +11,7 @@ import java.util.List;
  * 财务 - 收入支出管理服务。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface LedgerService {
 

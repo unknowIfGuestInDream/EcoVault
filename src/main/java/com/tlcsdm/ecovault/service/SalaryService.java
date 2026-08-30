@@ -11,6 +11,7 @@ import java.util.Map;
  * 财务 - 工资数据管理服务。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface SalaryService {
 

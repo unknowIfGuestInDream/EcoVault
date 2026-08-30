@@ -1,0 +1,110 @@
+name: Doxygen 文档生成
+
+# 在推送到主分支或提交 PR 时触发，生成 Doxygen 文档并上传产物
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'src/**'
+      - 'doxygen/**'
+      - 'README.md'
+      - '.github/workflows/doxygen.yml'
+  pull_request:
+    branches: [ "master" ]
+    paths:
+      - 'src/**'
+      - 'doxygen/**'
+      - 'README.md'
+      - '.github/workflows/doxygen.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  generate-doxygen:
+    name: 生成 Doxygen 文档
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v7
+
+      - name: 安装 Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: 安装 PlantUML
+        run: |
+          sudo apt-get install -y default-jre
+          sudo mkdir -p /opt/plantuml
+          sudo wget -O /opt/plantuml/plantuml.jar https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-1.2024.8.jar
+          echo "PLANTUML_JAR_PATH=/opt/plantuml/plantuml.jar" >> $GITHUB_ENV
+
+      - name: 验证 Doxygen 安装
+        run: |
+          doxygen --version
+          dot -V
+          java -jar /opt/plantuml/plantuml.jar -version
+
+      - name: 生成 Doxygen 文档
+        run: |
+          doxygen doxygen/Doxyfile
+
+      - name: 检查生成的文档
+        run: |
+          if [ -d "docs-gen/html" ]; then
+            echo "✓ Doxygen 文档生成成功"
+            echo "文件数量: $(find docs-gen/html -type f | wc -l)"
+            ls -lh docs-gen/html/ | head -20
+          else
+            echo "✗ Doxygen 文档生成失败"
+            exit 1
+          fi
+
+      - name: 创建文档压缩包
+        run: |
+          cd docs-gen
+          zip -qr ../doxygen-docs.zip html
+          cd ..
+          echo "文档压缩包大小: $(du -h doxygen-docs.zip | cut -f1)"
+
+      - name: 上传 Doxygen 文档
+        uses: actions/upload-artifact@v7
+        with:
+          name: doxygen-docs
+          path: doxygen-docs.zip
+          retention-days: 90
+
+      - name: 生成文档摘要
+        if: always()
+        run: |
+          {
+            echo "## 📚 Doxygen 文档生成报告"
+            echo
+            if [ -d "docs-gen/html" ]; then
+              echo "✅ 文档生成成功"
+              echo
+              echo "### 📊 统计信息"
+              echo
+              echo "| 项目 | 数量 |"
+              echo "|------|------|"
+              echo "| HTML 文件 | $(find docs-gen/html -name '*.html' | wc -l) |"
+              echo "| 图片文件 | $(find docs-gen/html -name '*.png' -o -name '*.svg' -o -name '*.jpg' | wc -l) |"
+              echo "| 总文件数 | $(find docs-gen/html -type f | wc -l) |"
+              echo "| 文档大小 | $(du -sh docs-gen/html | cut -f1) |"
+              echo
+              echo "### 📦 下载"
+              echo
+              echo "文档已上传为构建产物，可在 Actions 页面下载。"
+            else
+              echo "❌ 文档生成失败"
+              echo
+              echo "请检查 Doxygen 配置和源代码注释。"
+            fi
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: 清理临时文件
+        if: always()
+        run: |
+          rm -rf docs-gen doxygen-docs.zip

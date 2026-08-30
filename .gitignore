@@ -29,3 +29,7 @@ node_modules/
 
 # 环境变量文件 (避免提交敏感信息)
 .env
+
+# Doxygen 生成文件
+docs-gen/
+doxygen-docs.zip

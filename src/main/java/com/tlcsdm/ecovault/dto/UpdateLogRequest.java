@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
  * @param module 模块
  * @param operation 操作描述
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record UpdateLogRequest(@Size(max = 64, message = "模块名称过长") String module,
 

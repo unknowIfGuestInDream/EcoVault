@@ -21,8 +21,11 @@ import java.util.stream.Collectors;
  * 管理后台服务实现。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see AdminService
  */
 @Service
+
 public class AdminServiceImpl implements AdminService {
 
 	private final UserRepository userRepository;
@@ -38,12 +41,21 @@ public class AdminServiceImpl implements AdminService {
 		this.passwordEncoder = passwordEncoder;
 	}
 
+	/**
+	 * 查询业务数据列表。
+	 * @return 业务数据列表。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public List<AdminUserResponse> listUsers() {
 		return userRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param userId 用户编号。
+	 * @param enabled 是否启用。
+	 */
 	@Override
 	@Transactional
 	public void setUserEnabled(Long userId, boolean enabled) {
@@ -72,6 +84,12 @@ public class AdminServiceImpl implements AdminService {
 				user.getRole().name(), user.isEnabled(), user.getCreatedAt());
 	}
 
+	/**
+	 * 更新已有业务数据。
+	 * @param userId 用户编号。
+	 * @param request 请求参数对象。
+	 * @return 更新后的业务结果。
+	 */
 	@Override
 	@Transactional
 	public AdminUserResponse updateUser(Long userId, UpdateUserRequest request) {
@@ -105,6 +123,10 @@ public class AdminServiceImpl implements AdminService {
 		return toResponse(userRepository.save(user));
 	}
 
+	/**
+	 * 删除指定业务数据。
+	 * @param userId 用户编号。
+	 */
 	@Override
 	@Transactional
 	public void deleteUser(Long userId) {

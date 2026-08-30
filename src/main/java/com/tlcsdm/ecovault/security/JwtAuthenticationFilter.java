@@ -27,6 +27,7 @@ import java.util.Optional;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

@@ -35,13 +35,24 @@ import java.util.Map;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/finance/salaries")
+/**
+ * 工资管理控制器，提供工资记录维护、统计分析与导出接口。 用于处理个人工资数据的查询与展示。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class SalaryController {
 
 	private final SalaryService salaryService;
 
+	/**
+	 * 构造SalaryController实例并注入所需依赖。
+	 * @param salaryService salaryService参数。
+	 */
 	public SalaryController(SalaryService salaryService) {
 		this.salaryService = salaryService;
 	}

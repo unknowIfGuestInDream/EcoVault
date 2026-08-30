@@ -22,16 +22,28 @@ import java.util.stream.Collectors;
  * 财务 - 工资数据管理服务实现。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see SalaryService
  */
 @Service
 public class SalaryServiceImpl implements SalaryService {
 
 	private final SalaryRecordRepository repository;
 
+	/**
+	 * 构造SalaryServiceImpl实例并注入所需依赖。
+	 * @param repository repository参数。
+	 */
 	public SalaryServiceImpl(SalaryRecordRepository repository) {
 		this.repository = repository;
 	}
 
+	/**
+	 * 保存业务数据。
+	 * @param userId 用户编号。
+	 * @param request 请求参数对象。
+	 * @return 保存后的业务结果。
+	 */
 	@Override
 	@Transactional
 	public SalaryResponse save(Long userId, SalaryRequest request) {
@@ -42,6 +54,13 @@ public class SalaryServiceImpl implements SalaryService {
 		return toResponse(repository.save(record));
 	}
 
+	/**
+	 * 更新已有业务数据。
+	 * @param userId 用户编号。
+	 * @param id 主键或记录编号。
+	 * @param request 请求参数对象。
+	 * @return 更新后的业务结果。
+	 */
 	@Override
 	@Transactional
 	public SalaryResponse update(Long userId, Long id, SalaryRequest request) {
@@ -51,6 +70,11 @@ public class SalaryServiceImpl implements SalaryService {
 		return toResponse(repository.save(record));
 	}
 
+	/**
+	 * 删除指定业务数据。
+	 * @param userId 用户编号。
+	 * @param id 主键或记录编号。
+	 */
 	@Override
 	@Transactional
 	public void delete(Long userId, Long id) {
@@ -59,12 +83,26 @@ public class SalaryServiceImpl implements SalaryService {
 		repository.delete(record);
 	}
 
+	/**
+	 * 查询业务数据列表。
+	 * @param userId 用户编号。
+	 * @param startYear 起始年份。
+	 * @param endYear 结束年份。
+	 * @return 业务数据列表。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public List<SalaryResponse> list(Long userId, Integer startYear, Integer endYear) {
 		return query(userId, startYear, endYear).stream().map(this::toResponse).collect(Collectors.toList());
 	}
 
+	/**
+	 * 统计并汇总业务数据。
+	 * @param userId 用户编号。
+	 * @param startYear 起始年份。
+	 * @param endYear 结束年份。
+	 * @return 统计结果。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public SalaryStatistics statistics(Long userId, Integer startYear, Integer endYear) {
@@ -147,6 +185,13 @@ public class SalaryServiceImpl implements SalaryService {
 				composition, deductionComposition);
 	}
 
+	/**
+	 * 导出业务数据。
+	 * @param userId 用户编号。
+	 * @param startYear 起始年份。
+	 * @param endYear 结束年份。
+	 * @return 导出结果。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public Map<String, String> exportCsv(Long userId, Integer startYear, Integer endYear) {
@@ -220,6 +265,12 @@ public class SalaryServiceImpl implements SalaryService {
 		return result;
 	}
 
+	/**
+	 * 处理importCsv相关业务。
+	 * @param userId 用户编号。
+	 * @param csvContent csvContent参数。
+	 * @return 方法执行结果。
+	 */
 	@Override
 	@Transactional
 	public int importCsv(Long userId, String csvContent) {

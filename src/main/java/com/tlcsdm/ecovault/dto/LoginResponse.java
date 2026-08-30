@@ -8,6 +8,7 @@ package com.tlcsdm.ecovault.dto;
  * @param nickname 昵称
  * @param role 角色
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record LoginResponse(String token, String username, String nickname, String role) {
 }

@@ -19,6 +19,7 @@ import java.util.Base64;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Component
 public class AesUtil {

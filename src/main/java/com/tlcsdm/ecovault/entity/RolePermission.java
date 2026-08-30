@@ -22,6 +22,12 @@ import jakarta.persistence.UniqueConstraint;
 @Entity
 @Table(name = "role_permissions",
 		uniqueConstraints = @UniqueConstraint(name = "uk_role_page", columnNames = { "role", "page_key" }))
+/**
+ * 角色权限实体，表示角色与页面访问权限的关联关系。 用于控制不同角色可访问的功能页面范围。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class RolePermission {
 
 	/** 主键 */
@@ -38,34 +44,66 @@ public class RolePermission {
 	@Column(name = "page_key", nullable = false, length = 32)
 	private String pageKey;
 
+	/**
+	 * 构造RolePermission实例并注入所需依赖。
+	 */
 	public RolePermission() {
 	}
 
+	/**
+	 * 构造RolePermission实例并注入所需依赖。
+	 * @param role 角色标识。
+	 * @param pageKey pageKey参数。
+	 */
 	public RolePermission(Role role, String pageKey) {
 		this.role = role;
 		this.pageKey = pageKey;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 主键编号。
+	 */
 	public Long getId() {
 		return id;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param id 主键或记录编号。
+	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 角色信息。
+	 */
 	public Role getRole() {
 		return role;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param role 角色标识。
+	 */
 	public void setRole(Role role) {
 		this.role = role;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getPageKey() {
 		return pageKey;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param pageKey pageKey参数。
+	 */
 	public void setPageKey(String pageKey) {
 		this.pageKey = pageKey;
 	}

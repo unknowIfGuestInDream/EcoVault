@@ -13,6 +13,7 @@ import java.util.Optional;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public enum MenuPage {
 
@@ -40,7 +41,12 @@ public enum MenuPage {
 	/** 后台 - 角色管理 (仅管理员) */
 	ROLES("roles", "角色管理", "/admin/roles", MenuGroup.ADMIN, true, false);
 
-	/** 菜单分组 */
+	/**
+	 * 菜单分组
+	 *
+	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
+	 */
 	public enum MenuGroup {
 
 		/** 主菜单 */
@@ -75,18 +81,34 @@ public enum MenuPage {
 		this.configurable = configurable;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getKey() {
 		return key;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getLabel() {
 		return label;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getPath() {
 		return path;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public MenuGroup getGroup() {
 		return group;
 	}

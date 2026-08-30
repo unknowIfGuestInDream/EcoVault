@@ -1,0 +1,235 @@
+/* EcoVault Doxygen 自定义样式 */
+
+/* 主题色调整 */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+}
+
+/* 页面整体布局 */
+body {
+    font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* 导航栏样式 */
+#top {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#titlearea {
+    padding: 20px;
+    background: transparent !important;
+}
+
+#projectname {
+    font-size: 2em;
+    font-weight: bold;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#projectbrief {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-size: 1.1em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#projectnumber {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 侧边栏样式 */
+#side-nav {
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+}
+
+.ui-resizable-e {
+    background-color: #dee2e6;
+}
+
+/* 内容区域 */
+div.contents {
+    padding: 20px;
+}
+
+/* 代码块样式 */
+div.fragment {
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+}
+
+/* 表格样式 */
+table.doxtable {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+}
+
+table.doxtable th {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+table.doxtable td {
+    padding: 8px;
+    border: 1px solid #dee2e6;
+}
+
+table.doxtable tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* 警告框样式 */
+dl.warning {
+    background-color: #fff3cd;
+    border-left: 4px solid var(--warning-color);
+    padding: 10px;
+    margin: 10px 0;
+}
+
+dl.note {
+    background-color: #d1ecf1;
+    border-left: 4px solid var(--info-color);
+    padding: 10px;
+    margin: 10px 0;
+}
+
+dl.attention {
+    background-color: #f8d7da;
+    border-left: 4px solid var(--danger-color);
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* 链接样式 */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* 搜索框样式 */
+#MSearchBox {
+    border-radius: 20px;
+    border: 1px solid #dee2e6;
+    padding: 5px 15px;
+}
+
+/* UML 图表样式 */
+.center {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.center img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 成员列表样式 */
+.memitem {
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.memname {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* 类层次结构样式 */
+div.levels {
+    margin-left: 20px;
+}
+
+div.levels span {
+    padding: 2px 5px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    margin: 2px;
+    display: inline-block;
+}
+
+/* 页脚样式 */
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+}
+
+/* 响应式设计 */
+@media screen and (max-width: 768px) {
+    #projectname {
+        font-size: 1.5em;
+    }
+
+    #projectbrief {
+        font-size: 0.9em;
+    }
+
+    div.contents {
+        padding: 10px;
+    }
+
+    table.doxtable {
+        font-size: 0.9em;
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+    }
+
+    #side-nav {
+        background-color: #252526;
+        border-right: 1px solid #3e3e42;
+    }
+
+    div.fragment {
+        background-color: #1e1e1e;
+        border-color: #3e3e42;
+        color: #d4d4d4;
+    }
+
+    table.doxtable td {
+        border-color: #3e3e42;
+    }
+
+    table.doxtable tr:nth-child(even) {
+        background-color: #252526;
+    }
+
+    .footer {
+        background-color: #252526;
+        border-top-color: #3e3e42;
+    }
+}

@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Size;
  * @param email 邮箱
  * @param role 角色 (可空，默认为 USER；仅管理员创建用户时可指定)
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record RegisterRequest(
 		@NotBlank(message = "用户名不能为空") @Size(min = 3, max = 32, message = "用户名长度需在 3-32 之间") String username,

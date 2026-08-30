@@ -14,6 +14,7 @@ import java.util.Optional;
  * 收入支出记录数据访问接口。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, Long> {
 

@@ -32,14 +32,27 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
  * <li>方法级权限控制 ({@code @EnableMethodSecurity})</li>
  * <li>静态资源 (favicon、CSS、JS、图片) 通过 {@code permitAll} 公开，无需认证即可访问</li>
  * </ul>
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+/**
+ * 安全配置类，负责认证、授权、过滤器链和密码编码等安全组件配置。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+	/**
+	 * 构造SecurityConfig实例并注入所需依赖。
+	 * @param jwtAuthenticationFilter jwtAuthenticationFilter参数。
+	 */
 	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 	}

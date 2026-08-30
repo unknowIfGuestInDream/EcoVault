@@ -20,8 +20,10 @@ import java.util.stream.Collectors;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @RestControllerAdvice
+
 public class GlobalExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);

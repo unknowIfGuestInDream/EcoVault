@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
  * @param nickname 昵称
  * @param email 邮箱
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record UpdateProfileRequest(@Size(max = 64, message = "昵称过长") String nickname,
 

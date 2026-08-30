@@ -36,6 +36,12 @@ import java.util.Set;
 		indexes = { @Index(name = "idx_ledger_user", columnList = "user_id"),
 				@Index(name = "idx_ledger_date", columnList = "entry_date"),
 				@Index(name = "idx_ledger_type", columnList = "type") })
+/**
+ * 收支记录实体，表示用户的一笔收入或支出流水。 保存金额、日期、标签和备注等财务信息。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class LedgerEntry {
 
 	/** 主键 */
@@ -79,6 +85,9 @@ public class LedgerEntry {
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 
+	/**
+	 * 在实体首次持久化前初始化时间等字段。
+	 */
 	@PrePersist
 	public void prePersist() {
 		LocalDateTime now = LocalDateTime.now();
@@ -86,79 +95,154 @@ public class LedgerEntry {
 		this.updatedAt = now;
 	}
 
+	/**
+	 * 在实体更新前刷新时间等字段。
+	 */
 	@PreUpdate
 	public void preUpdate() {
 		this.updatedAt = LocalDateTime.now();
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 主键编号。
+	 */
 	public Long getId() {
 		return id;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param id 主键或记录编号。
+	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public Long getUserId() {
 		return userId;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param userId 用户编号。
+	 */
 	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public LedgerType getType() {
 		return type;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param type 类型条件。
+	 */
 	public void setType(LedgerType type) {
 		this.type = type;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public BigDecimal getAmount() {
 		return amount;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param amount amount参数。
+	 */
 	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public LocalDate getEntryDate() {
 		return entryDate;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param entryDate entryDate参数。
+	 */
 	public void setEntryDate(LocalDate entryDate) {
 		this.entryDate = entryDate;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public Set<String> getTags() {
 		return tags;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param tags tags参数。
+	 */
 	public void setTags(Set<String> tags) {
 		this.tags = tags;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getRemark() {
 		return remark;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param remark remark参数。
+	 */
 	public void setRemark(String remark) {
 		this.remark = remark;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 创建时间。
+	 */
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param createdAt createdAt参数。
+	 */
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 更新时间。
+	 */
 	public LocalDateTime getUpdatedAt() {
 		return updatedAt;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param updatedAt updatedAt参数。
+	 */
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}

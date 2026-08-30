@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotBlank;
  *
  * @param password 当前账户登录密码
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record VerifyPasswordRequest(@NotBlank(message = "密码不能为空") String password) {
 }

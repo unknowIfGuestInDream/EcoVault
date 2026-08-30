@@ -21,16 +21,26 @@ import java.util.stream.Collectors;
  * 角色-页面权限服务实现。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see RolePermissionService
  */
 @Service
+
 public class RolePermissionServiceImpl implements RolePermissionService {
 
 	private final RolePermissionRepository repository;
 
+	/**
+	 * 构造RolePermissionServiceImpl实例并注入所需依赖。
+	 * @param repository repository参数。
+	 */
 	public RolePermissionServiceImpl(RolePermissionRepository repository) {
 		this.repository = repository;
 	}
 
+	/**
+	 * 处理initDefaults相关业务。
+	 */
 	@Override
 	@Transactional
 	public void initDefaults() {
@@ -45,6 +55,10 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		}
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public RoleMatrixResponse getMatrix() {
@@ -61,6 +75,11 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		return new RoleMatrixResponse(pages, roles);
 	}
 
+	/**
+	 * 更新已有业务数据。
+	 * @param role 角色标识。
+	 * @param pageKeys pageKeys参数。
+	 */
 	@Override
 	@Transactional
 	public void updatePermissions(Role role, List<String> pageKeys) {
@@ -91,6 +110,11 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		}
 	}
 
+	/**
+	 * 处理accessiblePageKeys相关业务。
+	 * @param user 用户实体。
+	 * @return 方法执行结果。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public Set<String> accessiblePageKeys(User user) {
@@ -114,6 +138,12 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		return keys;
 	}
 
+	/**
+	 * 处理canAccessPath相关业务。
+	 * @param user 用户实体。
+	 * @param path path参数。
+	 * @return 方法执行结果。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public boolean canAccessPath(User user, String path) {

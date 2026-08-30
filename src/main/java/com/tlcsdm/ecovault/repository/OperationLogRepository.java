@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
  * 操作日志数据访问接口。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface OperationLogRepository extends JpaRepository<OperationLog, Long> {
 

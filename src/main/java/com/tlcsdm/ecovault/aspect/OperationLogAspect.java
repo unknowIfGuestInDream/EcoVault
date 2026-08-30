@@ -37,6 +37,7 @@ import tools.jackson.databind.node.ObjectNode;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Aspect
 @Component
@@ -58,6 +59,11 @@ public class OperationLogAspect {
 
 	private final ObjectMapper objectMapper;
 
+	/**
+	 * 构造OperationLogAspect实例并注入所需依赖。
+	 * @param operationLogService operationLogService参数。
+	 * @param objectMapper objectMapper参数。
+	 */
 	public OperationLogAspect(OperationLogService operationLogService, ObjectMapper objectMapper) {
 		this.operationLogService = operationLogService;
 		this.objectMapper = objectMapper;
