@@ -26,13 +26,6 @@ import java.util.stream.Collectors;
  * @see SalaryService
  */
 @Service
-/**
- * 工资管理服务实现类，负责工资记录维护、统计计算与导出。 用于支撑工资趋势分析和汇总展示。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see SalaryService
- */
 public class SalaryServiceImpl implements SalaryService {
 
 	private final SalaryRecordRepository repository;

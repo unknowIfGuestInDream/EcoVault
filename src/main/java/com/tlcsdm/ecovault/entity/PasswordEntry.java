@@ -180,8 +180,8 @@ public class PasswordEntry {
 	}
 
 	/**
-	 * 设置相关属性值。
-	 * @param secret JWT 签名密钥。
+	 * 设置密码密文。
+	 * @param secret 加密存储的密码内容
 	 */
 	public void setSecret(String secret) {
 		this.secret = secret;

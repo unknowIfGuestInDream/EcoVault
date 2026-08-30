@@ -41,12 +41,6 @@ import tools.jackson.databind.node.ObjectNode;
  */
 @Aspect
 @Component
-/**
- * 操作日志切面，负责拦截标记方法并自动写入审计日志。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- */
 public class OperationLogAspect {
 
 	private static final Logger log = LoggerFactory.getLogger(OperationLogAspect.class);

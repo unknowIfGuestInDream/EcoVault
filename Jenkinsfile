@@ -20,7 +20,7 @@ pipeline {
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
         
         // Maven 配置
-        MAVEN_OPTS = '-Xmx1024m -XX:MaxPermSize=256m'
+        MAVEN_OPTS = '-Xmx1024m'
         
         // PlantUML JAR 路径（用于 Doxygen 生成 UML 图）
         PLANTUML_JAR_PATH = '/opt/plantuml/plantuml.jar'

@@ -41,11 +41,12 @@ public enum MenuPage {
 	/** 后台 - 角色管理 (仅管理员) */
 	ROLES("roles", "角色管理", "/admin/roles", MenuGroup.ADMIN, true, false);
 
-	*
-
-	@author unknowIfGuestInDream
+	/**
+	 * 菜单分组
+	 *
+	 * @author unknowIfGuestInDream
 	 * @since 1.0.0
-	/** 菜单分组 */
+	 */
 	public enum MenuGroup {
 
 		/** 主菜单 */

@@ -31,7 +31,6 @@ public record RegisterRequest(
 	 * @param password 明文密码
 	 * @param nickname 昵称
 	 * @param email 邮箱
-	 * @return 方法返回结果。
 	 */
 	public RegisterRequest(String username, String password, String nickname, String email) {
 		this(username, password, nickname, email, null);

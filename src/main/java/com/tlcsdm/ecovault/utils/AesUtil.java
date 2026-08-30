@@ -22,12 +22,6 @@ import java.util.Base64;
  * @since 1.0.0
  */
 @Component
-/**
- * AES 工具类，用于敏感字段的加密与解密处理。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- */
 public class AesUtil {
 
 	/** GCM 推荐的初始化向量长度 (字节) */
@@ -45,7 +39,6 @@ public class AesUtil {
 	/**
 	 * 构造加密工具，从配置读取密钥并规整为 32 字节 (AES-256)。
 	 * @param secret 配置的密钥
-	 * @return 方法返回结果。
 	 */
 	public AesUtil(@Value("${ecovault.crypto.secret}") String secret) {
 		byte[] raw = secret.getBytes(StandardCharsets.UTF_8);

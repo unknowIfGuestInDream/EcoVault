@@ -28,13 +28,6 @@ import java.util.List;
  * @see AuthService
  */
 @Service
-/**
- * 认证服务实现类，负责处理登录认证、会话控制与用户资料维护。 结合 JWT、密码编码器与会话仓储完成认证流程。
- *
- * @author unknowIfGuestInDream
- * @since 1.0.0
- * @see AuthService
- */
 public class AuthServiceImpl implements AuthService {
 
 	private final UserRepository userRepository;
