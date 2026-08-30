@@ -90,7 +90,6 @@ EcoVault/
 │   ├── main/java/com/tlcsdm/ecovault/...
 │   └── main/resources/templates/...
 ├── CHANGELOG.md
-├── Jenkinsfile                       # Jenkins 流水线配置
 ├── LICENSE
 ├── README.md
 └── CONTRIBUTING.md
