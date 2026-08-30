@@ -1,0 +1,129 @@
+/**
+ * @mainpage EcoVault 生态保险箱技术文档
+ *
+ * @section intro_sec 项目简介
+ *
+ * EcoVault（生态保险箱）是一个个人数据安全存储与智能管理平台，面向个人、家庭与小团队私有化部署场景，
+ * 提供密码管理、财务管理、日志审计与后台管理能力。项目强调安全存储、权限隔离、可审计、易部署与现代化用户体验。
+ *
+ * @section tech_stack 技术栈
+ *
+ * - **后端框架**: Java 25 + Spring Boot 4
+ * - **数据库**: SQLite 3（嵌入式，默认存储于 data/ecovault.db）
+ * - **视图模板**: Thymeleaf
+ * - **安全**: Spring Security + JWT + BCrypt + AES-GCM
+ * - **构建工具**: Maven
+ * - **测试**: JUnit 5 + JaCoCo
+ * - **部署**: Jenkins + GitHub Actions
+ *
+ * @section features 核心功能
+ *
+ * @subsection user_mgmt 用户管理
+ * - RBAC 权限模型（USER / ADMIN）
+ * - JWT 登录认证
+ * - 支持多设备登录控制（通过 ecovault.security.max-devices 配置）
+ * - BCrypt 密码哈希
+ * - 管理员手动创建用户（无自助注册）
+ * - 用户启用、禁用与会话失效
+ *
+ * @subsection password_mgmt 密码管理
+ * - 密码条目新增、编辑、删除、分页与搜索
+ * - 标签分类
+ * - 密码强度检测与安全提示
+ * - 敏感密码内容使用 AES-GCM 加密存储
+ *
+ * @subsection finance_mgmt 财务管理
+ * - 工资数据录入、编辑、删除与查询
+ * - 月度、年度统计分析与图表展示
+ * - CSV 导出
+ * - 预留消费数据扩展能力
+ *
+ * @subsection log_mgmt 日志管理
+ * - AOP 自动记录关键操作
+ * - 按用户、模块、动作、时间筛选和搜索
+ * - 日志导出与敏感字段脱敏
+ * - UTF-8 统一输出
+ *
+ * @subsection admin_panel 管理后台
+ * - 管理员手动创建用户
+ * - 用户启用、禁用
+ * - 系统状态、构建版本、构建信息查看
+ * - Actuator 端点限制 ADMIN 访问
+ *
+ * @section architecture 架构概览
+ *
+ * EcoVault 采用经典的 MVC 架构，分层清晰：
+ *
+ * @code{.unparsed}
+ * +-------------------+
+ * |   Web 前端层      |  (Thymeleaf 模板)
+ * +-------------------+
+ *          |
+ * +-------------------+
+ * |   Controller      |  (接收请求、参数校验、返回视图/JSON)
+ * +-------------------+
+ *          |
+ * +-------------------+
+ * |   Service         |  (业务逻辑、事务处理)
+ * +-------------------+
+ *          |
+ * +-------------------+
+ * |   Repository      |  (数据访问层 JPA)
+ * +-------------------+
+ *          |
+ * +-------------------+
+ * |   SQLite DB       |  (嵌入式数据库文件)
+ * +-------------------+
+ * @endcode
+ *
+ * 安全层通过 Spring Security 和 JWT 拦截器横切所有请求，确保认证与授权。
+ *
+ * @section security 安全策略
+ *
+ * - **认证**: JWT 令牌，支持单设备或多设备登录（配置 ecovault.security.max-devices）
+ * - **授权**: RBAC 基于角色的访问控制（USER / ADMIN）
+ * - **密码存储**: BCrypt 哈希，不存明文
+ * - **敏感数据加密**: 密码条目中的密码字段使用 AES-GCM 加密
+ * - **操作审计**: AOP 自动记录关键操作日志，敏感字段脱敏
+ * - **SQL 注入防护**: 使用 JPA 参数绑定，防止 SQL 注入
+ * - **XSS 防护**: Thymeleaf 自动转义，防止跨站脚本攻击
+ *
+ * @section deployment 部署运维
+ *
+ * - **构建**: Maven 构建，生成可执行 Jar
+ * - **运行**: java -jar ecovault.jar（配置文件 application-prod.properties）
+ * - **数据库**: SQLite 嵌入式，数据文件默认位于 data/ecovault.db
+ * - **健康检查**: Actuator /actuator/health 端点
+ * - **日志**: 控制台日志 UTF-8 输出，支持日志导出
+ *
+ * @section dev_guide 开发指南
+ *
+ * - **编码规范**: 遵循《阿里巴巴 Java 开发手册》，使用 spring-javaformat 格式化
+ * - **测试**: 使用 JUnit 5 编写单元测试，JaCoCo 生成覆盖率报告
+ * - **文档**: Javadoc 注释规范，Doxygen 生成技术文档
+ * - **代码审查**: CI 中执行 spring-javaformat:validate，确保代码风格一致
+ *
+ * @section modules 模块说明
+ *
+ * - @ref com.tlcsdm.ecovault.annotation "注解模块" - 自定义注解（如操作日志注解）
+ * - @ref com.tlcsdm.ecovault.aspect "切面模块" - AOP 切面（操作日志切面）
+ * - @ref com.tlcsdm.ecovault.common "通用模块" - 通用常量、枚举、工具类
+ * - @ref com.tlcsdm.ecovault.config "配置模块" - Spring 配置类
+ * - @ref com.tlcsdm.ecovault.controller "控制器模块" - Web 控制器
+ * - @ref com.tlcsdm.ecovault.dto "数据传输对象模块" - DTO 类
+ * - @ref com.tlcsdm.ecovault.entity "实体模块" - JPA 实体类
+ * - @ref com.tlcsdm.ecovault.repository "仓储模块" - JPA Repository
+ * - @ref com.tlcsdm.ecovault.security "安全模块" - 安全配置、JWT 处理
+ * - @ref com.tlcsdm.ecovault.service "服务模块" - 业务服务接口与实现
+ * - @ref com.tlcsdm.ecovault.utils "工具模块" - 工具类
+ *
+ * @section links 相关链接
+ *
+ * - 项目主页: https://github.com/unknowIfGuestInDream/EcoVault
+ * - 问题反馈: https://github.com/unknowIfGuestInDream/EcoVault/issues
+ * - 许可证: MIT License
+ *
+ * @author unknowIfGuestInDream
+ * @date 2026
+ * @version 1.0.1
+ */

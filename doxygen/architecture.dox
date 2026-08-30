@@ -1,0 +1,343 @@
+/**
+ * @page architecture 架构设计文档
+ *
+ * @section arch_overview 架构概览
+ *
+ * EcoVault 采用经典的三层架构设计，各层职责清晰，易于维护和扩展。
+ *
+ * @section arch_layers 架构分层
+ *
+ * @subsection arch_presentation 表现层 (Presentation Layer)
+ *
+ * 表现层负责处理用户交互，包括：
+ * - **Thymeleaf 模板**: 服务端渲染 HTML 页面
+ * - **静态资源**: CSS、JavaScript、图片等
+ * - **RESTful API**: 提供 JSON 格式的数据接口
+ *
+ * 主要组件：
+ * - @ref com.tlcsdm.ecovault.controller.PageController "页面控制器" - 渲染页面视图
+ * - @ref com.tlcsdm.ecovault.controller.AuthController "认证控制器" - 处理登录、登出
+ * - @ref com.tlcsdm.ecovault.controller.PasswordController "密码控制器" - 密码管理
+ * - @ref com.tlcsdm.ecovault.controller.SalaryController "工资控制器" - 财务管理
+ * - @ref com.tlcsdm.ecovault.controller.LedgerController "账本控制器" - 账本管理
+ * - @ref com.tlcsdm.ecovault.controller.LogController "日志控制器" - 日志查询
+ * - @ref com.tlcsdm.ecovault.controller.AdminController "管理控制器" - 后台管理
+ *
+ * @subsection arch_business 业务层 (Business Layer)
+ *
+ * 业务层负责核心业务逻辑，包括：
+ * - **事务管理**: 使用 @Transactional 注解
+ * - **业务规则**: 密码加密、权限校验、数据统计等
+ * - **数据转换**: DTO 与 Entity 之间的转换
+ *
+ * 主要组件：
+ * - @ref com.tlcsdm.ecovault.service.AuthService "认证服务" - 用户认证、JWT 生成
+ * - @ref com.tlcsdm.ecovault.service.PasswordService "密码服务" - 密码条目管理、加解密
+ * - @ref com.tlcsdm.ecovault.service.SalaryService "工资服务" - 工资数据管理、统计
+ * - @ref com.tlcsdm.ecovault.service.LedgerService "账本服务" - 账本管理
+ * - @ref com.tlcsdm.ecovault.service.OperationLogService "操作日志服务" - 日志记录、查询
+ * - @ref com.tlcsdm.ecovault.service.AdminService "管理服务" - 用户管理、系统信息
+ * - @ref com.tlcsdm.ecovault.service.RolePermissionService "角色权限服务" - 权限校验
+ *
+ * @subsection arch_persistence 持久层 (Persistence Layer)
+ *
+ * 持久层负责数据存储和访问，包括：
+ * - **JPA Repository**: 数据访问接口
+ * - **Entity**: JPA 实体类
+ * - **SQLite**: 嵌入式数据库
+ *
+ * 主要组件：
+ * - @ref com.tlcsdm.ecovault.entity "实体类" - 用户、密码、工资、日志等
+ * - @ref com.tlcsdm.ecovault.repository "仓储接口" - JPA 数据访问接口
+ *
+ * @section arch_security 安全架构
+ *
+ * EcoVault 的安全架构基于 Spring Security 和 JWT，提供多层安全保障：
+ *
+ * @subsection arch_security_auth 认证流程
+ *
+ * @startuml
+ * @startuml{authentication_flow.png}
+ * actor 用户
+ * participant "前端" as FE
+ * participant "AuthController" as AC
+ * participant "AuthService" as AS
+ * participant "JwtUtil" as JWT
+ * participant "数据库" as DB
+ *
+ * 用户 -> FE: 输入用户名密码
+ * FE -> AC: POST /auth/login
+ * AC -> AS: authenticate(username, password)
+ * AS -> DB: 查询用户信息
+ * DB --> AS: 返回用户信息
+ * AS -> AS: BCrypt 密码校验
+ * AS -> JWT: 生成 JWT 令牌
+ * JWT --> AS: 返回令牌
+ * AS --> AC: 返回登录响应
+ * AC --> FE: 返回 JWT 令牌
+ * FE -> FE: 存储令牌到 localStorage
+ * @enduml
+ * @enduml
+ *
+ * @subsection arch_security_authz 授权流程
+ *
+ * @startuml
+ * @startuml{authorization_flow.png}
+ * actor 用户
+ * participant "前端" as FE
+ * participant "JwtFilter" as JF
+ * participant "Controller" as CTL
+ * participant "Service" as SVC
+ * participant "数据库" as DB
+ *
+ * 用户 -> FE: 发起请求（携带 JWT）
+ * FE -> JF: 请求拦截
+ * JF -> JF: 验证 JWT 有效性
+ * JF -> JF: 提取用户信息
+ * JF -> CTL: 传递请求
+ * CTL -> SVC: 调用业务逻辑
+ * SVC -> SVC: 权限校验（RBAC）
+ * SVC -> DB: 数据操作
+ * DB --> SVC: 返回结果
+ * SVC --> CTL: 返回结果
+ * CTL --> JF: 返回响应
+ * JF --> FE: 返回响应
+ * FE --> 用户: 显示结果
+ * @enduml
+ * @enduml
+ *
+ * @subsection arch_security_encryption 加密策略
+ *
+ * - **用户密码**: BCrypt 哈希（不可逆）
+ * - **密码条目密码**: AES-GCM 加密（可逆，需要时解密）
+ * - **JWT 令牌**: HS256 签名
+ *
+ * 加密组件：
+ * - @ref com.tlcsdm.ecovault.utils.EncryptionUtil "加密工具类" - AES 加解密
+ * - @ref com.tlcsdm.ecovault.security.JwtUtil "JWT 工具类" - JWT 生成与验证
+ *
+ * @section arch_data 数据模型
+ *
+ * EcoVault 的数据模型包括以下核心实体：
+ *
+ * @subsection arch_data_user 用户实体
+ *
+ * @startuml
+ * @startuml{user_model.png}
+ * class User {
+ *   + Long id
+ *   + String username
+ *   + String password
+ *   + String email
+ *   + String role
+ *   + Boolean enabled
+ *   + LocalDateTime createdAt
+ *   + LocalDateTime updatedAt
+ * }
+ *
+ * class Session {
+ *   + Long id
+ *   + Long userId
+ *   + String deviceId
+ *   + String token
+ *   + LocalDateTime createdAt
+ *   + LocalDateTime expiredAt
+ * }
+ *
+ * User "1" -- "0..*" Session : has
+ * @enduml
+ * @enduml
+ *
+ * @subsection arch_data_password 密码实体
+ *
+ * @startuml
+ * @startuml{password_model.png}
+ * class Password {
+ *   + Long id
+ *   + Long userId
+ *   + String title
+ *   + String username
+ *   + String password (encrypted)
+ *   + String url
+ *   + String notes
+ *   + String tags
+ *   + LocalDateTime createdAt
+ *   + LocalDateTime updatedAt
+ * }
+ *
+ * class User {
+ *   + Long id
+ *   + String username
+ * }
+ *
+ * User "1" -- "0..*" Password : owns
+ * @enduml
+ * @enduml
+ *
+ * @subsection arch_data_salary 工资实体
+ *
+ * @startuml
+ * @startuml{salary_model.png}
+ * class Salary {
+ *   + Long id
+ *   + Long userId
+ *   + BigDecimal amount
+ *   + String year
+ *   + String month
+ *   + String notes
+ *   + LocalDateTime createdAt
+ * }
+ *
+ * class User {
+ *   + Long id
+ *   + String username
+ * }
+ *
+ * User "1" -- "0..*" Salary : has
+ * @enduml
+ * @enduml
+ *
+ * @subsection arch_data_log 操作日志实体
+ *
+ * @startuml
+ * @startuml{log_model.png}
+ * class OperationLog {
+ *   + Long id
+ *   + String username
+ *   + String module
+ *   + String action
+ *   + String details
+ *   + String ipAddress
+ *   + LocalDateTime createdAt
+ * }
+ *
+ * class User {
+ *   + Long id
+ *   + String username
+ * }
+ *
+ * User "1" -- "0..*" OperationLog : generates
+ * @enduml
+ * @enduml
+ *
+ * @section arch_aop AOP 切面设计
+ *
+ * EcoVault 使用 AOP 实现横切关注点，主要包括：
+ *
+ * @subsection arch_aop_log 操作日志切面
+ *
+ * 操作日志切面自动记录关键操作，包括：
+ * - 用户登录、登出
+ * - 密码条目的增删改查
+ * - 工资数据的增删改查
+ * - 用户管理操作
+ *
+ * 切面实现：
+ * - @ref com.tlcsdm.ecovault.aspect.OperationLogAspect "操作日志切面"
+ * - @ref com.tlcsdm.ecovault.annotation.OperationLog "操作日志注解"
+ *
+ * @startuml
+ * @startuml{aop_flow.png}
+ * participant "Controller" as CTL
+ * participant "LogAspect" as AOP
+ * participant "Service" as SVC
+ * participant "LogService" as LOG
+ *
+ * CTL -> AOP: 方法调用（带 @OperationLog 注解）
+ * AOP -> AOP: @Before 记录开始时间
+ * AOP -> SVC: 执行业务方法
+ * SVC --> AOP: 返回结果
+ * AOP -> AOP: @AfterReturning 提取操作信息
+ * AOP -> LOG: 保存操作日志
+ * LOG --> AOP: 保存成功
+ * AOP --> CTL: 返回结果
+ * @enduml
+ * @enduml
+ *
+ * @section arch_deployment 部署架构
+ *
+ * EcoVault 支持多种部署方式：
+ *
+ * @subsection arch_deployment_standalone 单机部署
+ *
+ * @startuml
+ * @startuml{deployment_standalone.png}
+ * node "服务器" {
+ *   [EcoVault.jar] as JAR
+ *   database "SQLite\ndata/ecovault.db" as DB
+ *   JAR --> DB
+ * }
+ *
+ * actor 用户
+ * 用户 --> JAR : HTTP/HTTPS
+ * @enduml
+ * @enduml
+ *
+ * @subsection arch_deployment_docker Docker 部署
+ *
+ * @startuml
+ * @startuml{deployment_docker.png}
+ * node "Docker Host" {
+ *   node "EcoVault Container" {
+ *     [EcoVault.jar] as JAR
+ *     database "SQLite\n/data/ecovault.db" as DB
+ *     JAR --> DB
+ *   }
+ * }
+ *
+ * actor 用户
+ * 用户 --> JAR : HTTP/HTTPS (端口映射)
+ *
+ * folder "宿主机卷" as VOL
+ * DB --> VOL : 数据持久化
+ * @enduml
+ * @enduml
+ *
+ * @section arch_ci_cd CI/CD 流程
+ *
+ * EcoVault 使用 Jenkins 和 GitHub Actions 实现持续集成与持续部署：
+ *
+ * @startuml
+ * @startuml{cicd_flow.png}
+ * participant "开发者" as DEV
+ * participant "GitHub" as GH
+ * participant "GitHub Actions" as GHA
+ * participant "Jenkins" as JK
+ * participant "生产服务器" as PROD
+ *
+ * DEV -> GH: 推送代码
+ * GH -> GHA: 触发 CI 工作流
+ * GHA -> GHA: 编译、测试、生成覆盖率报告
+ * GHA -> GHA: 代码格式检查
+ * GHA -> GHA: 生成 Doxygen 文档
+ * GHA --> GH: 上传构建产物
+ *
+ * GH -> JK: Webhook 通知（master 分支）
+ * JK -> JK: 拉取代码
+ * JK -> JK: 编译、测试
+ * JK -> JK: 生成 Doxygen 文档
+ * JK -> JK: 打包 Jar
+ * JK -> PROD: 部署到生产环境
+ * PROD -> PROD: 停止旧服务
+ * PROD -> PROD: 备份旧版本
+ * PROD -> PROD: 启动新服务
+ * PROD -> PROD: 健康检查
+ * @enduml
+ * @enduml
+ *
+ * @section arch_future 未来扩展
+ *
+ * EcoVault 的架构设计预留了扩展空间，未来可以考虑：
+ *
+ * - **多租户支持**: 支持多个组织隔离使用
+ * - **API 网关**: 引入 API 网关统一入口
+ * - **微服务拆分**: 将用户、密码、财务等模块拆分为独立服务
+ * - **消息队列**: 引入消息队列实现异步处理
+ * - **缓存层**: 引入 Redis 提升性能
+ * - **分布式存储**: 支持数据库主从、分片
+ * - **容器编排**: 使用 Kubernetes 实现自动化部署与扩容
+ *
+ * @author unknowIfGuestInDream
+ * @date 2026
+ * @version 1.0.1
+ */
