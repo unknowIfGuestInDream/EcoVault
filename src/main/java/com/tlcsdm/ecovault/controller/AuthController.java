@@ -39,6 +39,12 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/auth")
+/**
+ * 认证控制器，提供登录、注销、个人资料维护与密码校验接口。 负责协调 JWT、会话与当前登录用户相关的交互流程。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class AuthController {
 
 	private final AuthService authService;

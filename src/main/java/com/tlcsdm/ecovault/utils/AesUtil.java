@@ -22,6 +22,12 @@ import java.util.Base64;
  * @since 1.0.0
  */
 @Component
+/**
+ * AES 工具类，用于敏感字段的加密与解密处理。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class AesUtil {
 
 	/** GCM 推荐的初始化向量长度 (字节) */

@@ -27,10 +27,20 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/passwords")
+/**
+ * 密码保险箱控制器，提供密码条目的增删改查、校验与导出接口。 负责处理用户敏感凭据的安全管理请求。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class PasswordController {
 
 	private final PasswordService passwordService;
 
+	/**
+	 * 构造PasswordController实例并注入所需依赖。
+	 * @param passwordService passwordService参数。
+	 */
 	public PasswordController(PasswordService passwordService) {
 		this.passwordService = passwordService;
 	}

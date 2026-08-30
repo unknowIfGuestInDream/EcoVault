@@ -23,6 +23,12 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 @RestControllerAdvice
+/**
+ * 全局异常处理器，负责将控制层异常转换为统一响应结果。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class GlobalExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);

@@ -28,6 +28,13 @@ import java.util.List;
  * @see AuthService
  */
 @Service
+/**
+ * 认证服务实现类，负责处理登录认证、会话控制与用户资料维护。 结合 JWT、密码编码器与会话仓储完成认证流程。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see AuthService
+ */
 public class AuthServiceImpl implements AuthService {
 
 	private final UserRepository userRepository;
@@ -51,6 +58,11 @@ public class AuthServiceImpl implements AuthService {
 		this.maxDevices = Math.max(1, maxDevices);
 	}
 
+	/**
+	 * 创建普通用户账户。
+	 * @param request 请求参数对象。
+	 * @return 创建后的用户信息。
+	 */
 	@Override
 	@Transactional
 	public User register(RegisterRequest request) {
@@ -86,6 +98,13 @@ public class AuthServiceImpl implements AuthService {
 		}
 	}
 
+	/**
+	 * 处理用户登录请求。
+	 * @param request 请求参数对象。
+	 * @param deviceInfo 设备信息。
+	 * @param ip 客户端 IP 地址。
+	 * @return 登录结果。
+	 */
 	@Override
 	@Transactional
 	public LoginResponse login(LoginRequest request, String deviceInfo, String ip) {
@@ -130,6 +149,10 @@ public class AuthServiceImpl implements AuthService {
 		}
 	}
 
+	/**
+	 * 处理用户注销请求。
+	 * @param jti 会话唯一标识。
+	 */
 	@Override
 	@Transactional
 	public void logout(String jti) {
@@ -142,6 +165,12 @@ public class AuthServiceImpl implements AuthService {
 		});
 	}
 
+	/**
+	 * 更新已有业务数据。
+	 * @param userId 用户编号。
+	 * @param request 请求参数对象。
+	 * @return 更新后的业务结果。
+	 */
 	@Override
 	@Transactional
 	public User updateProfile(Long userId, UpdateProfileRequest request) {
@@ -153,6 +182,11 @@ public class AuthServiceImpl implements AuthService {
 		return userRepository.save(user);
 	}
 
+	/**
+	 * 修改当前用户密码。
+	 * @param userId 用户编号。
+	 * @param request 请求参数对象。
+	 */
 	@Override
 	@Transactional
 	public void changePassword(Long userId, ChangePasswordRequest request) {
@@ -169,6 +203,11 @@ public class AuthServiceImpl implements AuthService {
 		});
 	}
 
+	/**
+	 * 校验用户输入密码是否正确。
+	 * @param userId 用户编号。
+	 * @param rawPassword 待校验的明文密码。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public void verifyPassword(Long userId, String rawPassword) {

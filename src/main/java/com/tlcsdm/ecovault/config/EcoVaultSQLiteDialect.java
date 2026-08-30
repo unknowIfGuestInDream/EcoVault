@@ -29,6 +29,10 @@ import org.hibernate.dialect.identity.IdentityColumnSupport;
  */
 public class EcoVaultSQLiteDialect extends SQLiteDialect {
 
+	/**
+	 * 获取相关属性值。
+	 * @return 主键编号。
+	 */
 	@Override
 	public IdentityColumnSupport getIdentityColumnSupport() {
 		return EcoVaultIdentityColumnSupport.INSTANCE;
@@ -41,6 +45,11 @@ public class EcoVaultSQLiteDialect extends SQLiteDialect {
 
 		static final EcoVaultIdentityColumnSupport INSTANCE = new EcoVaultIdentityColumnSupport();
 
+		/**
+		 * 获取相关属性值。
+		 * @param type 类型条件。
+		 * @return 主键编号。
+		 */
 		@Override
 		public String getIdentityColumnString(int type) {
 			// 使用大写 INTEGER 规避 Hibernate 建表时的小写 contains 误判，确保类型串稳定输出。

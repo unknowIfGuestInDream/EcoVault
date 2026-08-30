@@ -30,6 +30,12 @@ import java.util.Optional;
  * @since 1.0.0
  */
 @Component
+/**
+ * JWT 认证过滤器，负责从请求中提取令牌并建立认证上下文。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	/** 存放令牌的 Cookie 名 */

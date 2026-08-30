@@ -17,6 +17,12 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+/**
+ * 操作日志记录注解，用于标记需要进行审计记录的方法。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public @interface OperationLogRecord {
 
 	/**

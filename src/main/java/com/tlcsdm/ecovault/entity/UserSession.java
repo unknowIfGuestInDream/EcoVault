@@ -25,6 +25,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user_sessions", indexes = { @Index(name = "idx_sessions_jti", columnList = "jti", unique = true),
 		@Index(name = "idx_sessions_user", columnList = "user_id") })
+/**
+ * 用户会话实体，表示用户一次登录产生的会话记录。 用于控制设备登录数量与会话失效状态。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class UserSession {
 
 	/** 主键 */
@@ -60,6 +66,9 @@ public class UserSession {
 	@Column(name = "last_active_at", nullable = false)
 	private LocalDateTime lastActiveAt;
 
+	/**
+	 * 在实体首次持久化前初始化时间等字段。
+	 */
 	@PrePersist
 	public void prePersist() {
 		LocalDateTime now = LocalDateTime.now();
@@ -67,66 +76,130 @@ public class UserSession {
 		this.lastActiveAt = now;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 主键编号。
+	 */
 	public Long getId() {
 		return id;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param id 主键或记录编号。
+	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public Long getUserId() {
 		return userId;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param userId 用户编号。
+	 */
 	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getJti() {
 		return jti;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param jti 会话唯一标识。
+	 */
 	public void setJti(String jti) {
 		this.jti = jti;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getDeviceInfo() {
 		return deviceInfo;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param deviceInfo 设备信息。
+	 */
 	public void setDeviceInfo(String deviceInfo) {
 		this.deviceInfo = deviceInfo;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getIp() {
 		return ip;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param ip 客户端 IP 地址。
+	 */
 	public void setIp(String ip) {
 		this.ip = ip;
 	}
 
+	/**
+	 * 判断相关状态。
+	 * @return 方法执行结果。
+	 */
 	public boolean isActive() {
 		return active;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param active active参数。
+	 */
 	public void setActive(boolean active) {
 		this.active = active;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 创建时间。
+	 */
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param createdAt createdAt参数。
+	 */
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public LocalDateTime getLastActiveAt() {
 		return lastActiveAt;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param lastActiveAt lastActiveAt参数。
+	 */
 	public void setLastActiveAt(LocalDateTime lastActiveAt) {
 		this.lastActiveAt = lastActiveAt;
 	}

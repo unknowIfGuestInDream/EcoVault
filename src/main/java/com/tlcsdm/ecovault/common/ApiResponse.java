@@ -21,9 +21,18 @@ public class ApiResponse<T> implements Serializable {
 	/** 响应数据 */
 	private T data;
 
+	/**
+	 * 构造ApiResponse实例并注入所需依赖。
+	 */
 	public ApiResponse() {
 	}
 
+	/**
+	 * 构造ApiResponse实例并注入所需依赖。
+	 * @param code code参数。
+	 * @param message message参数。
+	 * @param data data参数。
+	 */
 	public ApiResponse(int code, String message, T data) {
 		this.code = code;
 		this.message = message;
@@ -60,26 +69,50 @@ public class ApiResponse<T> implements Serializable {
 		return new ApiResponse<>(code, message, null);
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public int getCode() {
 		return code;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param code code参数。
+	 */
 	public void setCode(int code) {
 		this.code = code;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getMessage() {
 		return message;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param message message参数。
+	 */
 	public void setMessage(String message) {
 		this.message = message;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public T getData() {
 		return data;
 	}
 
+	/**
+	 * 设置相关属性值。
+	 * @param data data参数。
+	 */
 	public void setData(T data) {
 		this.data = data;
 	}

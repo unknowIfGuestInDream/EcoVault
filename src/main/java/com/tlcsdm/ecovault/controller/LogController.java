@@ -42,12 +42,22 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/logs")
+/**
+ * 操作日志控制器，提供日志列表查询、详情查看与备注更新接口。 用于管理员审计系统关键操作记录。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class LogController {
 
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DateTimeConfig.DATE_TIME_PATTERN);
 
 	private final OperationLogService operationLogService;
 
+	/**
+	 * 构造LogController实例并注入所需依赖。
+	 * @param operationLogService operationLogService参数。
+	 */
 	public LogController(OperationLogService operationLogService) {
 		this.operationLogService = operationLogService;
 	}

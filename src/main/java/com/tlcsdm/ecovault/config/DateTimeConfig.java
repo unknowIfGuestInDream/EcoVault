@@ -24,16 +24,28 @@ import java.util.TimeZone;
  * @see WebMvcConfigurer
  */
 @Configuration
+/**
+ * 日期时间配置类，提供统一的日期与时间格式化能力。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see WebMvcConfigurer
+ */
 public class DateTimeConfig implements WebMvcConfigurer {
 
+	/** 统一日期格式模式。 */
 	public static final String DATE_PATTERN = "yyyy-MM-dd";
 
+	/** TIME_PATTERN字段说明。 */
 	public static final String TIME_PATTERN = "HH:mm:ss";
 
+	/** 统一日期时间格式模式。 */
 	public static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
+	/** TIME_ZONE字段说明。 */
 	public static final String TIME_ZONE = "GMT+8";
 
+	/** 系统默认使用的时区。 */
 	public static final ZoneId DEFAULT_ZONE_ID = ZoneId.of(TIME_ZONE);
 
 	/**
@@ -44,6 +56,10 @@ public class DateTimeConfig implements WebMvcConfigurer {
 		TimeZone.setDefault(TimeZone.getTimeZone(DEFAULT_ZONE_ID));
 	}
 
+	/**
+	 * 处理addFormatters相关业务。
+	 * @param registry registry参数。
+	 */
 	@Override
 	public void addFormatters(FormatterRegistry registry) {
 		DateTimeFormatterRegistrar registrar = new DateTimeFormatterRegistrar();

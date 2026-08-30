@@ -80,18 +80,34 @@ public enum MenuPage {
 		this.configurable = configurable;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getKey() {
 		return key;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getLabel() {
 		return label;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public String getPath() {
 		return path;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public MenuGroup getGroup() {
 		return group;
 	}

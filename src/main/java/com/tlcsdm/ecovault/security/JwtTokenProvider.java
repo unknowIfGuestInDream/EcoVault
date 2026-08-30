@@ -22,6 +22,12 @@ import java.util.UUID;
  * @since 1.0.0
  */
 @Component
+/**
+ * JWT 令牌提供者，负责生成、解析与校验 JWT。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class JwtTokenProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);

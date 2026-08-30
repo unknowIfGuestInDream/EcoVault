@@ -28,19 +28,38 @@ import java.util.stream.Collectors;
  * @see PasswordService
  */
 @Service
+/**
+ * 密码保险箱服务实现类，负责敏感密码数据的加密存储与管理。 结合 AES 工具完成条目安全处理。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see PasswordService
+ */
 public class PasswordServiceImpl implements PasswordService {
 
+	/** MASKED_SECRET字段说明。 */
 	public static final String MASKED_SECRET = "******";
 
 	private final PasswordEntryRepository repository;
 
 	private final AesUtil aesUtil;
 
+	/**
+	 * 构造PasswordServiceImpl实例并注入所需依赖。
+	 * @param repository repository参数。
+	 * @param aesUtil aesUtil参数。
+	 */
 	public PasswordServiceImpl(PasswordEntryRepository repository, AesUtil aesUtil) {
 		this.repository = repository;
 		this.aesUtil = aesUtil;
 	}
 
+	/**
+	 * 创建新的业务数据。
+	 * @param userId 用户编号。
+	 * @param request 请求参数对象。
+	 * @return 保存后的业务结果。
+	 */
 	@Override
 	@Transactional
 	public PasswordEntryResponse create(Long userId, PasswordEntryRequest request) {
@@ -50,6 +69,13 @@ public class PasswordServiceImpl implements PasswordService {
 		return toResponse(repository.save(entry));
 	}
 
+	/**
+	 * 更新已有业务数据。
+	 * @param userId 用户编号。
+	 * @param id 主键或记录编号。
+	 * @param request 请求参数对象。
+	 * @return 更新后的业务结果。
+	 */
 	@Override
 	@Transactional
 	public PasswordEntryResponse update(Long userId, Long id, PasswordEntryRequest request) {
@@ -59,6 +85,11 @@ public class PasswordServiceImpl implements PasswordService {
 		return toResponse(repository.save(entry));
 	}
 
+	/**
+	 * 删除指定业务数据。
+	 * @param userId 用户编号。
+	 * @param id 主键或记录编号。
+	 */
 	@Override
 	@Transactional
 	public void delete(Long userId, Long id) {
@@ -67,6 +98,12 @@ public class PasswordServiceImpl implements PasswordService {
 		repository.delete(entry);
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @param userId 用户编号。
+	 * @param id 主键或记录编号。
+	 * @return 方法执行结果。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public PasswordEntryResponse get(Long userId, Long id) {
@@ -75,6 +112,13 @@ public class PasswordServiceImpl implements PasswordService {
 		return toResponse(entry);
 	}
 
+	/**
+	 * 查询业务数据列表。
+	 * @param userId 用户编号。
+	 * @param keyword keyword参数。
+	 * @param tag 标签条件。
+	 * @return 业务数据列表。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public List<PasswordEntryResponse> list(Long userId, String keyword, String tag) {

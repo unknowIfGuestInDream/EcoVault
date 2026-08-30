@@ -45,6 +45,12 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/admin")
+/**
+ * 管理后台控制器，提供用户管理、角色权限维护及系统运行信息查询接口。 面向管理员角色开放，配合安全配置限制访问范围。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ */
 public class AdminController {
 
 	private static final DateTimeFormatter BUILD_TIME_FORMATTER = DateTimeFormatter

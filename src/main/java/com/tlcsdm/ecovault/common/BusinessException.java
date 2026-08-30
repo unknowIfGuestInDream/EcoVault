@@ -15,15 +15,28 @@ public class BusinessException extends RuntimeException {
 	/** 业务状态码 */
 	private final int code;
 
+	/**
+	 * 构造BusinessException实例并注入所需依赖。
+	 * @param message message参数。
+	 */
 	public BusinessException(String message) {
 		this(400, message);
 	}
 
+	/**
+	 * 构造BusinessException实例并注入所需依赖。
+	 * @param code code参数。
+	 * @param message message参数。
+	 */
 	public BusinessException(int code, String message) {
 		super(message);
 		this.code = code;
 	}
 
+	/**
+	 * 获取相关属性值。
+	 * @return 方法执行结果。
+	 */
 	public int getCode() {
 		return code;
 	}

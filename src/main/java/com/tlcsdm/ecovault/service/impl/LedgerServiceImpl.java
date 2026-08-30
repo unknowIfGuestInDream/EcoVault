@@ -31,16 +31,33 @@ import java.util.stream.Collectors;
  * @see LedgerService
  */
 @Service
+/**
+ * 收支管理服务实现类，负责处理收支记录维护、统计和导出逻辑。 面向个人财务流水场景提供完整业务支撑。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see LedgerService
+ */
 public class LedgerServiceImpl implements LedgerService {
 
 	private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
 	private final LedgerEntryRepository repository;
 
+	/**
+	 * 构造LedgerServiceImpl实例并注入所需依赖。
+	 * @param repository repository参数。
+	 */
 	public LedgerServiceImpl(LedgerEntryRepository repository) {
 		this.repository = repository;
 	}
 
+	/**
+	 * 创建新的业务数据。
+	 * @param userId 用户编号。
+	 * @param request 请求参数对象。
+	 * @return 保存后的业务结果。
+	 */
 	@Override
 	@Transactional
 	public LedgerResponse create(Long userId, LedgerRequest request) {
@@ -50,6 +67,13 @@ public class LedgerServiceImpl implements LedgerService {
 		return toResponse(repository.save(entry));
 	}
 
+	/**
+	 * 更新已有业务数据。
+	 * @param userId 用户编号。
+	 * @param id 主键或记录编号。
+	 * @param request 请求参数对象。
+	 * @return 更新后的业务结果。
+	 */
 	@Override
 	@Transactional
 	public LedgerResponse update(Long userId, Long id, LedgerRequest request) {
@@ -59,6 +83,11 @@ public class LedgerServiceImpl implements LedgerService {
 		return toResponse(repository.save(entry));
 	}
 
+	/**
+	 * 删除指定业务数据。
+	 * @param userId 用户编号。
+	 * @param id 主键或记录编号。
+	 */
 	@Override
 	@Transactional
 	public void delete(Long userId, Long id) {
@@ -67,12 +96,30 @@ public class LedgerServiceImpl implements LedgerService {
 		repository.delete(entry);
 	}
 
+	/**
+	 * 查询业务数据列表。
+	 * @param userId 用户编号。
+	 * @param type 类型条件。
+	 * @param start 起始日期。
+	 * @param end 结束日期。
+	 * @param tag 标签条件。
+	 * @return 业务数据列表。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public List<LedgerResponse> list(Long userId, String type, LocalDate start, LocalDate end, String tag) {
 		return query(userId, type, start, end, tag).stream().map(this::toResponse).collect(Collectors.toList());
 	}
 
+	/**
+	 * 统计并汇总业务数据。
+	 * @param userId 用户编号。
+	 * @param type 类型条件。
+	 * @param start 起始日期。
+	 * @param end 结束日期。
+	 * @param tag 标签条件。
+	 * @return 统计结果。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public LedgerStatistics statistics(Long userId, String type, LocalDate start, LocalDate end, String tag) {
@@ -116,6 +163,15 @@ public class LedgerServiceImpl implements LedgerService {
 				toTagAmounts(incomeByTag), toTagAmounts(expenseByTag), trend);
 	}
 
+	/**
+	 * 导出业务数据。
+	 * @param userId 用户编号。
+	 * @param type 类型条件。
+	 * @param start 起始日期。
+	 * @param end 结束日期。
+	 * @param tag 标签条件。
+	 * @return 导出结果。
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public String exportCsv(Long userId, String type, LocalDate start, LocalDate end, String tag) {
