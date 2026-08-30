@@ -337,7 +337,7 @@ DOTFILE_DIRS           =
 DIA_PATH               =
 DIAFILE_DIRS           =
 # PlantUML 配置：从环境变量读取 JAR 路径，GitHub Actions 和 Jenkins 自动设置
-PLANTUML_JAR_PATH      = $ENV{PLANTUML_JAR_PATH}
+PLANTUML_JAR_PATH      = $(PLANTUML_JAR_PATH)
 PLANTUML_CFG_FILE      =
 PLANTUML_INCLUDE_PATH  = doxygen
 DOT_GRAPH_MAX_NODES    = 100

@@ -56,7 +56,7 @@
  *
  * @subsection arch_security_auth 认证流程
  *
- * @startuml
+
  * @startuml{authentication_flow.png}
  * actor 用户
  * participant "前端" as FE
@@ -77,11 +77,10 @@
  * AC --> FE: 返回 JWT 令牌
  * FE -> FE: 存储令牌到 localStorage
  * @enduml
- * @enduml
  *
  * @subsection arch_security_authz 授权流程
  *
- * @startuml
+
  * @startuml{authorization_flow.png}
  * actor 用户
  * participant "前端" as FE
@@ -104,7 +103,6 @@
  * JF --> FE: 返回响应
  * FE --> 用户: 显示结果
  * @enduml
- * @enduml
  *
  * @subsection arch_security_encryption 加密策略
  *
@@ -122,7 +120,7 @@
  *
  * @subsection arch_data_user 用户实体
  *
- * @startuml
+
  * @startuml{user_model.png}
  * class User {
  *   + Long id
@@ -146,11 +144,10 @@
  *
  * User "1" -- "0..*" Session : has
  * @enduml
- * @enduml
  *
  * @subsection arch_data_password 密码实体
  *
- * @startuml
+
  * @startuml{password_model.png}
  * class Password {
  *   + Long id
@@ -172,11 +169,10 @@
  *
  * User "1" -- "0..*" Password : owns
  * @enduml
- * @enduml
  *
  * @subsection arch_data_salary 工资实体
  *
- * @startuml
+
  * @startuml{salary_model.png}
  * class Salary {
  *   + Long id
@@ -195,11 +191,10 @@
  *
  * User "1" -- "0..*" Salary : has
  * @enduml
- * @enduml
  *
  * @subsection arch_data_log 操作日志实体
  *
- * @startuml
+
  * @startuml{log_model.png}
  * class OperationLog {
  *   + Long id
@@ -218,7 +213,6 @@
  *
  * User "1" -- "0..*" OperationLog : generates
  * @enduml
- * @enduml
  *
  * @section arch_aop AOP 切面设计
  *
@@ -236,7 +230,7 @@
  * - @ref com.tlcsdm.ecovault.aspect.OperationLogAspect "操作日志切面"
  * - @ref com.tlcsdm.ecovault.annotation.OperationLog "操作日志注解"
  *
- * @startuml
+
  * @startuml{aop_flow.png}
  * participant "Controller" as CTL
  * participant "LogAspect" as AOP
@@ -252,7 +246,6 @@
  * LOG --> AOP: 保存成功
  * AOP --> CTL: 返回结果
  * @enduml
- * @enduml
  *
  * @section arch_deployment 部署架构
  *
@@ -260,7 +253,7 @@
  *
  * @subsection arch_deployment_standalone 单机部署
  *
- * @startuml
+
  * @startuml{deployment_standalone.png}
  * node "服务器" {
  *   [EcoVault.jar] as JAR
@@ -271,11 +264,10 @@
  * actor 用户
  * 用户 --> JAR : HTTP/HTTPS
  * @enduml
- * @enduml
  *
  * @subsection arch_deployment_docker Docker 部署
  *
- * @startuml
+
  * @startuml{deployment_docker.png}
  * node "Docker Host" {
  *   node "EcoVault Container" {
@@ -291,13 +283,12 @@
  * folder "宿主机卷" as VOL
  * DB --> VOL : 数据持久化
  * @enduml
- * @enduml
  *
  * @section arch_ci_cd CI/CD 流程
  *
  * EcoVault 使用 Jenkins 和 GitHub Actions 实现持续集成与持续部署：
  *
- * @startuml
+
  * @startuml{cicd_flow.png}
  * participant "开发者" as DEV
  * participant "GitHub" as GH
@@ -322,7 +313,6 @@
  * PROD -> PROD: 备份旧版本
  * PROD -> PROD: 启动新服务
  * PROD -> PROD: 健康检查
- * @enduml
  * @enduml
  *
  * @section arch_future 未来扩展
