@@ -38,6 +38,7 @@ import java.math.BigDecimal;
  * @param netPay 实发金额（本人银行卡实际到账）
  * @param remark 备注
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record SalaryResponse(Long id, int year, int month, boolean annualBonus, BigDecimal baseSalary,
 		BigDecimal performanceSalary, BigDecimal housingAllowance, BigDecimal mealAllowance,

@@ -25,6 +25,7 @@ import org.hibernate.dialect.identity.IdentityColumnSupport;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public class EcoVaultSQLiteDialect extends SQLiteDialect {
 

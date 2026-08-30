@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
  * 操作日志服务。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface OperationLogService {
 

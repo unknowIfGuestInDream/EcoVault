@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see CommandLineRunner
  */
 @Component
 public class DataInitializer implements CommandLineRunner {

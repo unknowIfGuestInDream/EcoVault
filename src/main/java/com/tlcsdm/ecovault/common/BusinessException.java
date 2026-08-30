@@ -8,6 +8,7 @@ package com.tlcsdm.ecovault.common;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public class BusinessException extends RuntimeException {
 

@@ -14,6 +14,7 @@ import java.util.List;
  * @param expenseByTag 支出按标签汇总
  * @param monthlyTrend 按月收支趋势
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record LedgerStatistics(BigDecimal totalIncome, BigDecimal totalExpense, BigDecimal balance, long count,
 		List<TagAmount> incomeByTag, List<TagAmount> expenseByTag, List<MonthlyPoint> monthlyTrend) {
@@ -23,6 +24,8 @@ public record LedgerStatistics(BigDecimal totalIncome, BigDecimal totalExpense, 
 	 *
 	 * @param tag 标签
 	 * @param amount 金额合计
+	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
 	 */
 	public record TagAmount(String tag, BigDecimal amount) {
 	}
@@ -33,6 +36,8 @@ public record LedgerStatistics(BigDecimal totalIncome, BigDecimal totalExpense, 
 	 * @param label 月份标签 (yyyy-MM)
 	 * @param income 当月收入合计
 	 * @param expense 当月支出合计
+	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
 	 */
 	public record MonthlyPoint(String label, BigDecimal income, BigDecimal expense) {
 	}

@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Size;
  * @param enabled 是否启用
  * @param password 重置后的新密码 (可空，为空则不修改)
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record UpdateUserRequest(@Size(max = 64, message = "昵称过长") String nickname,
 

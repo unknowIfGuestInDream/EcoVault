@@ -9,6 +9,7 @@ import java.util.List;
  * 管理后台服务 (仅管理员)。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface AdminService {
 

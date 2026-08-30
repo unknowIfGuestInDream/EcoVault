@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
  * 财务 - 工资数据管理服务实现。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see SalaryService
  */
 @Service
 public class SalaryServiceImpl implements SalaryService {

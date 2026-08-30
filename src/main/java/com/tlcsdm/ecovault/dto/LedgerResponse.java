@@ -17,6 +17,7 @@ import java.util.List;
  * @param tags 标签列表
  * @param remark 备注
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record LedgerResponse(Long id, String type, BigDecimal amount,
 		@JsonFormat(pattern = DateTimeConfig.DATE_PATTERN, timezone = DateTimeConfig.TIME_ZONE) LocalDate entryDate,

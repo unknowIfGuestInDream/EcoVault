@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
  * @param enabled 是否启用
  * @param createdAt 注册时间
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record AdminUserResponse(Long id, String username, String nickname, String email, String role, boolean enabled,
 		@JsonFormat(pattern = DateTimeConfig.DATE_TIME_PATTERN,

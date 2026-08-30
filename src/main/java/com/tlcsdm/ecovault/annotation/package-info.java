@@ -7,12 +7,11 @@
  *
  * <h2>主要注解</h2>
  * <ul>
- *   <li>{@link com.tlcsdm.ecovault.annotation.OperationLog} - 操作日志注解，用于标记需要记录日志的方法</li>
+ * <li>{@link com.tlcsdm.ecovault.annotation.OperationLog} - 操作日志注解，用于标记需要记录日志的方法</li>
  * </ul>
  *
- * <h2>使用示例</h2>
- * <pre>{@code
- * @OperationLog(module = "密码管理", action = "新增密码")
+ * <h2>使用示例</h2> <pre>{@code
+ * &#64;OperationLog(module = "密码管理", action = "新增密码")
  * public void createPassword(PasswordRequest request) {
  *     // 业务逻辑
  * }

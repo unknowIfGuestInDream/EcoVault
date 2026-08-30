@@ -20,6 +20,8 @@ import java.util.TimeZone;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see WebMvcConfigurer
  */
 @Configuration
 public class DateTimeConfig implements WebMvcConfigurer {

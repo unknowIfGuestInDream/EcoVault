@@ -7,6 +7,8 @@ import java.io.Serializable;
  *
  * @param <T> 响应数据类型
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see Serializable
  */
 public class ApiResponse<T> implements Serializable {
 

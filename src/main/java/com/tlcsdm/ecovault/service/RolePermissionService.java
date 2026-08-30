@@ -11,6 +11,7 @@ import java.util.Set;
  * 角色-页面权限服务 (RBAC 页面级授权)。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface RolePermissionService {
 

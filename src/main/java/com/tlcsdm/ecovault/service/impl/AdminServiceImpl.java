@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
  * 管理后台服务实现。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see AdminService
  */
 @Service
 public class AdminServiceImpl implements AdminService {

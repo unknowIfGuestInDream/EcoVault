@@ -7,7 +7,7 @@
  *
  * <h2>主要切面</h2>
  * <ul>
- *   <li>{@link com.tlcsdm.ecovault.aspect.OperationLogAspect} - 操作日志切面，自动记录关键操作日志</li>
+ * <li>{@link com.tlcsdm.ecovault.aspect.OperationLogAspect} - 操作日志切面，自动记录关键操作日志</li>
  * </ul>
  *
  * <h2>功能说明</h2>

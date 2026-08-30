@@ -11,6 +11,7 @@ import com.tlcsdm.ecovault.entity.User;
  * 认证与用户信息服务。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface AuthService {
 

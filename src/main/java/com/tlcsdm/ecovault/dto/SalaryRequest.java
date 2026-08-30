@@ -37,6 +37,7 @@ import java.math.BigDecimal;
  * @param netPay 实发金额（本人银行卡实际到账）
  * @param remark 备注
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record SalaryRequest(
 		@NotNull(message = "年份不能为空") @Min(value = 1970, message = "年份不合法") @Max(value = 9999,

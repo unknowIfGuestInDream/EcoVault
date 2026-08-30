@@ -9,6 +9,7 @@ package com.tlcsdm.ecovault.entity;
  * </ul>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public enum Role {
 

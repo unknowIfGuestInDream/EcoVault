@@ -9,6 +9,7 @@ import java.util.Optional;
  * 用户数据访问接口。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 

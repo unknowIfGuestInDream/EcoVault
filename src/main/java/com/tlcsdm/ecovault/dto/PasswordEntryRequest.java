@@ -16,6 +16,7 @@ import java.util.List;
  * @param category 分类
  * @param tags 标签列表
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record PasswordEntryRequest(@NotBlank(message = "标题不能为空") @Size(max = 128, message = "标题过长") String title,
 

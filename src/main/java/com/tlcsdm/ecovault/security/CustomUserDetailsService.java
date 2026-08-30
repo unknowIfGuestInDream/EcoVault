@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
  * 自定义用户详情服务，从数据库加载用户。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see UserDetailsService
  */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {

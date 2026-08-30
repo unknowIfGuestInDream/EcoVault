@@ -7,6 +7,7 @@ import java.util.List;
  *
  * @param pages 授权的可配置页面 key 列表
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record UpdateRolePermissionRequest(List<String> pages) {
 }

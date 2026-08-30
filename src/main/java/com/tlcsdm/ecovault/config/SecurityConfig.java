@@ -32,6 +32,9 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
  * <li>方法级权限控制 ({@code @EnableMethodSecurity})</li>
  * <li>静态资源 (favicon、CSS、JS、图片) 通过 {@code permitAll} 公开，无需认证即可访问</li>
  * </ul>
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Configuration
 @EnableWebSecurity

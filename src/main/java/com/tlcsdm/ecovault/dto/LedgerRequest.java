@@ -18,6 +18,7 @@ import java.util.List;
  * @param tags 标签列表 (可多个，可空)
  * @param remark 备注
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record LedgerRequest(@NotNull(message = "收支类型不能为空") String type,
 

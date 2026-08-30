@@ -14,6 +14,8 @@ public final class PasswordStrengthUtil {
 	private PasswordStrengthUtil() {
 	}
 
+	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
 	/** 密码强度评估结果 */
 	public record Strength(int score, String level) {
 	}

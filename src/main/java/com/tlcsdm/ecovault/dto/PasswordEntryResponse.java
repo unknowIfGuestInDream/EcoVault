@@ -23,6 +23,7 @@ import java.util.List;
  * @param createdAt 创建时间
  * @param updatedAt 更新时间
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record PasswordEntryResponse(Long id, String title, String account, String secret, String url, String notes,
 		String category, List<String> tags, int strengthScore, String strengthLevel, LocalDateTime createdAt,

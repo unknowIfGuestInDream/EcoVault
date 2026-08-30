@@ -33,6 +33,9 @@ import java.util.Map;
 
 /**
  * 认证与用户信息接口。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/auth")

@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Entity
 @Table(name = "users", indexes = { @Index(name = "idx_users_username", columnList = "username", unique = true) })

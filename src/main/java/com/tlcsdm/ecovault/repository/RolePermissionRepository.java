@@ -10,6 +10,7 @@ import java.util.List;
  * 角色-页面权限数据访问接口。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface RolePermissionRepository extends JpaRepository<RolePermission, Long> {
 

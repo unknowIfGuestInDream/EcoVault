@@ -35,6 +35,7 @@ import java.util.Map;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/finance/salaries")

@@ -21,6 +21,7 @@ import java.util.List;
  * @param composition 发放项构成 (各发放项合计)
  * @param deductionComposition 扣除项构成 (各扣除项与所得税合计)
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record SalaryStatistics(BigDecimal totalNet, BigDecimal averageNet, BigDecimal maxNet, BigDecimal minNet,
 		BigDecimal totalBonus, BigDecimal totalAnnualBonus, List<MonthlyPoint> monthlyTrend, Composition composition,
@@ -32,6 +33,8 @@ public record SalaryStatistics(BigDecimal totalNet, BigDecimal averageNet, BigDe
 	 * @param label 标签 (yyyy-MM)
 	 * @param net 实发金额
 	 * @param gross 应发工资
+	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
 	 */
 	public record MonthlyPoint(String label, BigDecimal net, BigDecimal gross) {
 	}
@@ -47,6 +50,8 @@ public record SalaryStatistics(BigDecimal totalNet, BigDecimal averageNet, BigDe
 	 * @param overtimePay 加班费合计
 	 * @param overtimeAllowance 加班补助合计
 	 * @param bonus 奖金合计
+	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
 	 */
 	public record Composition(BigDecimal baseSalary, BigDecimal performanceSalary, BigDecimal housingAllowance,
 			BigDecimal mealAllowance, BigDecimal transportAllowance, BigDecimal overtimePay,
@@ -61,6 +66,8 @@ public record SalaryStatistics(BigDecimal totalNet, BigDecimal averageNet, BigDe
 	 * @param unemployment 失业扣除合计
 	 * @param housingFund 公积金扣除合计
 	 * @param incomeTax 所得税合计
+	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
 	 */
 	public record DeductionComposition(BigDecimal medical, BigDecimal pension, BigDecimal unemployment,
 			BigDecimal housingFund, BigDecimal incomeTax) {

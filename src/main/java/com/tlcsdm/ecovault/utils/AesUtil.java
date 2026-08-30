@@ -19,6 +19,7 @@ import java.util.Base64;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Component
 public class AesUtil {
@@ -38,6 +39,7 @@ public class AesUtil {
 	/**
 	 * 构造加密工具，从配置读取密钥并规整为 32 字节 (AES-256)。
 	 * @param secret 配置的密钥
+	 * @return 方法返回结果。
 	 */
 	public AesUtil(@Value("${ecovault.crypto.secret}") String secret) {
 		byte[] raw = secret.getBytes(StandardCharsets.UTF_8);

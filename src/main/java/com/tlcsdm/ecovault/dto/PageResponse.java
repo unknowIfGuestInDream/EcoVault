@@ -15,6 +15,7 @@ import java.util.List;
  * @param first 是否首页
  * @param last 是否尾页
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record PageResponse<T>(List<T> content, int number, int size, long totalElements, int totalPages, boolean first,
 		boolean last) {

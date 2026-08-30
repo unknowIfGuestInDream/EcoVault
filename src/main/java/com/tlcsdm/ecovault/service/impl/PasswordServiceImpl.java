@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see PasswordService
  */
 @Service
 public class PasswordServiceImpl implements PasswordService {

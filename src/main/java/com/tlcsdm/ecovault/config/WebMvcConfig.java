@@ -16,12 +16,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see WebMvcConfigurer
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
 	/**
 	 * 为静态资源添加 30 天公共缓存头，确保浏览器复用 favicon、CSS、JS 等文件。
+	 * @param registry registry参数。
 	 */
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {

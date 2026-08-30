@@ -24,6 +24,8 @@ import java.util.List;
  * 认证与用户信息服务实现。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see AuthService
  */
 @Service
 public class AuthServiceImpl implements AuthService {

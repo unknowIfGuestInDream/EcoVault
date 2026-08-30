@@ -7,10 +7,10 @@
  *
  * <h2>主要配置类</h2>
  * <ul>
- *   <li>Web MVC 配置 - 配置拦截器、消息转换器、跨域等</li>
- *   <li>数据源配置 - 配置 SQLite 数据源和 JPA</li>
- *   <li>安全配置 - 配置 Spring Security 和 JWT</li>
- *   <li>AOP 配置 - 配置切面代理</li>
+ * <li>Web MVC 配置 - 配置拦截器、消息转换器、跨域等</li>
+ * <li>数据源配置 - 配置 SQLite 数据源和 JPA</li>
+ * <li>安全配置 - 配置 Spring Security 和 JWT</li>
+ * <li>AOP 配置 - 配置切面代理</li>
  * </ul>
  *
  * <h2>Bean 定义</h2>

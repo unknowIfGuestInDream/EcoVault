@@ -9,6 +9,7 @@ import java.util.List;
  * 密码管理服务。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public interface PasswordService {
 

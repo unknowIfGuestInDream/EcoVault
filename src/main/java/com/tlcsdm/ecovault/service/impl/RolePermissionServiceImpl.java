@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
  * 角色-页面权限服务实现。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see RolePermissionService
  */
 @Service
 public class RolePermissionServiceImpl implements RolePermissionService {

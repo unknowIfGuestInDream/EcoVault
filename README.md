@@ -64,19 +64,33 @@ EcoVault 使用 Java 25 与 Spring Boot 4 构建。系统默认使用嵌入式 S
 EcoVault/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
+│   ├── workflows/
+│   │   ├── ci.yml                    # CI 构建与测试
+│   │   ├── doxygen.yml               # Doxygen 文档生成
+│   │   └── label.yml                 # 标签自动管理
 │   ├── CODEOWNERS
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── copilot-instructions.md
 ├── deploy/
-│   └── deploy.sh
+│   └── deploy.sh                     # 生产部署脚本
 ├── docs/
 │   ├── 设计文档.md
 │   └── 开发规范.md
+├── doxygen/                          # Doxygen 文档配置
+│   ├── Doxyfile                      # Doxygen 主配置文件
+│   ├── mainpage.dox                  # 文档首页
+│   ├── architecture.dox              # 架构设计文档
+│   ├── custom.css                    # 自定义样式
+│   ├── custom.js                     # 自定义脚本
+│   ├── footer.html                   # 页脚模板
+│   ├── images/                       # 图片资源
+│   ├── pages/                        # 额外文档页面
+│   └── README.md                     # Doxygen 使用说明
 ├── src/
 │   ├── main/java/com/tlcsdm/ecovault/...
 │   └── main/resources/templates/...
 ├── CHANGELOG.md
-├── Jenkinsfile
+├── Jenkinsfile                       # Jenkins 流水线配置
 ├── LICENSE
 ├── README.md
 └── CONTRIBUTING.md
@@ -171,6 +185,38 @@ JaCoCo 报告位置：
 ```text
 target/site/jacoco/index.html
 ```
+
+## 技术文档
+
+### Doxygen API 文档
+
+项目使用 Doxygen 生成完整的 API 技术文档，包括：
+
+- **项目概览**：架构设计、技术栈、核心功能
+- **API 参考**：所有类、方法、字段的详细说明
+- **UML 图表**：类图、调用图、协作图等
+- **架构文档**：架构分层、安全设计、数据模型
+
+#### 生成文档
+
+```bash
+# 安装 Doxygen 和 Graphviz
+sudo apt-get install -y doxygen graphviz  # Linux
+brew install doxygen graphviz             # macOS
+
+# 生成文档
+doxygen doxygen/Doxyfile
+
+# 查看文档
+open docs-gen/html/index.html
+```
+
+详细说明请参阅 [doxygen/README.md](doxygen/README.md)。
+
+#### CI/CD 自动生成
+
+- **GitHub Actions**: `.github/workflows/doxygen.yml` 在代码推送时自动生成文档并上传构建产物
+- **Jenkins**: `Jenkinsfile` 包含 Doxygen 生成阶段，归档为 `doxygen-docs.zip`
 
 ## 部署
 

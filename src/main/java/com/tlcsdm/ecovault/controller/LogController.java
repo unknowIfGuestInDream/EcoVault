@@ -38,6 +38,7 @@ import java.util.List;
  * </p>
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/logs")

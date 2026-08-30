@@ -39,6 +39,9 @@ import java.util.Map;
 
 /**
  * 管理后台接口 (仅管理员，路径受安全配置保护)。
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @RestController
 @RequestMapping("/api/admin")

@@ -8,6 +8,7 @@ import java.util.List;
  * @param pages 可配置页面列表 (可分配)
  * @param roles 各角色当前拥有的页面权限
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 public record RoleMatrixResponse(List<PageInfo> pages, List<RolePermissionView> roles) {
 
@@ -17,6 +18,8 @@ public record RoleMatrixResponse(List<PageInfo> pages, List<RolePermissionView> 
 	 * @param key 页面 key
 	 * @param label 页面名称
 	 * @param group 所属分组
+	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
 	 */
 	public record PageInfo(String key, String label, String group) {
 	}
@@ -27,6 +30,7 @@ public record RoleMatrixResponse(List<PageInfo> pages, List<RolePermissionView> 
 	 * @param role 角色
 	 * @param allowedPages 已授权的可配置页面 key 列表
 	 * @author unknowIfGuestInDream
+	 * @since 1.0.0
 	 */
 	public record RolePermissionView(String role, List<String> allowedPages) {
 	}

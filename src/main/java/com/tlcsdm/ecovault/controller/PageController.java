@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
  * 仅负责返回视图名称，具体数据通过前端 JS 调用 REST 接口获取。受保护页面的访问控制由 Spring Security
  * 统一处理；对于「可配置页面」，进一步依据角色页面权限进行校验，无权限时重定向到控制台。
  * </p>
+ *
+ * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Controller
 public class PageController {

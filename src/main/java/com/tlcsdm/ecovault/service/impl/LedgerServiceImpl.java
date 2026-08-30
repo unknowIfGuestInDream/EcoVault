@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
  * 财务 - 收入支出管理服务实现。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
+ * @see LedgerService
  */
 @Service
 public class LedgerServiceImpl implements LedgerService {

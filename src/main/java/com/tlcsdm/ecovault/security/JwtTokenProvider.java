@@ -19,6 +19,7 @@ import java.util.UUID;
  * JWT 令牌提供者，负责令牌的生成与解析校验。
  *
  * @author unknowIfGuestInDream
+ * @since 1.0.0
  */
 @Component
 public class JwtTokenProvider {
@@ -37,6 +38,7 @@ public class JwtTokenProvider {
 	 * </p>
 	 * @param secret 签名密钥
 	 * @param expirationMs 令牌有效期 (毫秒)
+	 * @return 方法返回结果。
 	 */
 	public JwtTokenProvider(@Value("${ecovault.security.jwt-secret}") String secret,
 			@Value("${ecovault.security.jwt-expiration-ms}") long expirationMs) {
