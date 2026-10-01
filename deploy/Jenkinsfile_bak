@@ -1,0 +1,138 @@
+pipeline {
+    agent any
+    options {
+        timeout(time: 1, unit: "HOURS")
+    }
+    environment {
+        USER_NAME = 'Jenkins'
+        // 限制 Maven JVM 堆内存，避免在低配服务器(4核4G)上构建时内存压力过大
+        MAVEN_OPTS = '-Xmx1024m -XX:MaxMetaspaceSize=256m'
+        // Jenkins 构建使用 1 个 Maven 线程，并关闭 javac verbose 日志，降低内存和日志压力
+        MAVEN_CI_ARGS = '-B --no-transfer-progress -T 1 -Dmaven.compiler.verbose=false'
+        ECOVAULT_JWT_SECRET = credentials('ecovault-jwt-secret')
+        ECOVAULT_CRYPTO_SECRET = credentials('ecovault-crypto-secret')
+        PLANTUML_JAR_PATH = '/opt/plantuml/plantuml.jar'
+    }
+    tools {
+        jdk "jdk25"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // 检出仓库源码。
+                git branch: 'master',
+                    credentialsId: 'github_ssh',
+                    url: 'git@github.com:unknowIfGuestInDream/EcoVault.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // 构建可部署 Jar，测试在独立阶段执行。
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // 执行 JUnit 5 测试并生成 JaCoCo 覆盖率数据。
+                sh 'mvn verify'
+                sh '''
+                    cd target/site
+                    zip -r jacoco-report.zip jacoco
+                    mv jacoco-report.zip ../../
+
+                    cd ../
+                    zip -r surefire-reports.zip surefire-reports
+                    mv surefire-reports.zip ../
+                '''
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'jacoco-report.zip, surefire-reports.zip'
+                }
+            }
+        }
+
+        stage('Report') {
+            steps {
+                script {
+                // 构建可部署 Jar，测试在独立阶段执行。
+                sh '''#!/bin/bash
+                  if [ -f target/site/jacoco/jacoco.csv ]; then
+                    awk -F, '
+                      NR>1 {im+=$4; ic+=$5; bm+=$6; bc+=$7}
+                      END {
+                        instruction = (ic + im) ? ic * 100 / (ic + im) : 0
+                        branch = (bc + bm) ? bc * 100 / (bc + bm) : 0
+                        printf "指令覆盖 %.1f%% \\n", instruction
+                        printf "分支覆盖 %.1f%% \\n", branch
+                      }
+                    ' target/site/jacoco/jacoco.csv > cov.md
+                    cat cov.md
+                  fi
+              '''
+
+              def coverageSummary = readFile('cov.md')
+              currentBuild.description = coverageSummary
+            }
+            }
+        }
+
+        stage('Generate Doxygen Docs') {
+            steps {
+                script {
+                    echo "========== 生成 Doxygen 文档 =========="
+                    def hasDoxygen = sh(script: 'command -v doxygen >/dev/null 2>&1', returnStatus: true) == 0
+                    if (hasDoxygen) {
+                        sh 'rm -rf docs-gen doxygen-docs.zip'
+                        sh '''
+                            if [ ! -f "$PLANTUML_JAR_PATH" ]; then
+                                echo "PlantUML jar not found at $PLANTUML_JAR_PATH; running Doxygen without PlantUML diagrams."
+                                unset PLANTUML_JAR_PATH
+                            fi
+                            doxygen doxygen/Doxyfile
+                        '''
+                        sh 'cd docs-gen && zip -qr ../doxygen-docs.zip html'
+                        archiveArtifacts artifacts: 'doxygen-docs.zip', allowEmptyArchive: false
+                        echo "Doxygen 文档已生成并归档"
+                    } else {
+                        echo 'doxygen not found on this agent; skip Doxygen documentation generation'
+                    }
+                }
+            }
+            post {
+                cleanup {
+                    sh 'rm -rf docs-gen doxygen-docs.zip || true'
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                dir('target') {
+                    archiveArtifacts artifacts: 'ecovault.jar', fingerprint: true, onlyIfSuccessful: true
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    mkdir -p /usr/local/runtime/ecovault/target
+                    cp target/ecovault.jar /usr/local/runtime/ecovault/target/ecovault.jar
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'EcoVault 流水线执行成功。'
+        }
+        failure {
+            echo 'EcoVault 流水线执行失败，请检查构建日志。'
+        }
+    }
+}

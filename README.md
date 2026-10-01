@@ -55,8 +55,8 @@ EcoVault 使用 Java 25 与 Spring Boot 4 构建。系统默认使用嵌入式 S
 | 前端 | Thymeleaf、Chart.js |
 | UI | 玻璃拟态、渐变、暗色/亮色主题 |
 | 安全 | JWT、BCrypt、AES-GCM、CSRF、XSS、SQL 注入防护 |
-| 构建测试 | Maven、JUnit 5、JaCoCo、GitHub Actions、Jenkins |
-| 部署 | `deploy/deploy.sh`、Actuator |
+| 构建测试 | Maven、JUnit 5、JaCoCo、GitHub Actions、Jenkins、GraalVM Native Image |
+| 部署 | `deploy/deploy.sh`、Actuator、GraalVM Native 可执行文件 |
 
 ## 项目结构
 
@@ -72,7 +72,9 @@ EcoVault/
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── copilot-instructions.md
 ├── deploy/
-│   └── deploy.sh                     # 生产部署脚本
+│   ├── deploy.sh                     # 生产部署脚本（支持 Jar / Native）
+│   ├── Jenkinsfile                   # GraalVM Native Jenkins 流水线
+│   └── Jenkinsfile_bak               # 旧版 Jar Jenkins 流水线备份
 ├── docs/
 │   ├── 设计文档.md
 │   └── 开发规范.md
@@ -109,6 +111,14 @@ EcoVault/
 mvn clean package
 ```
 
+### 构建 Native 可执行文件（可选）
+
+```bash
+mvn -Pnative -DskipTests package
+```
+
+执行完成后会额外生成 `target/ecovault`，默认 `target/ecovault.jar` 仍会保留，便于继续沿用本地开发与常规 Jar 回归流程。
+
 ### 运行
 
 ```bash
@@ -117,6 +127,12 @@ java --enable-native-access=ALL-UNNAMED \
   -Dsun.stdout.encoding=UTF-8 \
   -Dsun.stderr.encoding=UTF-8 \
   -jar target/ecovault.jar
+```
+
+### 运行 Native 可执行文件（可选）
+
+```bash
+./target/ecovault --spring.profiles.active=prod
 ```
 
 ### 访问
@@ -150,6 +166,7 @@ ecovault:
 - `ecovault.security.max-devices`：单用户允许同时登录设备数，默认建议为 `1`。
 - `ecovault.crypto.secret`：密码库 AES 主密钥，必须通过环境变量安全注入。
 - 启动参数需包含 `--enable-native-access=ALL-UNNAMED`，用于消除 SQLite JDBC 在 Java 25 下的受限原生访问告警。
+- Native Image 构建仅在显式启用 `-Pnative` 时生效，默认 `mvn package` 仍只生成 Jar。
 
 ## 加密设计说明
 
@@ -215,13 +232,13 @@ open docs-gen/html/index.html
 #### CI/CD 自动生成
 
 - **GitHub Actions**: `.github/workflows/doxygen.yml` 在代码推送时自动生成文档并上传构建产物
-- **Jenkins**: `Jenkinsfile` 包含 Doxygen 生成阶段，归档为 `doxygen-docs.zip`
+- **Jenkins**: `deploy/Jenkinsfile` 与 `deploy/Jenkinsfile_bak` 均包含 Doxygen 生成阶段，归档为 `doxygen-docs.zip`
 
 ## 部署
 
 ### Jenkins
 
-`Jenkinsfile` 包含检出、构建、测试、JaCoCo、归档与 `master` 分支部署阶段。
+`deploy/Jenkinsfile_bak` 保留原有 Jar 构建流程；`deploy/Jenkinsfile` 使用 `jdk25-graalvm`，在常规 Jar 构建与测试通过后额外执行 `mvn -Pnative -DskipTests package` 生成 Native 可执行文件。
 
 ### deploy.sh
 
@@ -229,7 +246,9 @@ open docs-gen/html/index.html
 bash deploy/deploy.sh
 ```
 
-脚本会停止旧服务、备份旧 Jar、部署 `target/ecovault.jar`，以 `prod` 配置启动，并默认附加 `-Xms128m -Xmx512m`、`--enable-native-access=ALL-UNNAMED` 与 UTF-8 JVM 参数，然后通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。若生产环境需要更高或更低的内存上限，可通过 `JAVA_OPTS` 覆盖。
+脚本会停止旧服务、备份旧版本、自动选择 `target/ecovault` 或 `target/ecovault.jar`、以 `prod` 配置启动，并在 Jar 模式下默认附加 `-Xms128m -Xmx512m`、`--enable-native-access=ALL-UNNAMED` 与 UTF-8 JVM 参数，然后通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。若生产环境需要更高或更低的内存上限，可通过 `JAVA_OPTS` 覆盖。
+
+若执行了 Native 构建，`deploy/deploy.sh` 默认会优先部署 `target/ecovault`；也可通过 `ECOVAULT_ARTIFACT_TYPE=native` 或 `ECOVAULT_ARTIFACT_TYPE=jar` 强制指定部署产物类型。
 
 ## Actuator / 构建信息
 
