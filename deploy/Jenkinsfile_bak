@@ -120,8 +120,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    mkdir -p /usr/local/runtime/ecovault/target
+                    mkdir -p /usr/local/runtime/ecovault/deploy /usr/local/runtime/ecovault/target
+                    cp deploy/deploy.sh /usr/local/runtime/ecovault/deploy/deploy.sh
+                    chmod +x /usr/local/runtime/ecovault/deploy/deploy.sh
                     cp target/ecovault.jar /usr/local/runtime/ecovault/target/ecovault.jar
+                    ECOVAULT_ARTIFACT_TYPE=jar bash /usr/local/runtime/ecovault/deploy/deploy.sh
                 '''
             }
         }

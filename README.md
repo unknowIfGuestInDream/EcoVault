@@ -248,7 +248,7 @@ bash deploy/deploy.sh
 
 脚本会停止旧服务、备份旧版本、自动选择 `target/ecovault` 或 `target/ecovault.jar`、以 `prod` 配置启动，并在 Jar 模式下默认附加 `-Xms128m -Xmx512m`、`--enable-native-access=ALL-UNNAMED` 与 UTF-8 JVM 参数，然后通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。若生产环境需要更高或更低的内存上限，可通过 `JAVA_OPTS` 覆盖。
 
-若执行了 Native 构建，`deploy/deploy.sh` 默认会优先部署 `target/ecovault`；也可通过 `ECOVAULT_ARTIFACT_TYPE=native` 或 `ECOVAULT_ARTIFACT_TYPE=jar` 强制指定部署产物类型。
+若执行了 Native 构建，`deploy/deploy.sh` 默认会优先部署 `target/ecovault`；也可通过 `ECOVAULT_ARTIFACT_TYPE=native` 或 `ECOVAULT_ARTIFACT_TYPE=jar` 强制指定部署产物类型。Jenkins 部署时会先将 `deploy/deploy.sh` 与构建产物同步到 `/usr/local/runtime/ecovault`，再统一调用该脚本完成停服、备份、部署和健康检查。
 
 ## Actuator / 构建信息
 

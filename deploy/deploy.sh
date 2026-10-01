@@ -20,7 +20,6 @@ ECOVAULT_ARTIFACT_TYPE="${ECOVAULT_ARTIFACT_TYPE:-auto}"
 DEFAULT_JAVA_OPTS="-Xms128m -Xmx512m --enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
 JAVA_OPTS="${JAVA_OPTS:-${DEFAULT_JAVA_OPTS}}"
 SPRING_PROFILE="${SPRING_PROFILE:-prod}"
-APP_ARGS="${APP_ARGS:-}"
 HEALTH_RETRY="${HEALTH_RETRY:-60}"
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-2}"
 DEPLOY_MODE=""
@@ -33,6 +32,15 @@ log() {
 
 ensure_dirs() {
   mkdir -p "${DEPLOY_DIR}" "${BACKUP_DIR}" "${LOG_DIR}" "$(dirname "${TARGET_JAR}")"
+}
+
+require_target_artifact() {
+  local artifact_path="$1"
+  local artifact_mode="$2"
+  if [[ ! -f "${artifact_path}" ]]; then
+    log "未找到 ${artifact_mode} 模式所需产物：${artifact_path}。请先执行对应构建。"
+    exit 1
+  fi
 }
 
 resolve_artifact_mode() {
@@ -55,11 +63,13 @@ resolve_artifact_mode() {
       DEPLOY_MODE="native"
       TARGET_ARTIFACT="${TARGET_NATIVE}"
       APP_ARTIFACT="${APP_NATIVE}"
+      require_target_artifact "${TARGET_ARTIFACT}" "${DEPLOY_MODE}"
       ;;
     jar)
       DEPLOY_MODE="jar"
       TARGET_ARTIFACT="${TARGET_JAR}"
       APP_ARTIFACT="${APP_JAR}"
+      require_target_artifact "${TARGET_ARTIFACT}" "${DEPLOY_MODE}"
       ;;
     *)
       log "不支持的部署类型：${ECOVAULT_ARTIFACT_TYPE}。可选值为 auto、native、jar。"
@@ -167,10 +177,10 @@ start_service() {
 
   if [[ "${DEPLOY_MODE}" == "native" ]]; then
     BUILD_ID=dontKillMe nohup "${APP_NATIVE}" \
-      --spring.profiles.active="${SPRING_PROFILE}" ${APP_ARGS} >> "${APP_LOG}" 2>&1 &
+      --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
   else
     BUILD_ID=dontKillMe nohup java ${JAVA_OPTS} -jar "${APP_JAR}" \
-      --spring.profiles.active="${SPRING_PROFILE}" ${APP_ARGS} >> "${APP_LOG}" 2>&1 &
+      --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
   fi
 
   sleep 2
