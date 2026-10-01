@@ -96,7 +96,12 @@ find_app_process() {
       args = $0
     }
     index(args, jar) > 0 { print pid "\tjar"; next }
-    args ~ ("^" native "([[:space:]]|$)") { print pid "\tnative" }
+    index(args, native) == 1 {
+      suffix = substr(args, length(native) + 1, 1)
+      if (suffix == "" || suffix ~ /[[:space:]]/) {
+        print pid "\tnative"
+      }
+    }
   ' || true)"
 
   if [[ -z "${processes}" ]]; then

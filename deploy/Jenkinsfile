@@ -71,7 +71,7 @@ pipeline {
                       fi
                   '''
 
-                    def coverageSummary = readFile('cov.md')
+                    def coverageSummary = fileExists('cov.md') ? readFile('cov.md') : '覆盖率摘要未生成'
                     currentBuild.description = coverageSummary
                 }
             }
