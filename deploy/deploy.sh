@@ -37,8 +37,8 @@ is_running() {
   [[ -n "${pid}" ]] && [[ "${pid}" =~ ^[0-9]+$ ]] && kill -0 "${pid}" 2>/dev/null
 }
 
-# 通过 ps 查询当前 APP_NAME 对应的运行进程 PID（不依赖 PID 文件）。
-# 同时识别 Native 可执行文件与完整 JAR 路径，避免误匹配其他进程。
+# 通过 ps 查询当前 APP_NAME 对应的运行进程信息（不依赖 PID 文件）。
+# 兼容识别 Native 可执行文件与历史 JAR 进程，避免迁移到 Native 时漏停旧进程。
 # 若存在多个匹配进程，取最近启动的一个（即列表末尾），并输出警告。
 find_app_process() {
   local processes count
@@ -61,9 +61,9 @@ find_app_process() {
         args = args (i == 2 ? "" : " ") $i
       }
     }
-    index(args, jar) > 0 { print pid "\tjar"; next }
+    index(args, jar) > 0 { print pid "\t" jar; next }
     matches_native_path(args, native) {
-      print pid "\tnative"
+      print pid "\t" native
     }
   ' || true)"
 
@@ -77,23 +77,22 @@ find_app_process() {
       "$(date '+%Y-%m-%d %H:%M:%S')" "${count}" "${APP_NAME}" >&2
   fi
 
-  printf '%s\n' "${processes}" | awk 'NF { pid = $1; mode = $2 } END { if (pid != "") print pid "\t" mode }'
+  printf '%s\n' "${processes}" | awk -F '\t' 'NF { pid = $1; artifact = $2 } END { if (pid != "") print pid "\t" artifact }'
 }
 
 stop_service() {
-  local process_info="${1:-}" pid mode
+  local process_info="${1:-}" pid artifact
   if [[ -z "${process_info}" ]]; then
     process_info="$(find_app_process)"
   fi
-  pid="$(printf '%s' "${process_info}" | awk 'NF { print $1 }')"
-  mode="$(printf '%s' "${process_info}" | awk 'NF { print $2 }')"
+  IFS=$'\t' read -r pid artifact <<< "${process_info}"
 
   if [[ -z "${pid}" ]]; then
     log "未发现正在运行的 ${APP_NAME} 进程，跳过停止步骤。"
     return 0
   fi
 
-  log "正在停止 ${APP_NAME}（当前进程模式：${mode}），PID=${pid}。"
+  log "正在停止 ${APP_NAME}，PID=${pid}。"
   kill "${pid}"
 
   for _ in $(seq 1 30); do
@@ -109,13 +108,14 @@ stop_service() {
 }
 
 backup_old_version() {
-  local running_mode="${1:-}" source_file backup_ext
-  if [[ "${running_mode}" == "native" ]] && [[ -f "${APP_NATIVE}" ]]; then
-    source_file="${APP_NATIVE}"
-    backup_ext=""
-  elif [[ "${running_mode}" == "jar" ]] && [[ -f "${APP_JAR}" ]]; then
-    source_file="${APP_JAR}"
-    backup_ext=".jar"
+  local preferred_source="${1:-}" source_file backup_ext
+  if [[ -n "${preferred_source}" ]] && [[ -f "${preferred_source}" ]]; then
+    source_file="${preferred_source}"
+    if [[ "${preferred_source}" == "${APP_JAR}" ]]; then
+      backup_ext=".jar"
+    else
+      backup_ext=""
+    fi
   elif [[ -f "${APP_NATIVE}" ]]; then
     source_file="${APP_NATIVE}"
     backup_ext=""
@@ -148,25 +148,24 @@ start_service() {
 
   sleep 2
 
-  local process_info pid mode
+  local process_info pid artifact
   process_info="$(find_app_process)"
-  pid="$(printf '%s' "${process_info}" | awk 'NF { print $1 }')"
-  mode="$(printf '%s' "${process_info}" | awk 'NF { print $2 }')"
+  IFS=$'\t' read -r pid artifact <<< "${process_info}"
 
   if [[ -z "${pid}" ]]; then
     log "未找到 ${APP_NAME} 的运行进程，启动失败，请查看日志：${APP_LOG}。"
     exit 1
   fi
 
-  log "服务启动命令已执行，PID=${pid}，当前进程模式=${mode}，日志=${APP_LOG}。"
+  log "服务启动命令已执行，PID=${pid}，日志=${APP_LOG}。"
 }
 
 health_check() {
   log "开始健康检查：${HEALTH_URL}。"
 
-  local process_info pid
+  local process_info pid artifact
   process_info="$(find_app_process)"
-  pid="$(printf '%s' "${process_info}" | awk 'NF { print $1 }')"
+  IFS=$'\t' read -r pid artifact <<< "${process_info}"
 
   if [[ -z "${pid}" ]]; then
     log "未找到 ${APP_NAME} 的运行进程，无法执行健康检查。请查看日志：${APP_LOG}。"
@@ -196,13 +195,13 @@ health_check() {
 }
 
 main() {
-  local process_info running_mode
+  local process_info previous_pid previous_artifact
   ensure_dirs
   require_native_artifact
   process_info="$(find_app_process)"
-  running_mode="$(printf '%s' "${process_info}" | awk 'NF { print $2 }')"
+  IFS=$'\t' read -r previous_pid previous_artifact <<< "${process_info}"
   stop_service "${process_info}"
-  backup_old_version "${running_mode}"
+  backup_old_version "${previous_artifact}"
   deploy_new_version
   start_service
   health_check
