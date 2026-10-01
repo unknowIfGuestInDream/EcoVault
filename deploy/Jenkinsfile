@@ -145,7 +145,7 @@ pipeline {
                         cp target/ecovault /usr/local/runtime/ecovault/target/ecovault
                         chmod +x /usr/local/runtime/ecovault/target/ecovault
                     fi
-                    ECOVAULT_ARTIFACT_TYPE=native bash -e /usr/local/runtime/ecovault/deploy/deploy.sh
+                    ECOVAULT_ARTIFACT_TYPE=auto bash -e /usr/local/runtime/ecovault/deploy/deploy.sh
                 '''
             }
         }
