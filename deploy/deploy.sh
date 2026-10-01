@@ -5,26 +5,17 @@ set -euo pipefail
 
 APP_NAME="ecovault"
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TARGET_JAR="${BASE_DIR}/target/${APP_NAME}.jar"
 TARGET_NATIVE="${BASE_DIR}/target/${APP_NAME}"
 DEPLOY_DIR="${BASE_DIR}"
 BACKUP_DIR="${DEPLOY_DIR}/backup"
 LOG_DIR="${DEPLOY_DIR}/logs"
-APP_JAR="${DEPLOY_DIR}/${APP_NAME}.jar"
 APP_NATIVE="${DEPLOY_DIR}/${APP_NAME}"
+APP_JAR="${DEPLOY_DIR}/${APP_NAME}.jar"
 APP_LOG="${LOG_DIR}/${APP_NAME}.log"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8100/actuator/health}"
-# auto: 优先部署 Native，可回退到 Jar；native/jar: 强制指定部署类型
-ECOVAULT_ARTIFACT_TYPE="${ECOVAULT_ARTIFACT_TYPE:-auto}"
-# 默认堆内存限制，生产环境可通过 JAVA_OPTS 环境变量覆盖
-DEFAULT_JAVA_OPTS="-Xms128m -Xmx512m --enable-native-access=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
-JAVA_OPTS="${JAVA_OPTS:-${DEFAULT_JAVA_OPTS}}"
 SPRING_PROFILE="${SPRING_PROFILE:-prod}"
 HEALTH_RETRY="${HEALTH_RETRY:-60}"
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-2}"
-DEPLOY_MODE=""
-TARGET_ARTIFACT=""
-APP_ARTIFACT=""
 LAST_RUNNING_MODE=""
 
 log() {
@@ -32,51 +23,14 @@ log() {
 }
 
 ensure_dirs() {
-  mkdir -p "${DEPLOY_DIR}" "${BACKUP_DIR}" "${LOG_DIR}" "$(dirname "${TARGET_JAR}")"
+  mkdir -p "${DEPLOY_DIR}" "${BACKUP_DIR}" "${LOG_DIR}" "$(dirname "${TARGET_NATIVE}")"
 }
 
-require_target_artifact() {
-  local artifact_path="$1"
-  local artifact_mode="$2"
-  if [[ ! -f "${artifact_path}" ]]; then
-    log "未找到 ${artifact_mode} 模式所需产物：${artifact_path}。请先执行对应构建。"
+require_native_artifact() {
+  if [[ ! -f "${TARGET_NATIVE}" ]]; then
+    log "未找到 Native 可执行文件：${TARGET_NATIVE}。请先执行 GraalVM Native Image 构建。"
     exit 1
   fi
-}
-
-resolve_artifact_mode() {
-  case "${ECOVAULT_ARTIFACT_TYPE}" in
-    auto)
-      if [[ -f "${TARGET_NATIVE}" ]]; then
-        DEPLOY_MODE="native"
-        TARGET_ARTIFACT="${TARGET_NATIVE}"
-        APP_ARTIFACT="${APP_NATIVE}"
-      elif [[ -f "${TARGET_JAR}" ]]; then
-        DEPLOY_MODE="jar"
-        TARGET_ARTIFACT="${TARGET_JAR}"
-        APP_ARTIFACT="${APP_JAR}"
-      else
-        log "未找到可部署产物：${TARGET_NATIVE} 或 ${TARGET_JAR}。请先执行对应构建。"
-        exit 1
-      fi
-      ;;
-    native)
-      DEPLOY_MODE="native"
-      TARGET_ARTIFACT="${TARGET_NATIVE}"
-      APP_ARTIFACT="${APP_NATIVE}"
-      require_target_artifact "${TARGET_ARTIFACT}" "${DEPLOY_MODE}"
-      ;;
-    jar)
-      DEPLOY_MODE="jar"
-      TARGET_ARTIFACT="${TARGET_JAR}"
-      APP_ARTIFACT="${APP_JAR}"
-      require_target_artifact "${TARGET_ARTIFACT}" "${DEPLOY_MODE}"
-      ;;
-    *)
-      log "不支持的部署类型：${ECOVAULT_ARTIFACT_TYPE}。可选值为 auto、native、jar。"
-      exit 1
-      ;;
-  esac
 }
 
 is_running() {
@@ -139,7 +93,7 @@ stop_service() {
     return 0
   fi
 
-  log "正在停止 ${APP_NAME}（模式：${mode}），PID=${pid}。"
+  log "正在停止 ${APP_NAME}（当前进程模式：${mode}），PID=${pid}。"
   kill "${pid}"
 
   for _ in $(seq 1 30); do
@@ -155,23 +109,21 @@ stop_service() {
 }
 
 backup_old_version() {
-  local source_file backup_ext backup_mode
-  backup_mode="${LAST_RUNNING_MODE:-${DEPLOY_MODE}}"
-  if [[ "${backup_mode}" == "native" ]] && [[ -f "${APP_NATIVE}" ]]; then
+  local source_file backup_ext
+  if [[ "${LAST_RUNNING_MODE}" == "native" ]] && [[ -f "${APP_NATIVE}" ]]; then
     source_file="${APP_NATIVE}"
     backup_ext=""
-  elif [[ "${backup_mode}" == "jar" ]] && [[ -f "${APP_JAR}" ]]; then
+  elif [[ "${LAST_RUNNING_MODE}" == "jar" ]] && [[ -f "${APP_JAR}" ]]; then
     source_file="${APP_JAR}"
     backup_ext=".jar"
-  elif [[ -f "${APP_ARTIFACT}" ]]; then
-    source_file="${APP_ARTIFACT}"
-    if [[ "${DEPLOY_MODE}" == "jar" ]]; then
-      backup_ext=".jar"
-    else
-      backup_ext=""
-    fi
+  elif [[ -f "${APP_NATIVE}" ]]; then
+    source_file="${APP_NATIVE}"
+    backup_ext=""
+  elif [[ -f "${APP_JAR}" ]]; then
+    source_file="${APP_JAR}"
+    backup_ext=".jar"
   else
-    log "未发现当前部署模式对应的旧版本产物，跳过备份。"
+    log "未发现可备份的旧版本产物，跳过备份。"
     return 0
   fi
 
@@ -183,28 +135,16 @@ backup_old_version() {
 }
 
 deploy_new_version() {
-  if [[ ! -f "${TARGET_ARTIFACT}" ]]; then
-    log "未找到新版本产物：${TARGET_ARTIFACT}。请先执行对应构建。"
-    exit 1
-  fi
-
-  cp "${TARGET_ARTIFACT}" "${APP_ARTIFACT}"
-  if [[ "${DEPLOY_MODE}" == "native" ]]; then
-    chmod +x "${APP_ARTIFACT}"
-  fi
-  log "新版本已部署到 ${APP_ARTIFACT}（模式：${DEPLOY_MODE}）。"
+  cp "${TARGET_NATIVE}" "${APP_NATIVE}"
+  chmod +x "${APP_NATIVE}"
+  log "新版本 Native 可执行文件已部署到 ${APP_NATIVE}。"
 }
 
 start_service() {
-  log "正在启动 ${APP_NAME}（模式：${DEPLOY_MODE}），配置环境为 ${SPRING_PROFILE}。"
+  log "正在以 Native 模式启动 ${APP_NAME}，配置环境为 ${SPRING_PROFILE}。"
 
-  if [[ "${DEPLOY_MODE}" == "native" ]]; then
-    BUILD_ID=dontKillMe nohup "${APP_NATIVE}" \
-      --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
-  else
-    BUILD_ID=dontKillMe nohup java ${JAVA_OPTS} -jar "${APP_JAR}" \
-      --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
-  fi
+  BUILD_ID=dontKillMe nohup "${APP_NATIVE}" \
+    --spring.profiles.active="${SPRING_PROFILE}" >> "${APP_LOG}" 2>&1 &
 
   sleep 2
 
@@ -218,7 +158,7 @@ start_service() {
     exit 1
   fi
 
-  log "服务启动命令已执行，PID=${pid}，模式=${mode}，日志=${APP_LOG}。"
+  log "服务启动命令已执行，PID=${pid}，当前进程模式=${mode}，日志=${APP_LOG}。"
 }
 
 health_check() {
@@ -257,7 +197,7 @@ health_check() {
 
 main() {
   ensure_dirs
-  resolve_artifact_mode
+  require_native_artifact
   stop_service
   backup_old_version
   deploy_new_version

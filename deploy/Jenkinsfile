@@ -140,12 +140,11 @@ pipeline {
                     mkdir -p /usr/local/runtime/ecovault/deploy /usr/local/runtime/ecovault/target
                     cp deploy/deploy.sh /usr/local/runtime/ecovault/deploy/deploy.sh
                     chmod +x /usr/local/runtime/ecovault/deploy/deploy.sh
-                    cp target/ecovault.jar /usr/local/runtime/ecovault/target/ecovault.jar
                     if [ -f target/ecovault ]; then
                         cp target/ecovault /usr/local/runtime/ecovault/target/ecovault
                         chmod +x /usr/local/runtime/ecovault/target/ecovault
                     fi
-                    ECOVAULT_ARTIFACT_TYPE=auto bash -e /usr/local/runtime/ecovault/deploy/deploy.sh
+                    bash -e /usr/local/runtime/ecovault/deploy/deploy.sh
                 '''
             }
         }

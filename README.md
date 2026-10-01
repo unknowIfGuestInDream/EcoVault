@@ -72,7 +72,7 @@ EcoVault/
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── copilot-instructions.md
 ├── deploy/
-│   ├── deploy.sh                     # 生产部署脚本（支持 Jar / Native）
+│   ├── deploy.sh                     # Native 生产部署脚本
 │   ├── Jenkinsfile                   # GraalVM Native Jenkins 流水线
 │   └── Jenkinsfile_bak               # 旧版 Jar Jenkins 流水线备份
 ├── docs/
@@ -238,7 +238,7 @@ open docs-gen/html/index.html
 
 ### Jenkins
 
-`deploy/Jenkinsfile_bak` 保留原有 Jar 构建流程；`deploy/Jenkinsfile` 使用 `jdk25-graalvm`，在常规 Jar 构建与测试通过后额外执行 `mvn -Pnative -DskipTests package` 生成 Native 可执行文件。
+`deploy/Jenkinsfile_bak` 保留原有 Jar 构建流程；`deploy/Jenkinsfile` 使用 `jdk25-graalvm`，在常规 Jar 构建与测试通过后额外执行 `mvn -Pnative -DskipTests package` 生成 Native 可执行文件，并调用 `deploy/deploy.sh` 执行 Native 部署。
 
 ### deploy.sh
 
@@ -246,9 +246,9 @@ open docs-gen/html/index.html
 bash deploy/deploy.sh
 ```
 
-脚本会停止旧服务、备份旧版本、自动选择 `target/ecovault` 或 `target/ecovault.jar`、以 `prod` 配置启动，并在 Jar 模式下默认附加 `-Xms128m -Xmx512m`、`--enable-native-access=ALL-UNNAMED` 与 UTF-8 JVM 参数，然后通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。若生产环境需要更高或更低的内存上限，可通过 `JAVA_OPTS` 覆盖。
+脚本会停止旧服务、备份旧版本、部署 `target/ecovault` Native 可执行文件，并以 `prod` 配置启动后通过 `http://127.0.0.1:8100/actuator/health` 执行健康检查。脚本会优先备份当前正在运行的旧版本（Native 或历史 Jar 部署），便于从 Jar 迁移到 Native 时保留回滚文件。
 
-若执行了 Native 构建，`deploy/deploy.sh` 默认会优先部署 `target/ecovault`；也可通过 `ECOVAULT_ARTIFACT_TYPE=native` 或 `ECOVAULT_ARTIFACT_TYPE=jar` 强制指定部署产物类型。Jenkins 部署时会先将 `deploy/deploy.sh` 与构建产物同步到 `/usr/local/runtime/ecovault`，再统一调用该脚本完成停服、备份、部署和健康检查。
+Jenkins Native 部署时会先将 `deploy/deploy.sh` 与 `target/ecovault` 同步到 `/usr/local/runtime/ecovault`，再统一调用该脚本完成停服、备份、部署和健康检查。
 
 ## Actuator / 构建信息
 
