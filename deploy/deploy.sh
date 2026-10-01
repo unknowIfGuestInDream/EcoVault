@@ -89,8 +89,13 @@ is_running() {
 find_app_process() {
   local processes count
   processes="$(ps -eo pid=,args= | awk -v jar="${APP_JAR}" -v native="${APP_NATIVE}" '
-    index($0, jar) > 0 { print $1 "\tjar"; next }
-    $0 ~ ("^[[:space:]]*[0-9]+[[:space:]]+" native "([[:space:]]|$)") { print $1 "\tnative" }
+    {
+      pid = $1
+      sub(/^[[:space:]]*[0-9]+[[:space:]]+/, "", $0)
+      args = $0
+    }
+    index(args, jar) > 0 { print pid "\tjar"; next }
+    args ~ ("^" native "([[:space:]]|$)") { print pid "\tnative" }
   ' || true)"
 
   if [[ -z "${processes}" ]]; then
@@ -133,22 +138,25 @@ stop_service() {
 }
 
 backup_old_version() {
-  local source_file backup_ext
-  if [[ -f "${APP_ARTIFACT}" ]]; then
+  local source_file backup_ext process_info running_mode
+  process_info="$(find_app_process || true)"
+  running_mode="$(printf '%s' "${process_info}" | awk 'NF { print $2 }')"
+
+  if [[ "${running_mode}" == "native" ]] && [[ -f "${APP_NATIVE}" ]]; then
+    source_file="${APP_NATIVE}"
+    backup_ext=""
+  elif [[ "${running_mode}" == "jar" ]] && [[ -f "${APP_JAR}" ]]; then
+    source_file="${APP_JAR}"
+    backup_ext=".jar"
+  elif [[ -f "${APP_ARTIFACT}" ]]; then
     source_file="${APP_ARTIFACT}"
     if [[ "${DEPLOY_MODE}" == "jar" ]]; then
       backup_ext=".jar"
     else
       backup_ext=""
     fi
-  elif [[ -f "${APP_NATIVE}" ]]; then
-    source_file="${APP_NATIVE}"
-    backup_ext=""
-  elif [[ -f "${APP_JAR}" ]]; then
-    source_file="${APP_JAR}"
-    backup_ext=".jar"
   else
-    log "未发现旧版本产物，跳过备份。"
+    log "未发现当前部署模式对应的旧版本产物，跳过备份。"
     return 0
   fi
 
@@ -235,8 +243,8 @@ health_check() {
 main() {
   ensure_dirs
   resolve_artifact_mode
-  stop_service
   backup_old_version
+  stop_service
   deploy_new_version
   start_service
   health_check

@@ -124,6 +124,9 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                branch 'master'
+            }
             steps {
                 sh '''
                     mkdir -p /usr/local/runtime/ecovault/deploy /usr/local/runtime/ecovault/target
