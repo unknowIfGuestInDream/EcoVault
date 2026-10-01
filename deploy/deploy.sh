@@ -25,6 +25,7 @@ HEALTH_INTERVAL="${HEALTH_INTERVAL:-2}"
 DEPLOY_MODE=""
 TARGET_ARTIFACT=""
 APP_ARTIFACT=""
+LAST_RUNNING_MODE=""
 
 log() {
   printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
@@ -116,6 +117,7 @@ stop_service() {
   process_info="$(find_app_process)"
   pid="$(printf '%s' "${process_info}" | awk 'NF { print $1 }')"
   mode="$(printf '%s' "${process_info}" | awk 'NF { print $2 }')"
+  LAST_RUNNING_MODE="${mode}"
 
   if [[ -z "${pid}" ]]; then
     log "未发现正在运行的 ${APP_NAME} 进程，跳过停止步骤。"
@@ -138,14 +140,11 @@ stop_service() {
 }
 
 backup_old_version() {
-  local source_file backup_ext process_info running_mode
-  process_info="$(find_app_process || true)"
-  running_mode="$(printf '%s' "${process_info}" | awk 'NF { print $2 }')"
-
-  if [[ "${running_mode}" == "native" ]] && [[ -f "${APP_NATIVE}" ]]; then
+  local source_file backup_ext
+  if [[ "${LAST_RUNNING_MODE}" == "native" ]] && [[ -f "${APP_NATIVE}" ]]; then
     source_file="${APP_NATIVE}"
     backup_ext=""
-  elif [[ "${running_mode}" == "jar" ]] && [[ -f "${APP_JAR}" ]]; then
+  elif [[ "${LAST_RUNNING_MODE}" == "jar" ]] && [[ -f "${APP_JAR}" ]]; then
     source_file="${APP_JAR}"
     backup_ext=".jar"
   elif [[ -f "${APP_ARTIFACT}" ]]; then
@@ -243,8 +242,8 @@ health_check() {
 main() {
   ensure_dirs
   resolve_artifact_mode
-  backup_old_version
   stop_service
+  backup_old_version
   deploy_new_version
   start_service
   health_check

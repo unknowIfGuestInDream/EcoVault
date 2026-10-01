@@ -21,9 +21,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // 检出仓库源码。
-                git branch: 'master',
-                    credentialsId: 'github_ssh',
-                    url: 'git@github.com:unknowIfGuestInDream/EcoVault.git'
+                checkout scm
             }
         }
 
