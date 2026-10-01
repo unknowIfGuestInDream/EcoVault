@@ -28,14 +28,14 @@ pipeline {
         stage('Build') {
             steps {
                 // 构建可部署 Jar，测试在独立阶段执行。
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn ${MAVEN_CI_ARGS} clean package -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
                 // 执行 JUnit 5 测试并生成 JaCoCo 覆盖率数据。
-                sh 'mvn verify'
+                sh 'mvn ${MAVEN_CI_ARGS} verify'
                 sh '''
                     cd target/site
                     zip -r jacoco-report.zip jacoco
@@ -56,7 +56,7 @@ pipeline {
         stage('Report') {
             steps {
                 script {
-                // 构建可部署 Jar，测试在独立阶段执行。
+                // 汇总 JaCoCo 覆盖率摘要，便于在 Jenkins 构建描述中直接查看。
                 sh '''#!/bin/bash
                   if [ -f target/site/jacoco/jacoco.csv ]; then
                     awk -F, '

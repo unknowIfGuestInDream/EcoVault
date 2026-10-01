@@ -28,14 +28,14 @@ pipeline {
         stage('Build Jar') {
             steps {
                 // 日常构建仍保持 Jar 产物，便于本地开发与常规回归。
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn ${MAVEN_CI_ARGS} clean package -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
                 // 执行 JUnit 5 测试并生成 JaCoCo 覆盖率数据。
-                sh 'mvn verify'
+                sh 'mvn ${MAVEN_CI_ARGS} verify'
                 sh '''
                     cd target/site
                     zip -r jacoco-report.zip jacoco
@@ -109,7 +109,7 @@ pipeline {
         stage('Build Native') {
             steps {
                 // 仅部署阶段使用 GraalVM 生成 Native Image，可执行文件名保持为 ecovault。
-                sh 'mvn -Pnative -DskipTests package'
+                sh 'mvn ${MAVEN_CI_ARGS} -Pnative -DskipTests package'
             }
         }
 
