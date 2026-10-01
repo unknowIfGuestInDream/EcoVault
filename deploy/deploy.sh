@@ -16,7 +16,6 @@ HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8100/actuator/health}"
 SPRING_PROFILE="${SPRING_PROFILE:-prod}"
 HEALTH_RETRY="${HEALTH_RETRY:-60}"
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-2}"
-LAST_RUNNING_MODE=""
 
 log() {
   printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
@@ -82,11 +81,12 @@ find_app_process() {
 }
 
 stop_service() {
-  local process_info pid mode
-  process_info="$(find_app_process)"
+  local process_info="${1:-}" pid mode
+  if [[ -z "${process_info}" ]]; then
+    process_info="$(find_app_process)"
+  fi
   pid="$(printf '%s' "${process_info}" | awk 'NF { print $1 }')"
   mode="$(printf '%s' "${process_info}" | awk 'NF { print $2 }')"
-  LAST_RUNNING_MODE="${mode}"
 
   if [[ -z "${pid}" ]]; then
     log "未发现正在运行的 ${APP_NAME} 进程，跳过停止步骤。"
@@ -109,11 +109,11 @@ stop_service() {
 }
 
 backup_old_version() {
-  local source_file backup_ext
-  if [[ "${LAST_RUNNING_MODE}" == "native" ]] && [[ -f "${APP_NATIVE}" ]]; then
+  local running_mode="${1:-}" source_file backup_ext
+  if [[ "${running_mode}" == "native" ]] && [[ -f "${APP_NATIVE}" ]]; then
     source_file="${APP_NATIVE}"
     backup_ext=""
-  elif [[ "${LAST_RUNNING_MODE}" == "jar" ]] && [[ -f "${APP_JAR}" ]]; then
+  elif [[ "${running_mode}" == "jar" ]] && [[ -f "${APP_JAR}" ]]; then
     source_file="${APP_JAR}"
     backup_ext=".jar"
   elif [[ -f "${APP_NATIVE}" ]]; then
@@ -196,10 +196,13 @@ health_check() {
 }
 
 main() {
+  local process_info running_mode
   ensure_dirs
   require_native_artifact
-  stop_service
-  backup_old_version
+  process_info="$(find_app_process)"
+  running_mode="$(printf '%s' "${process_info}" | awk 'NF { print $2 }')"
+  stop_service "${process_info}"
+  backup_old_version "${running_mode}"
   deploy_new_version
   start_service
   health_check
