@@ -89,7 +89,17 @@ is_running() {
 # 若存在多个匹配进程，取最近启动的一个（即列表末尾），并输出警告。
 find_app_process() {
   local processes count
-  processes="$(ps -eo pid=,args= | awk -v jar="${APP_JAR}" -v native="${APP_NATIVE}" '
+  processes="$(ps -eo pid=,args= | awk -v jar="${APP_JAR}" -v native="${APP_NATIVE}" -v native_target="${TARGET_NATIVE}" '
+    function matches_native_path(command, candidate, suffix) {
+      if (candidate == "") {
+        return 0
+      }
+      if (index(command, candidate) != 1) {
+        return 0
+      }
+      suffix = substr(command, length(candidate) + 1, 1)
+      return (suffix == "" || suffix ~ /[[:space:]]/)
+    }
     {
       pid = $1
       args = ""
@@ -98,11 +108,8 @@ find_app_process() {
       }
     }
     index(args, jar) > 0 { print pid "\tjar"; next }
-    index(args, native) == 1 {
-      suffix = substr(args, length(native) + 1, 1)
-      if (suffix == "" || suffix ~ /[[:space:]]/) {
-        print pid "\tnative"
-      }
+    matches_native_path(args, native) || matches_native_path(args, native_target) {
+      print pid "\tnative"
     }
   ' || true)"
 

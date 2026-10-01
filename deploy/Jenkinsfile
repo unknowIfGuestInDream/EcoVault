@@ -107,6 +107,9 @@ pipeline {
         }
 
         stage('Build Native') {
+            when {
+                branch 'master'
+            }
             steps {
                 // 仅部署阶段使用 GraalVM 生成 Native Image，可执行文件名保持为 ecovault。
                 sh 'mvn ${MAVEN_CI_ARGS} -Pnative -DskipTests package'
@@ -115,8 +118,15 @@ pipeline {
 
         stage('Package') {
             steps {
-                dir('target') {
-                    archiveArtifacts artifacts: 'ecovault.jar, ecovault', fingerprint: true, onlyIfSuccessful: true
+                script {
+                    dir('target') {
+                        if (fileExists('ecovault')) {
+                            archiveArtifacts artifacts: 'ecovault.jar, ecovault', fingerprint: true,
+                                    onlyIfSuccessful: true
+                        } else {
+                            archiveArtifacts artifacts: 'ecovault.jar', fingerprint: true, onlyIfSuccessful: true
+                        }
+                    }
                 }
             }
         }
