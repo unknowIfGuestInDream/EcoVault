@@ -250,7 +250,7 @@ bash deploy/deploy.sh
 
 Jenkins Native 部署时会先将 `deploy/deploy.sh` 与 `target/ecovault` 同步到 `/usr/local/runtime/ecovault`，再统一调用该脚本完成停服、备份、部署和健康检查。
 
-为保证 GraalVM Native Image 可正常启动内嵌 Tomcat，项目已额外注册 `org.apache.coyote.AbstractProtocol#getProperty(String)` 的运行时反射提示，用于覆盖 Tomcat 启动阶段的反射访问需求。
+为保证 GraalVM Native Image 可正常启动内嵌 Tomcat，项目已额外提供 `src/main/resources/META-INF/native-image/com.tlcsdm/ecovault/reachability-metadata.json`，并同步注册 `org.apache.coyote.AbstractProtocol#getProperty(String)`、`setProperty(String, String)` 的反射元数据，用于覆盖 Tomcat 启动阶段的属性读写需求。
 
 ## Actuator / 构建信息
 
