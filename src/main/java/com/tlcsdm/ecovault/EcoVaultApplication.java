@@ -1,12 +1,12 @@
 package com.tlcsdm.ecovault;
 
-import org.springframework.context.annotation.ImportRuntimeHints;
+import java.io.File;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ImportRuntimeHints;
 
 import com.tlcsdm.ecovault.config.EcoVaultRuntimeHints;
-
-import java.io.File;
 
 /**
  * EcoVault 应用启动入口。
