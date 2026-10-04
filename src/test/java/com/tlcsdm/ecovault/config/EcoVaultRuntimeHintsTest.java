@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EcoVaultRuntimeHintsTest {
 
 	@Test
-	@DisplayName("应注册 Tomcat AbstractProtocol 属性读写的反射调用提示")
+	@DisplayName("应注册 Tomcat AbstractProtocol 属性访问相关的反射调用提示")
 	void shouldRegisterTomcatProtocolPropertyAccessHints() throws NoSuchMethodException {
 		RuntimeHints hints = new RuntimeHints();
 
@@ -30,8 +30,10 @@ class EcoVaultRuntimeHintsTest {
 
 		Method getPropertyMethod = AbstractProtocol.class.getMethod("getProperty", String.class);
 		Method setPropertyMethod = AbstractProtocol.class.getMethod("setProperty", String.class, String.class);
+		Method getNameMethod = AbstractProtocol.class.getMethod("getName");
 		assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(getPropertyMethod).test(hints)).isTrue();
 		assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(setPropertyMethod).test(hints)).isTrue();
+		assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(getNameMethod).test(hints)).isTrue();
 	}
 
 }
