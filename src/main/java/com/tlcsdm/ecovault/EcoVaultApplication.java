@@ -1,5 +1,7 @@
 package com.tlcsdm.ecovault;
 
+import com.tlcsdm.ecovault.config.EcoVaultRuntimeHints;
+import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -15,6 +17,7 @@ import java.io.File;
  * @author unknowIfGuestInDream
  */
 @SpringBootApplication
+@ImportRuntimeHints(EcoVaultRuntimeHints.class)
 public class EcoVaultApplication {
 
 	/**
