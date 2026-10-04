@@ -4,8 +4,6 @@ import org.apache.coyote.AbstractProtocol;
 import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
 
@@ -24,9 +22,13 @@ public class EcoVaultRuntimeHints implements RuntimeHintsRegistrar {
 
 	@Override
 	public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
-		Method getPropertyMethod = ReflectionUtils.findMethod(AbstractProtocol.class, "getProperty", String.class);
-		Assert.notNull(getPropertyMethod, "Tomcat AbstractProtocol#getProperty(String) 方法不存在");
-		hints.reflection().registerMethod(getPropertyMethod, ExecutableMode.INVOKE);
+		try {
+			Method getPropertyMethod = AbstractProtocol.class.getMethod("getProperty", String.class);
+			hints.reflection().registerMethod(getPropertyMethod, ExecutableMode.INVOKE);
+		}
+		catch (NoSuchMethodException e) {
+			throw new IllegalStateException("Tomcat AbstractProtocol#getProperty(String) 方法不存在", e);
+		}
 	}
 
 }

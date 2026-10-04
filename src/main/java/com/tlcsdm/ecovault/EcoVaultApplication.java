@@ -1,9 +1,10 @@
 package com.tlcsdm.ecovault;
 
-import com.tlcsdm.ecovault.config.EcoVaultRuntimeHints;
 import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.tlcsdm.ecovault.config.EcoVaultRuntimeHints;
 
 import java.io.File;
 
